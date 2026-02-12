@@ -27,7 +27,7 @@ kotlinxSerializationJson = "1.10.0"
 matterAndroidDemoSdk = "1.0"
 playServicesHomeTypes = "16.0.0"
 runtimeLivedataVersion = "1.10.3"
-material3 = "1.4.0"
+material3 = "1.10.3"
 cloudy = "0.5.0"
 
 [libraries]
