@@ -36,8 +36,6 @@ import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.Serializer
 import androidx.datastore.dataStore
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import no.nordicsemi.nrf.matter.model.UserPreferences
 import java.io.InputStream
 import java.io.OutputStream
@@ -54,16 +52,14 @@ object UserPreferencesJsonSerializer : Serializer<UserPreferences> {
         }
 
     override suspend fun writeTo(t: UserPreferences, output: OutputStream) {
-        withContext(Dispatchers.IO) {
-            output.write(
-                UserPreferencesJson.encode(t).encodeToByteArray()
-            )
-        }
+        output.write(
+            UserPreferencesJson.encode(t).encodeToByteArray()
+        )
     }
 }
 
 val Context.userPreferencesDataStore: DataStore<UserPreferences> by
 dataStore(
-    fileName = "user_prefs_store.json",
+    fileName = "user_prefs_store.proto",
     serializer = UserPreferencesJsonSerializer
 )

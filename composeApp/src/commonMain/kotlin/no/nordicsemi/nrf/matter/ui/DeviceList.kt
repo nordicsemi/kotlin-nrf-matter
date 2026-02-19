@@ -300,8 +300,6 @@ private val DeviceTest =
         deviceId = 1L,
         name = "Living Room Light",
         productName = "My Light",
-        vendorName = "MyVendor",
-        deviceMatterInfo = emptyList()
-
+        vendorName = "MyVendor"
 
     )

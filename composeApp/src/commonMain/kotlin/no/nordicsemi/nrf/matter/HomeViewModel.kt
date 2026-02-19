@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter
 
 import androidx.lifecycle.ViewModel
+import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -10,9 +11,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import no.nordicsemi.nrf.matter.domain.DeviceCommand
-import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.Device
+import no.nordicsemi.nrf.matter.model.DeviceController
+import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.Devices
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
@@ -57,7 +58,7 @@ class HomeViewModel(
     private val devicesRepository: DevicesRepository,
     private val devicesStateRepository: DevicesStateRepository,
     userPreferencesRepository: UserPreferencesRepository,
-    private val deviceCommandHandler: DeviceCommandHandler,
+    private val deviceController: DeviceController,
 ) : ViewModel() {
     private val scope = CoroutineScope(
         SupervisorJob() + Dispatchers.Main
@@ -80,6 +81,12 @@ class HomeViewModel(
             SharingStarted.Eagerly,
             DevicesListUiModel(emptyList(), showOfflineDevices = true)
         )
+
+    private fun updateDeviceStateRepository(deviceId: Long, isOnline: Boolean, isOn: Boolean) {
+        scope.launch {
+            devicesStateRepository.updateDeviceState(deviceId, isOnline = isOnline, isOn = isOn)
+        }
+    }
 
     private fun processDevices(
         devices: Devices,
@@ -114,6 +121,15 @@ class HomeViewModel(
         }
     }
 
+    fun updateDeviceType(
+        deviceId: Long,
+        deviceType: DeviceType
+    ) {
+        scope.launch {
+            devicesRepository.updateDeviceType(deviceId, deviceType)
+        }
+    }
+
     fun commissioningFailed(resultCode: Int) {
         // TODO: Handle commissioning failure with proper UI states.
         if (resultCode == 0) {
@@ -122,12 +138,27 @@ class HomeViewModel(
         }
     }
 
-    fun toggleDevice(deviceId: Long, isOnline: Boolean, isOn: Boolean) {
+    fun updateDeviceState(deviceId: Long, isOnline: Boolean, isOn: Boolean) {
         scope.launch {
-            deviceCommandHandler.execute(
-                deviceId,
-                DeviceCommand.SetPower(isOn)
-            )
+            try {
+                updateDeviceStateRepository(
+                    deviceId = deviceId,
+                    isOn = isOn,
+                    isOnline = isOnline
+                )
+                deviceController.setDeviceOnOff(
+                    deviceId = deviceId,
+                    isDeviceOnline = isOnline,
+                    isOn = isOn
+                )
+            } catch (e: Exception) {
+                Napier.e(e) { "Error updating device state: ${e.message}" }
+                updateDeviceStateRepository(
+                    deviceId = deviceId,
+                    isOnline = false,
+                    isOn = !isOn
+                )
+            }
         }
     }
 }

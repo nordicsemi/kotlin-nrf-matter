@@ -9,8 +9,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import no.nordicsemi.nrf.matter.domain.DeviceCommand
-import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
@@ -51,7 +49,6 @@ class DevicePresenter(
     private val devicesRepository: DevicesRepository,
     private val devicesStateRepository: DevicesStateRepository,
     private val deviceController: DeviceController,
-    private val deviceCommandHandler: DeviceCommandHandler
 ) {
     private val scope = CoroutineScope(
         SupervisorJob() + Dispatchers.Main
@@ -64,7 +61,7 @@ class DevicePresenter(
         if (deviceId == _uiState.value.deviceUiModel?.device?.deviceId) return
 
         scope.launch {
-            val device = devicesRepository.getDeviceOrNull(deviceId) ?: return@launch
+            val device = devicesRepository.getDevice(deviceId)
             val state = devicesStateRepository.loadDeviceState(deviceId)
 
             _uiState.update {
@@ -75,6 +72,32 @@ class DevicePresenter(
                         isOn = state?.on ?: false
                     ),
                     removeDeviceState = RemoveDeviceState.Idle
+                )
+            }
+        }
+    }
+
+    fun updateDevicePowerState(deviceId: Long, isOn: Boolean) {
+        scope.launch {
+            try {
+                devicesStateRepository.updateDeviceState(
+                    deviceId = deviceId,
+                    isOnline = true,
+                    isOn = isOn
+                )
+
+                deviceController.setDeviceOnOff(
+                    deviceId = deviceId,
+                    isDeviceOnline = true,
+                    isOn = isOn
+                )
+            } catch (e: Exception) {
+                Napier.e(e) { "AAA, error updating device state: ${e.message}" }
+                // rollback
+                devicesStateRepository.updateDeviceState(
+                    deviceId = deviceId,
+                    isOnline = false,
+                    isOn = !isOn
                 )
             }
         }
@@ -136,15 +159,5 @@ class DevicePresenter(
 
         }
     }
-
-    fun togglePower(deviceId: Long, isOn: Boolean) {
-        scope.launch {
-            deviceCommandHandler.execute(
-                deviceId,
-                DeviceCommand.SetPower(isOn)
-            )
-        }
-    }
-
 
 }

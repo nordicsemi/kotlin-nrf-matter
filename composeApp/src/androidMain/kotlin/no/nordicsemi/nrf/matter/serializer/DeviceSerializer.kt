@@ -5,8 +5,6 @@ import androidx.datastore.core.CorruptionException
 import androidx.datastore.core.DataStore
 import androidx.datastore.core.Serializer
 import androidx.datastore.dataStore
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import no.nordicsemi.nrf.matter.model.Devices
 import java.io.InputStream
 import java.io.OutputStream
@@ -54,11 +52,9 @@ object DevicesJsonSerializer : Serializer<Devices> {
         }
 
     override suspend fun writeTo(t: Devices, output: OutputStream) {
-        withContext(Dispatchers.IO) {
-            output.write(
-                DevicesJson.encode(t).encodeToByteArray()
-            )
-        }
+        output.write(
+            DevicesJson.encode(t).encodeToByteArray()
+        )
     }
 }
 

@@ -3,10 +3,9 @@ package no.nordicsemi.nrf.matter.chip
 import chip.devicecontroller.ChipClusters
 import chip.devicecontroller.ChipStructs
 import io.github.aakira.napier.Napier
-import kotlinx.coroutines.suspendCancellableCoroutine
-import no.nordicsemi.nrf.matter.model.DeviceMatterInfo
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -38,6 +37,16 @@ import kotlin.coroutines.resumeWithException
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+/**
+ * Encapsulates the information of interest when querying a Matter device just after it has been
+ * commissioned.
+ */
+data class DeviceMatterInfo(
+    val endpoint: Int,
+    val types: List<Long>,
+    val serverClusters: List<Any>,
+    val clientClusters: List<Any>
+)
 
 class ClustersHelper(private val chipClient: ChipClient) {
 
@@ -77,18 +86,18 @@ class ClustersHelper(private val chipClient: ChipClient) {
             readDescriptorClusterDeviceListAttribute(connectedDevicePtr, endpointInt)
         val types = arrayListOf<Long>()
         // todo: device type is deprecated
-        deviceListAttribute.forEach { types.add(it.deviceType) }
+//        deviceListAttribute.forEach { types.add(it.deviceType) }
 
         // ServerListAttribute
         val serverListAttribute =
             readDescriptorClusterServerListAttribute(connectedDevicePtr, endpointInt)
-        val serverClusters = arrayListOf<Long>()
+        val serverClusters = arrayListOf<Any>()
         serverListAttribute.forEach { serverClusters.add(it) }
 
         // ClientListAttribute
         val clientListAttribute =
             readDescriptorClusterClientListAttribute(connectedDevicePtr, endpointInt)
-        val clientClusters = arrayListOf<Long>()
+        val clientClusters = arrayListOf<Any>()
         clientListAttribute.forEach { clientClusters.add(it) }
 
         // Build the DeviceMatterInfo
@@ -125,7 +134,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
         devicePtr: Long,
         endpoint: Int
     ): List<Any>? {
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             getDescriptorClusterForDevice(devicePtr, endpoint)
                 .readPartsListAttribute(
                     object : ChipClusters.DescriptorCluster.PartsListAttributeCallback {
@@ -154,7 +163,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
         devicePtr: Long,
         endpoint: Int
     ): List<ChipStructs.DescriptorClusterDeviceTypeStruct> {
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             getDescriptorClusterForDevice(devicePtr, endpoint)
                 .readDeviceTypeListAttribute(
                     object : ChipClusters.DescriptorCluster.DeviceTypeListAttributeCallback {
@@ -205,7 +214,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
         devicePtr: Long,
         endpoint: Int
     ): List<Long> {
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             getDescriptorClusterForDevice(devicePtr, endpoint)
                 .readServerListAttribute(
                     object : ChipClusters.DescriptorCluster.ServerListAttributeCallback {
@@ -225,7 +234,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
         devicePtr: Long,
         endpoint: Int
     ): List<Long> {
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             getDescriptorClusterForDevice(devicePtr, endpoint)
                 .readClientListAttribute(
                     object : ChipClusters.DescriptorCluster.ClientListAttributeCallback {
@@ -261,7 +270,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
                 return emptyList()
             }
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             getApplicationBasicClusterForDevice(connectedDevicePtr, endpoint)
                 .readAttributeListAttribute(
                     object : ChipClusters.ApplicationBasicCluster.AttributeListAttributeCallback {
@@ -294,7 +303,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
                 return null
             }
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             getBasicClusterForDevice(connectedDevicePtr, endpoint)
                 .readVendorIDAttribute(
                     object : ChipClusters.ApplicationBasicCluster.VendorIDAttributeCallback {
@@ -318,7 +327,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 return emptyList()
             }
 
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             getBasicClusterForDevice(connectedDevicePtr, endpoint)
                 .readAttributeListAttribute(
                     object : ChipClusters.ApplicationBasicCluster.AttributeListAttributeCallback {
@@ -356,7 +365,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 return
             }
 
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             val callback =
                 object : ChipClusters.DefaultClusterCallback {
                     override fun onSuccess() {
@@ -389,7 +398,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 return ""
             }
 
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             val callback =
                 object : ChipClusters.CharStringAttributeCallback {
                     override fun onSuccess(value: String) {
@@ -422,7 +431,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 return ""
             }
 
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             val callback =
                 object : ChipClusters.CharStringAttributeCallback {
                     override fun onSuccess(value: String) {
@@ -455,7 +464,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 return null
             }
 
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             val callback =
                 object : ChipClusters.CharStringAttributeCallback {
                     override fun onSuccess(value: String?) {
@@ -485,7 +494,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
                 return
             }
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             getOnOffClusterForDevice(connectedDevicePtr, endpoint)
                 .toggle(
                     object : ChipClusters.DefaultClusterCallback {
@@ -516,7 +525,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             }
         if (isOn) {
             // ON
-            return suspendCancellableCoroutine { continuation ->
+            return suspendCoroutine { continuation ->
                 getOnOffClusterForDevice(connectedDevicePtr, endpoint)
                     .on(
                         object : ChipClusters.DefaultClusterCallback {
@@ -533,7 +542,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
             }
         } else {
             // OFF
-            return suspendCancellableCoroutine { continuation ->
+            return suspendCoroutine { continuation ->
                 getOnOffClusterForDevice(connectedDevicePtr, endpoint)
                     .off(
                         object : ChipClusters.DefaultClusterCallback {
@@ -560,7 +569,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
                 Napier.e(e) { "AAA, Can't get connectedDevicePointer." }
                 return null
             }
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             getOnOffClusterForDevice(connectedDevicePtr, endpoint)
                 .readOnOffAttribute(
                     object : ChipClusters.BooleanAttributeCallback {
@@ -611,7 +620,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
         /*
         ChipClusters.DefaultClusterCallback var1, Integer var2, byte[] var3, Integer var4, Long var5, byte[] var6, int var7
          */
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             getAdministratorCommissioningClusterForDevice(connectedDevicePtr, endpoint)
                 .openCommissioningWindow(
                     object : ChipClusters.DefaultClusterCallback {
@@ -643,7 +652,7 @@ class ClustersHelper(private val chipClient: ChipClient) {
      * @param devicePtr connected device pointer.
      */
     suspend fun closeCommissioningWindow(devicePtr: Long) {
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             val callback =
                 object : ChipClusters.DefaultClusterCallback {
                     override fun onSuccess() {

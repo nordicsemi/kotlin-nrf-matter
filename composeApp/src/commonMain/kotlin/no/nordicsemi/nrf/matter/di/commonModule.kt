@@ -2,7 +2,6 @@ package no.nordicsemi.nrf.matter.di
 
 import no.nordicsemi.nrf.matter.BeaconRepository
 import no.nordicsemi.nrf.matter.device.DevicePresenter
-import no.nordicsemi.nrf.matter.domain.DeviceCommandHandler
 import no.nordicsemi.nrf.matter.model.DeviceController
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
@@ -53,16 +52,6 @@ val commonModule = module {
     // Device viewmodel.
     single {
         DevicePresenter(
-            get<DevicesRepository>(),
-            get<DevicesStateRepository>(),
-            get<DeviceController>(),
-            get<DeviceCommandHandler>()
-        )
-    }
-
-    // Device command handler.
-    single {
-        DeviceCommandHandler(
             get<DevicesRepository>(),
             get<DevicesStateRepository>(),
             get<DeviceController>()

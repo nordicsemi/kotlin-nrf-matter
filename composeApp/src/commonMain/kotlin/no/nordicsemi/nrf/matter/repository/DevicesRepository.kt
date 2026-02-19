@@ -105,8 +105,9 @@ class DevicesRepository(
         }
     }
 
-    suspend fun getDeviceOrNull(deviceId: Long): Device? =
+    suspend fun getDevice(deviceId: Long): Device =
         devicesFlow.first().devicesList.firstOrNull { it.deviceId == deviceId }
+            ?: throw IllegalStateException("Device not found: $deviceId")
 
     suspend fun getAllDevices(): Devices =
         devicesFlow.first()

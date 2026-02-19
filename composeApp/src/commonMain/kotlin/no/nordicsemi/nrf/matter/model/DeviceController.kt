@@ -31,12 +31,7 @@ package no.nordicsemi.nrf.matter.model
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 interface DeviceController {
-    suspend fun setDeviceOnOff(
-        deviceId: Long,
-        isDeviceOnline: Boolean,
-        isOn: Boolean,
-        endpoint: Int,
-    )
+    suspend fun setDeviceOnOff(deviceId: Long, isDeviceOnline: Boolean, isOn: Boolean)
 
     suspend fun unlinkDevice(deviceId: Long)
 }

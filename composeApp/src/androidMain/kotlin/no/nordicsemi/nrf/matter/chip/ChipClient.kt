@@ -30,6 +30,7 @@ import io.github.aakira.napier.Napier
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -61,15 +62,15 @@ import kotlin.coroutines.resumeWithException
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-/* 0xFFF4 is a test vendor ID, replace with your assigned company ID */
-private const val VENDOR_ID = 0xFFF4
-
-private const val DEFAULT_TIMEOUT = 1000
-
 class ChipClient(
     private val context: Context,
 ) {
+
+    /* 0xFFF4 is a test vendor ID, replace with your assigned company ID */
+    private val VENDOR_ID = 0xFFF4
+
+    private val DEFAULT_TIMEOUT = 1000
+
     // Lazily instantiate [ChipDeviceController] and hold a reference to it.
     val chipDeviceController: ChipDeviceController by lazy {
         ChipDeviceController.loadJni()
@@ -92,7 +93,7 @@ class ChipClient(
      * Wrapper around [ChipDeviceController.getConnectedDevicePointer] to return the value directly.
      */
     suspend fun getConnectedDevicePointer(nodeId: Long): Long {
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             chipDeviceController.getConnectedDevicePointer(
                 nodeId,
                 object : GetConnectedDeviceCallbackJni.GetConnectedDeviceCallback {
@@ -162,7 +163,7 @@ class ChipClient(
         port: Int,
         setupPinCode: Long
     ) {
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             chipDeviceController.setCompletionListener(
                 object : BaseCompletionListener() {
                     override fun onConnectDeviceComplete() {
@@ -223,7 +224,7 @@ class ChipClient(
     }
 
     suspend fun awaitCommissionDevice(deviceId: Long, networkCredentials: NetworkCredentials?) {
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             chipDeviceController.setCompletionListener(
                 object : BaseCompletionListener() {
                     // Note that an error in processing is not necessarily communicated via onError().
@@ -255,7 +256,7 @@ class ChipClient(
         discriminator: Int,
         setupPinCode: Long
     ) {
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             Napier.d { "AAA, Calling chipDeviceController.openPairingWindowWithPIN" }
             val callback: OpenCommissioningCallback =
                 object : OpenCommissioningCallback {
@@ -287,7 +288,7 @@ class ChipClient(
      * Wrapper around [ChipDeviceController.getConnectedDevicePointer] to return the value directly.
      */
     suspend fun awaitGetConnectedDevicePointer(nodeId: Long): Long {
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             chipDeviceController.getConnectedDevicePointer(
                 nodeId,
                 object : GetConnectedDeviceCallbackJni.GetConnectedDeviceCallback {
@@ -340,7 +341,7 @@ class ChipClient(
         timedRequestTimeoutMs: Int = DEFAULT_TIMEOUT,
         imTimeoutMs: Int = DEFAULT_TIMEOUT
     ) {
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             val requests: List<AttributeWriteRequest> =
                 attributes.toList().map {
                     AttributeWriteRequest.newInstance(
@@ -393,7 +394,7 @@ class ChipClient(
         devicePtr: Long,
         attributePaths: List<ChipAttributePath>
     ): Map<ChipAttributePath, AttributeState> {
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             val callback: ReportCallback =
                 object : ReportCallback {
                     override fun onError(
@@ -422,6 +423,9 @@ class ChipClient(
                         continuation.resume(states)
                     }
 
+                    override fun onDone() {
+                        super.onDone()
+                    }
                 }
             chipDeviceController.readAttributePath(callback, devicePtr, attributePaths)
         }
@@ -435,7 +439,7 @@ class ChipClient(
         maxInterval: Int,
         callback: ReportCallback
     ) {
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             chipDeviceController.subscribeToAttributePath(
                 { continuation.resume(Unit) },
                 callback,
@@ -454,7 +458,7 @@ class ChipClient(
         timedRequestTimeoutMs: Int = DEFAULT_TIMEOUT,
         imTimeoutMs: Int = DEFAULT_TIMEOUT
     ): Long {
-        return suspendCancellableCoroutine { continuation ->
+        return suspendCoroutine { continuation ->
             val invokeCallback: InvokeCallback =
                 object : InvokeCallback {
                     override fun onError(e: java.lang.Exception?) {
