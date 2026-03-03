@@ -14,7 +14,7 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -24,7 +24,7 @@ kotlin {
             isStatic = true
         }
     }
-    
+
     sourceSets {
         androidMain.dependencies {
             implementation(compose.preview)
@@ -34,11 +34,15 @@ kotlin {
             implementation(libs.accompanist.permissions)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
-            implementation(libs.play.services.home)
-            implementation(libs.matter.android.demo.sdk)
             implementation(libs.androidx.material3)
             implementation(libs.androidx.material)
             implementation(libs.androidx.runtime.livedata)
+            // Home API SDK dependency
+            implementation(libs.play.services.types)
+            implementation(libs.play.services.home)
+            // Matter Android Demo SDK
+            implementation(libs.matter.android.demo.sdk)
+
         }
         commonMain.dependencies {
             implementation(compose.runtime)

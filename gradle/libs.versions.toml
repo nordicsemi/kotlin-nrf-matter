@@ -25,7 +25,7 @@ kotlinxDatetime = "0.7.1"
 kotlinxSerializationJson = "1.10.0"
 matterAndroidDemoSdk = "1.0"
 napier = "2.7.1"
-playServicesHomeTypes = "16.0.0"
+playServicesHomeTypes = "17.1.0"
 qrKit = "3.1.3"
 runtimeLivedataVersion = "1.10.3"
 material3 = "1.4.0"
@@ -55,7 +55,8 @@ material-icons-extended = { module = "org.jetbrains.compose.material:material-ic
 material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "material3Version" }
 matter-android-demo-sdk = { module = "com.google.matter:matter-android-demo-sdk", version.ref = "matterAndroidDemoSdk" }
 napier = { module = "io.github.aakira:napier", version.ref = "napier" }
-play-services-home = { module = "com.google.android.gms:play-services-home", version.ref = "playServicesHomeTypes" }
+play-services-home = { group = "com.google.android.gms", name = "play-services-home", version.ref = "playServicesHomeTypes" }
+play-services-types = { group = "com.google.android.gms", name = "play-services-home-types", version.ref = "playServicesHomeTypes" }
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedataVersion" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 androidx-material = { group = "androidx.compose.material", name = "material", version.ref = "material3" }
