@@ -12,6 +12,7 @@ androidx-espresso = "3.7.0"
 androidx-lifecycle = "2.9.6"
 androidx-testExt = "1.3.0"
 composeMultiplatform = "1.10.1"
+error_prone_annotations = "2.47.0"
 material3Version = "1.9.0"
 materialIconsExtended = "1.7.3"
 multiplatform-nav3-ui = "1.0.0-alpha06"
@@ -35,6 +36,7 @@ cloudy = "0.5.0"
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
+error_prone_annotations = { module = "com.google.errorprone:error_prone_annotations", version.ref = "error_prone_annotations" }
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinCore" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinCore" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koinCore" }

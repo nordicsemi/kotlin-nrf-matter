@@ -42,6 +42,8 @@ kotlin {
             implementation(libs.play.services.home)
             // Matter Android Demo SDK
             implementation(libs.matter.android.demo.sdk)
+            // MA traits
+            implementation(libs.error.prone.annotations)
 
         }
         commonMain.dependencies {
