@@ -95,6 +95,7 @@ object DescriptorTrait {
    *
    * @constructor Creates the SemanticTagStruct class.
    */
+  @OptIn(HomeExperimentalGenericApi::class)
   class SemanticTagStruct(
     /** The manufacturer ID. */
     override val mfgCode: UShort? = null,
@@ -107,7 +108,7 @@ object DescriptorTrait {
     override val label: String? = _label.getOrNull()
 
     /** Descriptor enum for this struct's fields. */
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     enum class StructFields(
       override val fieldName: String,
       override val tag: UInt,
@@ -127,9 +128,9 @@ object DescriptorTrait {
       label("label", 3u, "String", FieldType.String, false, NoOpDescriptor, true),
     }
 
-    @HomeExperimentalGenericApi override fun getDescriptor(): StructDescriptor = Adapter
+    @OptIn(HomeExperimentalGenericApi::class) override fun getDescriptor(): StructDescriptor = Adapter
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         StructFields.mfgCode.tag -> mfgCode
@@ -160,11 +161,11 @@ object DescriptorTrait {
         )
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       @Suppress("Immutable")
       override val fields: DescriptorMap = StructFields.entries.toDescriptorMap()
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
         return SemanticTagStruct(
           mfgCode = fields[StructFields.mfgCode] as UShort?,
@@ -229,6 +230,7 @@ object DescriptorTrait {
    *
    * @constructor Creates the DeviceTypeStruct class.
    */
+  @OptIn(HomeExperimentalGenericApi::class)
   class DeviceTypeStruct(
     /** The device type definition. */
     val deviceType: UInt = 0u,
@@ -237,7 +239,7 @@ object DescriptorTrait {
   ) : ClusterStruct {
 
     /** Descriptor enum for this struct's fields. */
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     enum class StructFields(
       override val fieldName: String,
       override val tag: UInt,
@@ -253,9 +255,9 @@ object DescriptorTrait {
       revision("revision", 1u, "UShort", FieldType.UShort, false, NoOpDescriptor, false),
     }
 
-    @HomeExperimentalGenericApi override fun getDescriptor(): StructDescriptor = Adapter
+    @OptIn(HomeExperimentalGenericApi::class) override fun getDescriptor(): StructDescriptor = Adapter
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         StructFields.deviceType.tag -> deviceType
@@ -265,6 +267,7 @@ object DescriptorTrait {
     }
 
     /** @suppress */
+    @OptIn(HomeExperimentalGenericApi::class)
     @Immutable
     companion object Adapter : StructAdapter<DeviceTypeStruct>, StructDescriptor {
       override fun write(writer: ClusterPayloadWriter, value: DeviceTypeStruct) {
@@ -277,11 +280,11 @@ object DescriptorTrait {
         return DeviceTypeStruct(data.uint.get(0u, "DeviceType"), data.ushort.get(1u, "Revision"))
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       @Suppress("Immutable")
       override val fields: DescriptorMap = StructFields.entries.toDescriptorMap()
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
         return DeviceTypeStruct(
           deviceType = fields[StructFields.deviceType] as UInt,
@@ -326,6 +329,7 @@ object DescriptorTrait {
   }
 
   /** Attributes for the Descriptor cluster. */
+  @OptIn(HomeExperimentalGenericApi::class)
   @Generated("GoogleHomePlatformCodegen")
   interface Attributes : ClusterStruct {
 
@@ -388,10 +392,9 @@ object DescriptorTrait {
     /** The revision of the server cluster specification supported by the cluster instance. */
     val clusterRevision: UShort
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getDescriptor(): StructDescriptor = Descriptor.Attribute.StructDescriptor
-
-    @HomeExperimentalGenericApi
+    
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         Descriptor.Attribute.deviceTypeList.tag -> deviceTypeList

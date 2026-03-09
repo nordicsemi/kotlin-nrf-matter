@@ -1,7 +1,7 @@
 // This file contains machine-generated code.
 @file:Suppress("PackageName")
 
-package no.nordicsemi.nrf.matter
+package no.nordicsemi.nrf.matter.cluster
 
 import com.google.errorprone.annotations.Immutable
 import com.google.home.BitmapDescriptor
@@ -11,7 +11,6 @@ import com.google.home.Descriptor as HomeDescriptor
 import com.google.home.DescriptorMap
 import com.google.home.EnumDescriptor
 import com.google.home.EnumEntry
-import com.google.home.Field
 import com.google.home.HomeException
 import com.google.home.NoOpDescriptor
 import com.google.home.StructDescriptor
@@ -37,6 +36,7 @@ import com.google.home.matter.serialization.camelToSnakeUpper
 import com.google.home.matter.serialization.unwrapPayload
 import com.google.home.matter.serialization.upperCamelToSnakeUpper
 import com.google.home.matter.serialization.wrapPayload
+import com.google.home.matter.standard.GeneralCommissioning
 import com.google.home.toBitmapDescriptor
 import com.google.home.toDescriptorMap
 import com.google.home.toEnumDescriptor
@@ -76,9 +76,9 @@ object GeneralCommissioningTrait {
      * The enum value is out of range. For example, a newer Matter cluster definition may support
      * enum values not yet supported by the Home APIs.
      */
-    UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
+    ; //; //UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     fun toDescription(): String {
       return "CommissioningErrorEnum".upperCamelToSnakeUpper() +
         "_" +
@@ -87,9 +87,9 @@ object GeneralCommissioningTrait {
 
     /** @suppress */
     companion object {
-      val Adapter = EnumAdapter(values())
+      val Adapter = EnumAdapter(entries.toTypedArray())
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       val EnumDescriptor =
         object : EnumDescriptor {
           override val name: String = "CommissioningErrorEnum"
@@ -113,9 +113,9 @@ object GeneralCommissioningTrait {
      * The enum value is out of range. For example, a newer Matter cluster definition may support
      * enum values not yet supported by the Home APIs.
      */
-    UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
+    ; //UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     fun toDescription(): String {
       return "NetworkRecoveryReasonEnum".upperCamelToSnakeUpper() +
         "_" +
@@ -126,7 +126,7 @@ object GeneralCommissioningTrait {
     companion object {
       val Adapter = EnumAdapter(values())
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       val EnumDescriptor =
         object : EnumDescriptor {
           override val name: String = "NetworkRecoveryReasonEnum"
@@ -150,9 +150,9 @@ object GeneralCommissioningTrait {
      * The enum value is out of range. For example, a newer Matter cluster definition may support
      * enum values not yet supported by the Home APIs.
      */
-    UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
+    ; //UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     fun toDescription(): String {
       return "RegulatoryLocationTypeEnum".upperCamelToSnakeUpper() +
         "_" +
@@ -163,7 +163,7 @@ object GeneralCommissioningTrait {
     companion object {
       val Adapter = EnumAdapter(values())
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       val EnumDescriptor =
         object : EnumDescriptor {
           override val name: String = "RegulatoryLocationTypeEnum"
@@ -224,7 +224,7 @@ object GeneralCommissioningTrait {
   ) : ClusterStruct {
 
     /** Descriptor enum for this struct's fields. */
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     enum class StructFields(
       override val fieldName: String,
       override val tag: UInt,
@@ -256,9 +256,9 @@ object GeneralCommissioningTrait {
       ),
     }
 
-    @HomeExperimentalGenericApi override fun getDescriptor(): StructDescriptor = Adapter
+    @OptIn(HomeExperimentalGenericApi::class) override fun getDescriptor(): StructDescriptor = Adapter
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         StructFields.failSafeExpiryLengthSeconds.tag -> failSafeExpiryLengthSeconds
@@ -283,11 +283,11 @@ object GeneralCommissioningTrait {
         )
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       @Suppress("Immutable")
       override val fields: DescriptorMap = StructFields.entries.toDescriptorMap()
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
         return BasicCommissioningInfo(
           failSafeExpiryLengthSeconds = fields[StructFields.failSafeExpiryLengthSeconds] as UShort,
@@ -342,6 +342,7 @@ object GeneralCommissioningTrait {
   }
 
   /** Attributes for the GeneralCommissioning cluster. */
+  @OptIn(HomeExperimentalGenericApi::class)
   @Generated("GoogleHomePlatformCodegen")
   interface Attributes : ClusterStruct {
     val breadcrumb: ULong?
@@ -381,10 +382,10 @@ object GeneralCommissioningTrait {
     /** The revision of the server cluster specification supported by the cluster instance. */
     val clusterRevision: UShort
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getDescriptor(): StructDescriptor = GeneralCommissioning.Attribute.StructDescriptor
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         GeneralCommissioning.Attribute.breadcrumb.tag -> breadcrumb
@@ -812,12 +813,12 @@ object GeneralCommissioningTrait {
     /** @suppress */
     val responseId = ScopedCommandId(GeneralCommissioningTrait.Id, 1u)
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldById(tagId: UInt): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.tag == tagId }
     }
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldByName(name: String): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.name == name }
     }
@@ -826,7 +827,7 @@ object GeneralCommissioningTrait {
       ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -854,7 +855,7 @@ object GeneralCommissioningTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Request(
                   expiryLengthSeconds = fields[CommandFields.expiryLengthSeconds] as UShort,
@@ -865,10 +866,10 @@ object GeneralCommissioningTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.expiryLengthSeconds.tag -> expiryLengthSeconds
@@ -930,7 +931,7 @@ object GeneralCommissioningTrait {
     ) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -958,7 +959,7 @@ object GeneralCommissioningTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Response(
                   errorCode = fields[CommandFields.errorCode] as CommissioningErrorEnum,
@@ -969,10 +970,10 @@ object GeneralCommissioningTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.errorCode.tag -> errorCode
@@ -1040,12 +1041,12 @@ object GeneralCommissioningTrait {
     /** @suppress */
     val responseId = ScopedCommandId(GeneralCommissioningTrait.Id, 3u)
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldById(tagId: UInt): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.tag == tagId }
     }
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldByName(name: String): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.name == name }
     }
@@ -1057,7 +1058,7 @@ object GeneralCommissioningTrait {
     ) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -1087,7 +1088,7 @@ object GeneralCommissioningTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Request(
                   newRegulatoryConfig =
@@ -1100,10 +1101,10 @@ object GeneralCommissioningTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.newRegulatoryConfig.tag -> newRegulatoryConfig
@@ -1172,7 +1173,7 @@ object GeneralCommissioningTrait {
     ) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -1200,7 +1201,7 @@ object GeneralCommissioningTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Response(
                   errorCode = fields[CommandFields.errorCode] as CommissioningErrorEnum,
@@ -1211,10 +1212,10 @@ object GeneralCommissioningTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.errorCode.tag -> errorCode
@@ -1286,7 +1287,7 @@ object GeneralCommissioningTrait {
     class Request() : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -1303,7 +1304,7 @@ object GeneralCommissioningTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Request()
               }
@@ -1311,10 +1312,10 @@ object GeneralCommissioningTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           else -> null
@@ -1358,7 +1359,7 @@ object GeneralCommissioningTrait {
     ) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -1386,7 +1387,7 @@ object GeneralCommissioningTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Response(
                   errorCode = fields[CommandFields.errorCode] as CommissioningErrorEnum,
@@ -1397,10 +1398,10 @@ object GeneralCommissioningTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.errorCode.tag -> errorCode
@@ -1468,12 +1469,12 @@ object GeneralCommissioningTrait {
     /** @suppress */
     val responseId = ScopedCommandId(GeneralCommissioningTrait.Id, 7u)
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldById(tagId: UInt): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.tag == tagId }
     }
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldByName(name: String): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.name == name }
     }
@@ -1481,7 +1482,7 @@ object GeneralCommissioningTrait {
     class Request(val tcVersion: UShort = 0u, val tcUserResponse: UShort = 0u) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -1509,7 +1510,7 @@ object GeneralCommissioningTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Request(
                   tcVersion = fields[CommandFields.tcVersion] as UShort,
@@ -1520,10 +1521,10 @@ object GeneralCommissioningTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.tcVersion.tag -> tcVersion
@@ -1580,7 +1581,7 @@ object GeneralCommissioningTrait {
       ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -1606,7 +1607,7 @@ object GeneralCommissioningTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Response(
                   errorCode = fields[CommandFields.errorCode] as CommissioningErrorEnum
@@ -1616,10 +1617,10 @@ object GeneralCommissioningTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.errorCode.tag -> errorCode

@@ -103,9 +103,9 @@ object BasicInformationTrait {
      * The enum value is out of range. For example, a newer Matter cluster definition may support
      * enum values not yet supported by the Home APIs.
      */
-    UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
+    ; //UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     fun toDescription(): String {
       return "ColorEnum".upperCamelToSnakeUpper() + "_" + super.toString().camelToSnakeUpper()
     }
@@ -114,7 +114,7 @@ object BasicInformationTrait {
     companion object {
       val Adapter = EnumAdapter(values())
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       val EnumDescriptor =
         object : EnumDescriptor {
           override val name: String = "ColorEnum"
@@ -148,9 +148,9 @@ object BasicInformationTrait {
      * The enum value is out of range. For example, a newer Matter cluster definition may support
      * enum values not yet supported by the Home APIs.
      */
-    UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
+    ; //UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     fun toDescription(): String {
       return "ProductFinishEnum".upperCamelToSnakeUpper() +
         "_" +
@@ -161,7 +161,7 @@ object BasicInformationTrait {
     companion object {
       val Adapter = EnumAdapter(values())
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       val EnumDescriptor =
         object : EnumDescriptor {
           override val name: String = "ProductFinishEnum"
@@ -183,11 +183,11 @@ object BasicInformationTrait {
      */
     val softwareVersion: UInt?
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getDescriptor(): StructDescriptor =
       BasicInformation.StartUpEvent.EventFields.StructDescriptor
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         BasicInformation.StartUpEvent.EventFields.softwareVersion.tag -> softwareVersion
@@ -243,11 +243,11 @@ object BasicInformationTrait {
   /** Indicates that the node has begun an orderly shutdown sequence on a best effort basis. */
   interface ShutDown : ClusterStruct {
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getDescriptor(): StructDescriptor =
       BasicInformation.ShutDownEvent.EventFields.StructDescriptor
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         else -> null
@@ -270,11 +270,11 @@ object BasicInformationTrait {
     /** The identifier for the fabric where the target endpoint is located. */
     val fabricIndex: UByte?
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getDescriptor(): StructDescriptor =
       BasicInformation.LeaveEvent.EventFields.StructDescriptor
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         BasicInformation.LeaveEvent.EventFields.fabricIndex.tag -> fabricIndex
@@ -331,11 +331,11 @@ object BasicInformationTrait {
     /** The new [reachable][BasicInformationTrait.Attributes.reachable] attribute value. */
     val reachableNewValue: Boolean?
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getDescriptor(): StructDescriptor =
       BasicInformation.ReachableChangedEvent.EventFields.StructDescriptor
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         BasicInformation.ReachableChangedEvent.EventFields.reachableNewValue.tag ->
@@ -407,7 +407,7 @@ object BasicInformationTrait {
   ) : ClusterStruct {
 
     /** Descriptor enum for this struct's fields. */
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     enum class StructFields(
       override val fieldName: String,
       override val tag: UInt,
@@ -439,9 +439,9 @@ object BasicInformationTrait {
       ),
     }
 
-    @HomeExperimentalGenericApi override fun getDescriptor(): StructDescriptor = Adapter
+    @OptIn(HomeExperimentalGenericApi::class) override fun getDescriptor(): StructDescriptor = Adapter
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         StructFields.caseSessionsPerFabric.tag -> caseSessionsPerFabric
@@ -466,11 +466,11 @@ object BasicInformationTrait {
         )
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       @Suppress("Immutable")
       override val fields: DescriptorMap = StructFields.entries.toDescriptorMap()
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
         return CapabilityMinimaStruct(
           caseSessionsPerFabric = fields[StructFields.caseSessionsPerFabric] as UShort,
@@ -536,7 +536,7 @@ object BasicInformationTrait {
   ) : ClusterStruct {
 
     /** Descriptor enum for this struct's fields. */
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     enum class StructFields(
       override val fieldName: String,
       override val tag: UInt,
@@ -568,9 +568,9 @@ object BasicInformationTrait {
       ),
     }
 
-    @HomeExperimentalGenericApi override fun getDescriptor(): StructDescriptor = Adapter
+    @OptIn(HomeExperimentalGenericApi::class) override fun getDescriptor(): StructDescriptor = Adapter
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         StructFields.finish.tag -> finish
@@ -595,11 +595,11 @@ object BasicInformationTrait {
         )
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       @Suppress("Immutable")
       override val fields: DescriptorMap = StructFields.entries.toDescriptorMap()
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
         return ProductAppearanceStruct(
           finish = fields[StructFields.finish] as ProductFinishEnum,
@@ -836,10 +836,10 @@ object BasicInformationTrait {
     /** The revision of the server cluster specification supported by the cluster instance. */
     val clusterRevision: UShort
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getDescriptor(): StructDescriptor = BasicInformation.Attribute.StructDescriptor
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         BasicInformation.Attribute.dataModelRevision.tag -> dataModelRevision
@@ -1511,7 +1511,7 @@ object BasicInformationTrait {
     class Request() : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -1528,7 +1528,7 @@ object BasicInformationTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Request()
               }
@@ -1536,10 +1536,10 @@ object BasicInformationTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           else -> null

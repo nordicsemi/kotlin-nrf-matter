@@ -72,9 +72,9 @@ object AccessControlTrait {
      * The enum value is out of range. For example, a newer Matter cluster definition may support
      * enum values not yet supported by the Home APIs.
      */
-    UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
+    ; //UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     fun toDescription(): String {
       return "AccessControlEntryAuthModeEnum".upperCamelToSnakeUpper() +
         "_" +
@@ -85,7 +85,7 @@ object AccessControlTrait {
     companion object {
       val Adapter = EnumAdapter(values())
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       val EnumDescriptor =
         object : EnumDescriptor {
           override val name: String = "AccessControlEntryAuthModeEnum"
@@ -111,9 +111,9 @@ object AccessControlTrait {
      * The enum value is out of range. For example, a newer Matter cluster definition may support
      * enum values not yet supported by the Home APIs.
      */
-    UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
+    ; //UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     fun toDescription(): String {
       return "AccessControlEntryPrivilegeEnum".upperCamelToSnakeUpper() +
         "_" +
@@ -124,7 +124,7 @@ object AccessControlTrait {
     companion object {
       val Adapter = EnumAdapter(values())
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       val EnumDescriptor =
         object : EnumDescriptor {
           override val name: String = "AccessControlEntryPrivilegeEnum"
@@ -149,9 +149,9 @@ object AccessControlTrait {
      * The enum value is out of range. For example, a newer Matter cluster definition may support
      * enum values not yet supported by the Home APIs.
      */
-    UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
+    ; //UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     fun toDescription(): String {
       return "AccessRestrictionTypeEnum".upperCamelToSnakeUpper() +
         "_" +
@@ -162,7 +162,7 @@ object AccessControlTrait {
     companion object {
       val Adapter = EnumAdapter(values())
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       val EnumDescriptor =
         object : EnumDescriptor {
           override val name: String = "AccessRestrictionTypeEnum"
@@ -186,9 +186,9 @@ object AccessControlTrait {
      * The enum value is out of range. For example, a newer Matter cluster definition may support
      * enum values not yet supported by the Home APIs.
      */
-    UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
+    ; //UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     fun toDescription(): String {
       return "ChangeTypeEnum".upperCamelToSnakeUpper() + "_" + super.toString().camelToSnakeUpper()
     }
@@ -197,7 +197,7 @@ object AccessControlTrait {
     companion object {
       val Adapter = EnumAdapter(values())
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       val EnumDescriptor =
         object : EnumDescriptor {
           override val name: String = "ChangeTypeEnum"
@@ -252,11 +252,11 @@ object AccessControlTrait {
     val latestValue: AccessControlEntryStruct?
     val fabricIndex: UByte?
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getDescriptor(): StructDescriptor =
       AccessControl.AccessControlEntryChangedEvent.EventFields.StructDescriptor
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         AccessControl.AccessControlEntryChangedEvent.EventFields.adminNodeId.tag -> adminNodeId
@@ -355,11 +355,11 @@ object AccessControlTrait {
     val latestValue: AccessControlExtensionStruct?
     val fabricIndex: UByte?
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getDescriptor(): StructDescriptor =
       AccessControl.AccessControlExtensionChangedEvent.EventFields.StructDescriptor
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         AccessControl.AccessControlExtensionChangedEvent.EventFields.adminNodeId.tag -> adminNodeId
@@ -457,11 +457,11 @@ object AccessControlTrait {
     val arlRequestFlowUrl: String?
     val fabricIndex: UByte?
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getDescriptor(): StructDescriptor =
       AccessControl.FabricRestrictionReviewUpdateEvent.EventFields.StructDescriptor
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         AccessControl.FabricRestrictionReviewUpdateEvent.EventFields.token.tag -> token
@@ -549,7 +549,7 @@ object AccessControlTrait {
   ) : ClusterStruct {
 
     /** Descriptor enum for this struct's fields. */
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     enum class StructFields(
       override val fieldName: String,
       override val tag: UInt,
@@ -573,9 +573,9 @@ object AccessControlTrait {
       id("id", 1u, "UInt", FieldType.UInt, false, NoOpDescriptor, true),
     }
 
-    @HomeExperimentalGenericApi override fun getDescriptor(): StructDescriptor = Adapter
+    @OptIn(HomeExperimentalGenericApi::class) override fun getDescriptor(): StructDescriptor = Adapter
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         StructFields.type.tag -> type
@@ -600,11 +600,11 @@ object AccessControlTrait {
         )
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       @Suppress("Immutable")
       override val fields: DescriptorMap = StructFields.entries.toDescriptorMap()
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
         return AccessRestrictionStruct(
           type = fields[StructFields.type] as AccessRestrictionTypeEnum,
@@ -657,7 +657,7 @@ object AccessControlTrait {
   ) : ClusterStruct {
 
     /** Descriptor enum for this struct's fields. */
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     enum class StructFields(
       override val fieldName: String,
       override val tag: UInt,
@@ -683,9 +683,9 @@ object AccessControlTrait {
       ),
     }
 
-    @HomeExperimentalGenericApi override fun getDescriptor(): StructDescriptor = Adapter
+    @OptIn(HomeExperimentalGenericApi::class) override fun getDescriptor(): StructDescriptor = Adapter
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         StructFields.endpoint.tag -> endpoint
@@ -717,11 +717,11 @@ object AccessControlTrait {
         )
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       @Suppress("Immutable")
       override val fields: DescriptorMap = StructFields.entries.toDescriptorMap()
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
         return CommissioningAccessRestrictionEntryStruct(
           endpoint = fields[StructFields.endpoint] as UShort,
@@ -793,7 +793,7 @@ object AccessControlTrait {
   ) : ClusterStruct {
 
     /** Descriptor enum for this struct's fields. */
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     enum class StructFields(
       override val fieldName: String,
       override val tag: UInt,
@@ -821,9 +821,9 @@ object AccessControlTrait {
       fabricIndex("fabricIndex", 254u, "UByte", FieldType.UByte, false, NoOpDescriptor, false),
     }
 
-    @HomeExperimentalGenericApi override fun getDescriptor(): StructDescriptor = Adapter
+    @OptIn(HomeExperimentalGenericApi::class) override fun getDescriptor(): StructDescriptor = Adapter
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         StructFields.endpoint.tag -> endpoint
@@ -854,11 +854,11 @@ object AccessControlTrait {
         )
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       @Suppress("Immutable")
       override val fields: DescriptorMap = StructFields.entries.toDescriptorMap()
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
         return AccessRestrictionEntryStruct(
           endpoint = fields[StructFields.endpoint] as UShort,
@@ -930,7 +930,7 @@ object AccessControlTrait {
   ) : ClusterStruct {
 
     /** Descriptor enum for this struct's fields. */
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     enum class StructFields(
       override val fieldName: String,
       override val tag: UInt,
@@ -948,9 +948,9 @@ object AccessControlTrait {
       deviceType("deviceType", 2u, "UInt", FieldType.UInt, false, NoOpDescriptor, true),
     }
 
-    @HomeExperimentalGenericApi override fun getDescriptor(): StructDescriptor = Adapter
+    @OptIn(HomeExperimentalGenericApi::class) override fun getDescriptor(): StructDescriptor = Adapter
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         StructFields.cluster.tag -> cluster
@@ -978,11 +978,11 @@ object AccessControlTrait {
         )
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       @Suppress("Immutable")
       override val fields: DescriptorMap = StructFields.entries.toDescriptorMap()
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
         return AccessControlTargetStruct(
           cluster = fields[StructFields.cluster] as UInt?,
@@ -1043,7 +1043,7 @@ object AccessControlTrait {
   ) : ClusterStruct {
 
     /** Descriptor enum for this struct's fields. */
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     enum class StructFields(
       override val fieldName: String,
       override val tag: UInt,
@@ -1089,9 +1089,9 @@ object AccessControlTrait {
       fabricIndex("fabricIndex", 254u, "UByte", FieldType.UByte, false, NoOpDescriptor, false),
     }
 
-    @HomeExperimentalGenericApi override fun getDescriptor(): StructDescriptor = Adapter
+    @OptIn(HomeExperimentalGenericApi::class) override fun getDescriptor(): StructDescriptor = Adapter
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         StructFields.privilege.tag -> privilege
@@ -1125,11 +1125,11 @@ object AccessControlTrait {
         )
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       @Suppress("Immutable")
       override val fields: DescriptorMap = StructFields.entries.toDescriptorMap()
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
         return AccessControlEntryStruct(
           privilege = fields[StructFields.privilege] as AccessControlEntryPrivilegeEnum,
@@ -1218,7 +1218,7 @@ object AccessControlTrait {
   ) : ClusterStruct {
 
     /** Descriptor enum for this struct's fields. */
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     enum class StructFields(
       override val fieldName: String,
       override val tag: UInt,
@@ -1234,9 +1234,9 @@ object AccessControlTrait {
       fabricIndex("fabricIndex", 254u, "UByte", FieldType.UByte, false, NoOpDescriptor, false),
     }
 
-    @HomeExperimentalGenericApi override fun getDescriptor(): StructDescriptor = Adapter
+    @OptIn(HomeExperimentalGenericApi::class) override fun getDescriptor(): StructDescriptor = Adapter
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         StructFields.`data`.tag -> data
@@ -1261,11 +1261,11 @@ object AccessControlTrait {
         )
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       @Suppress("Immutable")
       override val fields: DescriptorMap = StructFields.entries.toDescriptorMap()
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
         return AccessControlExtensionStruct(
           data = fields[StructFields.`data`] as ByteArray,
@@ -1343,10 +1343,10 @@ object AccessControlTrait {
     /** The revision of the server cluster specification supported by the cluster instance. */
     val clusterRevision: UShort
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getDescriptor(): StructDescriptor = AccessControl.Attribute.StructDescriptor
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         AccessControl.Attribute.acl.tag -> acl
@@ -1678,12 +1678,12 @@ object AccessControlTrait {
     /** @suppress */
     val responseId = ScopedCommandId(AccessControlTrait.Id, 1u)
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldById(tagId: UInt): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.tag == tagId }
     }
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldByName(name: String): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.name == name }
     }
@@ -1692,7 +1692,7 @@ object AccessControlTrait {
       ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -1718,7 +1718,7 @@ object AccessControlTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Request(
                   arl = fields[CommandFields.arl] as List<CommissioningAccessRestrictionEntryStruct>
@@ -1728,10 +1728,10 @@ object AccessControlTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.arl.tag -> arl
@@ -1784,7 +1784,7 @@ object AccessControlTrait {
     class Response(val token: ULong = 0u) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -1802,7 +1802,7 @@ object AccessControlTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Response(token = fields[CommandFields.token] as ULong)
               }
@@ -1810,10 +1810,10 @@ object AccessControlTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.token.tag -> token

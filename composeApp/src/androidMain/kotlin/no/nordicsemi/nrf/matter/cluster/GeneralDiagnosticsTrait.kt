@@ -75,9 +75,9 @@ object GeneralDiagnosticsTrait {
      * The enum value is out of range. For example, a newer Matter cluster definition may support
      * enum values not yet supported by the Home APIs.
      */
-    UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
+    ; //UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     fun toDescription(): String {
       return "BootReasonEnum".upperCamelToSnakeUpper() + "_" + super.toString().camelToSnakeUpper()
     }
@@ -86,7 +86,7 @@ object GeneralDiagnosticsTrait {
     companion object {
       val Adapter = EnumAdapter(values())
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       val EnumDescriptor =
         object : EnumDescriptor {
           override val name: String = "BootReasonEnum"
@@ -118,9 +118,9 @@ object GeneralDiagnosticsTrait {
      * The enum value is out of range. For example, a newer Matter cluster definition may support
      * enum values not yet supported by the Home APIs.
      */
-    UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
+    ; //UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     fun toDescription(): String {
       return "HardwareFaultEnum".upperCamelToSnakeUpper() +
         "_" +
@@ -131,7 +131,7 @@ object GeneralDiagnosticsTrait {
     companion object {
       val Adapter = EnumAdapter(values())
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       val EnumDescriptor =
         object : EnumDescriptor {
           override val name: String = "HardwareFaultEnum"
@@ -157,9 +157,9 @@ object GeneralDiagnosticsTrait {
      * The enum value is out of range. For example, a newer Matter cluster definition may support
      * enum values not yet supported by the Home APIs.
      */
-    UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
+    ; //UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     fun toDescription(): String {
       return "InterfaceTypeEnum".upperCamelToSnakeUpper() +
         "_" +
@@ -170,7 +170,7 @@ object GeneralDiagnosticsTrait {
     companion object {
       val Adapter = EnumAdapter(values())
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       val EnumDescriptor =
         object : EnumDescriptor {
           override val name: String = "InterfaceTypeEnum"
@@ -195,9 +195,9 @@ object GeneralDiagnosticsTrait {
      * The enum value is out of range. For example, a newer Matter cluster definition may support
      * enum values not yet supported by the Home APIs.
      */
-    UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
+    ; //UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     fun toDescription(): String {
       return "NetworkFaultEnum".upperCamelToSnakeUpper() +
         "_" +
@@ -208,7 +208,7 @@ object GeneralDiagnosticsTrait {
     companion object {
       val Adapter = EnumAdapter(values())
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       val EnumDescriptor =
         object : EnumDescriptor {
           override val name: String = "NetworkFaultEnum"
@@ -236,9 +236,9 @@ object GeneralDiagnosticsTrait {
      * The enum value is out of range. For example, a newer Matter cluster definition may support
      * enum values not yet supported by the Home APIs.
      */
-    UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
+    ; //UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     fun toDescription(): String {
       return "RadioFaultEnum".upperCamelToSnakeUpper() + "_" + super.toString().camelToSnakeUpper()
     }
@@ -247,7 +247,7 @@ object GeneralDiagnosticsTrait {
     companion object {
       val Adapter = EnumAdapter(values())
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       val EnumDescriptor =
         object : EnumDescriptor {
           override val name: String = "RadioFaultEnum"
@@ -295,11 +295,11 @@ object GeneralDiagnosticsTrait {
     val current: List<HardwareFaultEnum>?
     val previous: List<HardwareFaultEnum>?
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getDescriptor(): StructDescriptor =
       GeneralDiagnostics.HardwareFaultChangeEvent.EventFields.StructDescriptor
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         GeneralDiagnostics.HardwareFaultChangeEvent.EventFields.current.tag -> current
@@ -367,11 +367,11 @@ object GeneralDiagnosticsTrait {
     val current: List<RadioFaultEnum>?
     val previous: List<RadioFaultEnum>?
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getDescriptor(): StructDescriptor =
       GeneralDiagnostics.RadioFaultChangeEvent.EventFields.StructDescriptor
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         GeneralDiagnostics.RadioFaultChangeEvent.EventFields.current.tag -> current
@@ -439,11 +439,11 @@ object GeneralDiagnosticsTrait {
     val current: List<NetworkFaultEnum>?
     val previous: List<NetworkFaultEnum>?
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getDescriptor(): StructDescriptor =
       GeneralDiagnostics.NetworkFaultChangeEvent.EventFields.StructDescriptor
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         GeneralDiagnostics.NetworkFaultChangeEvent.EventFields.current.tag -> current
@@ -510,11 +510,11 @@ object GeneralDiagnosticsTrait {
   interface BootReason : ClusterStruct {
     val bootReason: BootReasonEnum?
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getDescriptor(): StructDescriptor =
       GeneralDiagnostics.BootReasonEvent.EventFields.StructDescriptor
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         GeneralDiagnostics.BootReasonEvent.EventFields.bootReason.tag -> bootReason
@@ -581,7 +581,7 @@ object GeneralDiagnosticsTrait {
   ) : ClusterStruct {
 
     /** Descriptor enum for this struct's fields. */
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     enum class StructFields(
       override val fieldName: String,
       override val tag: UInt,
@@ -665,9 +665,9 @@ object GeneralDiagnosticsTrait {
       ),
     }
 
-    @HomeExperimentalGenericApi override fun getDescriptor(): StructDescriptor = Adapter
+    @OptIn(HomeExperimentalGenericApi::class) override fun getDescriptor(): StructDescriptor = Adapter
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         StructFields.Name.tag -> name
@@ -710,11 +710,11 @@ object GeneralDiagnosticsTrait {
         )
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       @Suppress("Immutable")
       override val fields: DescriptorMap = StructFields.entries.toDescriptorMap()
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
         return NetworkInterface(
           name = fields[StructFields.Name] as String,
@@ -854,10 +854,10 @@ object GeneralDiagnosticsTrait {
     /** The revision of the server cluster specification supported by the cluster instance. */
     val clusterRevision: UShort
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getDescriptor(): StructDescriptor = GeneralDiagnostics.Attribute.StructDescriptor
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         GeneralDiagnostics.Attribute.networkInterfaces.tag -> networkInterfaces
@@ -1133,12 +1133,12 @@ object GeneralDiagnosticsTrait {
     override val fields: DescriptorMap =
       Request.CommandFields.values().associateBy({ it.tag }, { it })
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldById(tagId: UInt): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.tag == tagId }
     }
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldByName(name: String): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.name == name }
     }
@@ -1147,7 +1147,7 @@ object GeneralDiagnosticsTrait {
       ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -1167,7 +1167,7 @@ object GeneralDiagnosticsTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Request(
                   enableKey = fields[CommandFields.enableKey] as ByteArray,
@@ -1178,10 +1178,10 @@ object GeneralDiagnosticsTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.enableKey.tag -> enableKey
@@ -1250,7 +1250,7 @@ object GeneralDiagnosticsTrait {
     class Request() : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -1267,7 +1267,7 @@ object GeneralDiagnosticsTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Request()
               }
@@ -1275,10 +1275,10 @@ object GeneralDiagnosticsTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           else -> null
@@ -1319,7 +1319,7 @@ object GeneralDiagnosticsTrait {
     class Response(val systemTimeMs: ULong = 0u, val posixTimeMs: ULong? = null) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -1339,7 +1339,7 @@ object GeneralDiagnosticsTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Response(
                   systemTimeMs = fields[CommandFields.systemTimeMs] as ULong,
@@ -1350,10 +1350,10 @@ object GeneralDiagnosticsTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.systemTimeMs.tag -> systemTimeMs
@@ -1421,12 +1421,12 @@ object GeneralDiagnosticsTrait {
     /** @suppress */
     val responseId = ScopedCommandId(GeneralDiagnosticsTrait.Id, 4u)
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldById(tagId: UInt): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.tag == tagId }
     }
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldByName(name: String): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.name == name }
     }
@@ -1438,7 +1438,7 @@ object GeneralDiagnosticsTrait {
     ) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -1460,7 +1460,7 @@ object GeneralDiagnosticsTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Request(
                   enableKey = fields[CommandFields.enableKey] as ByteArray,
@@ -1472,10 +1472,10 @@ object GeneralDiagnosticsTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.enableKey.tag -> enableKey
@@ -1541,7 +1541,7 @@ object GeneralDiagnosticsTrait {
     class Response(val payload: ByteArray = ByteArray(0)) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -1559,7 +1559,7 @@ object GeneralDiagnosticsTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Response(payload = fields[CommandFields.payload] as ByteArray)
               }
@@ -1567,10 +1567,10 @@ object GeneralDiagnosticsTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.payload.tag -> payload

@@ -63,9 +63,9 @@ object OperationalCredentialsTrait {
      * The enum value is out of range. For example, a newer Matter cluster definition may support
      * enum values not yet supported by the Home APIs.
      */
-    UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
+    ; //UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     fun toDescription(): String {
       return "CertificateChainTypeEnum".upperCamelToSnakeUpper() +
         "_" +
@@ -76,7 +76,7 @@ object OperationalCredentialsTrait {
     companion object {
       val Adapter = EnumAdapter(values())
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       val EnumDescriptor =
         object : EnumDescriptor {
           override val name: String = "CertificateChainTypeEnum"
@@ -107,9 +107,9 @@ object OperationalCredentialsTrait {
      * The enum value is out of range. For example, a newer Matter cluster definition may support
      * enum values not yet supported by the Home APIs.
      */
-    UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
+    ; //UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     fun toDescription(): String {
       return "NodeOperationalCertStatusEnum".upperCamelToSnakeUpper() +
         "_" +
@@ -120,7 +120,7 @@ object OperationalCredentialsTrait {
     companion object {
       val Adapter = EnumAdapter(values())
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       val EnumDescriptor =
         object : EnumDescriptor {
           override val name: String = "NodeOperationalCertStatusEnum"
@@ -147,7 +147,7 @@ object OperationalCredentialsTrait {
   ) : ClusterStruct {
 
     /** Descriptor enum for this struct's fields. */
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     enum class StructFields(
       override val fieldName: String,
       override val tag: UInt,
@@ -189,9 +189,9 @@ object OperationalCredentialsTrait {
       fabricIndex("fabricIndex", 254u, "UByte", FieldType.UByte, false, NoOpDescriptor, false),
     }
 
-    @HomeExperimentalGenericApi override fun getDescriptor(): StructDescriptor = Adapter
+    @OptIn(HomeExperimentalGenericApi::class) override fun getDescriptor(): StructDescriptor = Adapter
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         StructFields.rootPublicKey.tag -> rootPublicKey
@@ -231,11 +231,11 @@ object OperationalCredentialsTrait {
         )
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       @Suppress("Immutable")
       override val fields: DescriptorMap = StructFields.entries.toDescriptorMap()
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
         return FabricDescriptorStruct(
           rootPublicKey = fields[StructFields.rootPublicKey] as ByteArray,
@@ -333,7 +333,7 @@ object OperationalCredentialsTrait {
   ) : ClusterStruct {
 
     /** Descriptor enum for this struct's fields. */
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     enum class StructFields(
       override val fieldName: String,
       override val tag: UInt,
@@ -353,9 +353,9 @@ object OperationalCredentialsTrait {
       fabricIndex("fabricIndex", 254u, "UByte", FieldType.UByte, false, NoOpDescriptor, false),
     }
 
-    @HomeExperimentalGenericApi override fun getDescriptor(): StructDescriptor = Adapter
+    @OptIn(HomeExperimentalGenericApi::class) override fun getDescriptor(): StructDescriptor = Adapter
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         StructFields.noc.tag -> noc
@@ -386,11 +386,11 @@ object OperationalCredentialsTrait {
         )
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       @Suppress("Immutable")
       override val fields: DescriptorMap = StructFields.entries.toDescriptorMap()
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
         return NocStruct(
           noc = fields[StructFields.noc] as ByteArray,
@@ -483,11 +483,11 @@ object OperationalCredentialsTrait {
     /** The revision of the server cluster specification supported by the cluster instance. */
     val clusterRevision: UShort
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getDescriptor(): StructDescriptor =
       OperationalCredentials.Attribute.StructDescriptor
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         OperationalCredentials.Attribute.nocs.tag -> nocs
@@ -718,12 +718,12 @@ object OperationalCredentialsTrait {
     /** @suppress */
     val responseId = ScopedCommandId(OperationalCredentialsTrait.Id, 1u)
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldById(tagId: UInt): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.tag == tagId }
     }
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldByName(name: String): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.name == name }
     }
@@ -731,7 +731,7 @@ object OperationalCredentialsTrait {
     class Request(val attestationNonce: ByteArray = ByteArray(0)) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -757,7 +757,7 @@ object OperationalCredentialsTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Request(
                   attestationNonce = fields[CommandFields.attestationNonce] as ByteArray
@@ -767,10 +767,10 @@ object OperationalCredentialsTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.attestationNonce.tag -> attestationNonce
@@ -823,7 +823,7 @@ object OperationalCredentialsTrait {
     ) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -859,7 +859,7 @@ object OperationalCredentialsTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Response(
                   attestationElements = fields[CommandFields.attestationElements] as ByteArray,
@@ -870,10 +870,10 @@ object OperationalCredentialsTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.attestationElements.tag -> attestationElements
@@ -941,12 +941,12 @@ object OperationalCredentialsTrait {
     /** @suppress */
     val responseId = ScopedCommandId(OperationalCredentialsTrait.Id, 3u)
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldById(tagId: UInt): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.tag == tagId }
     }
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldByName(name: String): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.name == name }
     }
@@ -956,7 +956,7 @@ object OperationalCredentialsTrait {
     ) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -982,7 +982,7 @@ object OperationalCredentialsTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Request(
                   certificateType =
@@ -993,10 +993,10 @@ object OperationalCredentialsTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.certificateType.tag -> certificateType
@@ -1046,7 +1046,7 @@ object OperationalCredentialsTrait {
     class Response(val certificate: ByteArray = ByteArray(0)) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -1072,7 +1072,7 @@ object OperationalCredentialsTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Response(certificate = fields[CommandFields.certificate] as ByteArray)
               }
@@ -1080,10 +1080,10 @@ object OperationalCredentialsTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.certificate.tag -> certificate
@@ -1142,12 +1142,12 @@ object OperationalCredentialsTrait {
     /** @suppress */
     val responseId = ScopedCommandId(OperationalCredentialsTrait.Id, 5u)
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldById(tagId: UInt): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.tag == tagId }
     }
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldByName(name: String): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.name == name }
     }
@@ -1158,7 +1158,7 @@ object OperationalCredentialsTrait {
     ) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -1186,7 +1186,7 @@ object OperationalCredentialsTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Request(
                   csrNonce = fields[CommandFields.csrNonce] as ByteArray,
@@ -1197,10 +1197,10 @@ object OperationalCredentialsTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.csrNonce.tag -> csrNonce
@@ -1267,7 +1267,7 @@ object OperationalCredentialsTrait {
     ) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -1303,7 +1303,7 @@ object OperationalCredentialsTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Response(
                   nocsrElements = fields[CommandFields.nocsrElements] as ByteArray,
@@ -1314,10 +1314,10 @@ object OperationalCredentialsTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.nocsrElements.tag -> nocsrElements
@@ -1385,12 +1385,12 @@ object OperationalCredentialsTrait {
     /** @suppress */
     val responseId = ScopedCommandId(OperationalCredentialsTrait.Id, 8u)
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldById(tagId: UInt): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.tag == tagId }
     }
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldByName(name: String): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.name == name }
     }
@@ -1404,7 +1404,7 @@ object OperationalCredentialsTrait {
     ) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -1446,7 +1446,7 @@ object OperationalCredentialsTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Request(
                   nocValue = fields[CommandFields.nocValue] as ByteArray,
@@ -1460,10 +1460,10 @@ object OperationalCredentialsTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.nocValue.tag -> nocValue
@@ -1552,7 +1552,7 @@ object OperationalCredentialsTrait {
     ) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -1582,7 +1582,7 @@ object OperationalCredentialsTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Response(
                   statusCode = fields[CommandFields.statusCode] as NodeOperationalCertStatusEnum,
@@ -1594,10 +1594,10 @@ object OperationalCredentialsTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.statusCode.tag -> statusCode
@@ -1672,12 +1672,12 @@ object OperationalCredentialsTrait {
     /** @suppress */
     val responseId = ScopedCommandId(OperationalCredentialsTrait.Id, 8u)
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldById(tagId: UInt): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.tag == tagId }
     }
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldByName(name: String): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.name == name }
     }
@@ -1688,7 +1688,7 @@ object OperationalCredentialsTrait {
     ) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -1708,7 +1708,7 @@ object OperationalCredentialsTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Request(
                   nocValue = fields[CommandFields.nocValue] as ByteArray,
@@ -1719,10 +1719,10 @@ object OperationalCredentialsTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.nocValue.tag -> nocValue
@@ -1790,7 +1790,7 @@ object OperationalCredentialsTrait {
     ) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -1820,7 +1820,7 @@ object OperationalCredentialsTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Response(
                   statusCode = fields[CommandFields.statusCode] as NodeOperationalCertStatusEnum,
@@ -1832,10 +1832,10 @@ object OperationalCredentialsTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.statusCode.tag -> statusCode
@@ -1910,12 +1910,12 @@ object OperationalCredentialsTrait {
     /** @suppress */
     val responseId = ScopedCommandId(OperationalCredentialsTrait.Id, 8u)
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldById(tagId: UInt): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.tag == tagId }
     }
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldByName(name: String): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.name == name }
     }
@@ -1923,7 +1923,7 @@ object OperationalCredentialsTrait {
     class Request(val label: String = "") : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -1941,7 +1941,7 @@ object OperationalCredentialsTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Request(label = fields[CommandFields.label] as String)
               }
@@ -1949,10 +1949,10 @@ object OperationalCredentialsTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.label.tag -> label
@@ -2006,7 +2006,7 @@ object OperationalCredentialsTrait {
     ) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -2036,7 +2036,7 @@ object OperationalCredentialsTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Response(
                   statusCode = fields[CommandFields.statusCode] as NodeOperationalCertStatusEnum,
@@ -2048,10 +2048,10 @@ object OperationalCredentialsTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.statusCode.tag -> statusCode
@@ -2126,12 +2126,12 @@ object OperationalCredentialsTrait {
     /** @suppress */
     val responseId = ScopedCommandId(OperationalCredentialsTrait.Id, 8u)
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldById(tagId: UInt): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.tag == tagId }
     }
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldByName(name: String): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.name == name }
     }
@@ -2139,7 +2139,7 @@ object OperationalCredentialsTrait {
     class Request(val fabricIndex: UByte = 0u) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -2157,7 +2157,7 @@ object OperationalCredentialsTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Request(fabricIndex = fields[CommandFields.fabricIndex] as UByte)
               }
@@ -2165,10 +2165,10 @@ object OperationalCredentialsTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.fabricIndex.tag -> fabricIndex
@@ -2222,7 +2222,7 @@ object OperationalCredentialsTrait {
     ) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -2252,7 +2252,7 @@ object OperationalCredentialsTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Response(
                   statusCode = fields[CommandFields.statusCode] as NodeOperationalCertStatusEnum,
@@ -2264,10 +2264,10 @@ object OperationalCredentialsTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.statusCode.tag -> statusCode
@@ -2340,12 +2340,12 @@ object OperationalCredentialsTrait {
     override val fields: DescriptorMap =
       Request.CommandFields.values().associateBy({ it.tag }, { it })
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldById(tagId: UInt): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.tag == tagId }
     }
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldByName(name: String): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.name == name }
     }
@@ -2353,7 +2353,7 @@ object OperationalCredentialsTrait {
     class Request(val rootCaCertificate: ByteArray = ByteArray(0)) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -2379,7 +2379,7 @@ object OperationalCredentialsTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Request(
                   rootCaCertificate = fields[CommandFields.rootCaCertificate] as ByteArray
@@ -2389,10 +2389,10 @@ object OperationalCredentialsTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.rootCaCertificate.tag -> rootCaCertificate
@@ -2449,12 +2449,12 @@ object OperationalCredentialsTrait {
     override val fields: DescriptorMap =
       Request.CommandFields.values().associateBy({ it.tag }, { it })
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldById(tagId: UInt): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.tag == tagId }
     }
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldByName(name: String): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.name == name }
     }
@@ -2466,7 +2466,7 @@ object OperationalCredentialsTrait {
     ) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -2496,7 +2496,7 @@ object OperationalCredentialsTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Request(
                   vendorId = fields[CommandFields.vendorId] as OptionalValue<UShort>,
@@ -2509,10 +2509,10 @@ object OperationalCredentialsTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.vendorId.tag -> vendorId
@@ -2594,12 +2594,12 @@ object OperationalCredentialsTrait {
     /** @suppress */
     val responseId = ScopedCommandId(OperationalCredentialsTrait.Id, 14u)
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldById(tagId: UInt): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.tag == tagId }
     }
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldByName(name: String): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.name == name }
     }
@@ -2608,7 +2608,7 @@ object OperationalCredentialsTrait {
       ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -2636,7 +2636,7 @@ object OperationalCredentialsTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Request(
                   fabricIndex = fields[CommandFields.fabricIndex] as UByte,
@@ -2647,10 +2647,10 @@ object OperationalCredentialsTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.fabricIndex.tag -> fabricIndex
@@ -2713,7 +2713,7 @@ object OperationalCredentialsTrait {
     ) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -2743,7 +2743,7 @@ object OperationalCredentialsTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Response(
                   fabricIndex = fields[CommandFields.fabricIndex] as UByte,
@@ -2755,10 +2755,10 @@ object OperationalCredentialsTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.fabricIndex.tag -> fabricIndex

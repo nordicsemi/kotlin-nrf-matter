@@ -74,9 +74,9 @@ object OtaSoftwareUpdateRequestorTrait {
      * The enum value is out of range. For example, a newer Matter cluster definition may support
      * enum values not yet supported by the Home APIs.
      */
-    UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
+    ; //UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     fun toDescription(): String {
       return "AnnouncementReasonEnum".upperCamelToSnakeUpper() +
         "_" +
@@ -87,7 +87,7 @@ object OtaSoftwareUpdateRequestorTrait {
     companion object {
       val Adapter = EnumAdapter(values())
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       val EnumDescriptor =
         object : EnumDescriptor {
           override val name: String = "AnnouncementReasonEnum"
@@ -119,9 +119,9 @@ object OtaSoftwareUpdateRequestorTrait {
      * The enum value is out of range. For example, a newer Matter cluster definition may support
      * enum values not yet supported by the Home APIs.
      */
-    UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
+    ; //UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     fun toDescription(): String {
       return "ChangeReasonEnum".upperCamelToSnakeUpper() +
         "_" +
@@ -132,7 +132,7 @@ object OtaSoftwareUpdateRequestorTrait {
     companion object {
       val Adapter = EnumAdapter(values())
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       val EnumDescriptor =
         object : EnumDescriptor {
           override val name: String = "ChangeReasonEnum"
@@ -172,9 +172,9 @@ object OtaSoftwareUpdateRequestorTrait {
      * The enum value is out of range. For example, a newer Matter cluster definition may support
      * enum values not yet supported by the Home APIs.
      */
-    UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
+    ; //UnknownValue(ClusterEnum.UNKNOWN_ENUM_VALUE_CODE);
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     fun toDescription(): String {
       return "UpdateStateEnum".upperCamelToSnakeUpper() + "_" + super.toString().camelToSnakeUpper()
     }
@@ -183,7 +183,7 @@ object OtaSoftwareUpdateRequestorTrait {
     companion object {
       val Adapter = EnumAdapter(values())
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       val EnumDescriptor =
         object : EnumDescriptor {
           override val name: String = "UpdateStateEnum"
@@ -203,11 +203,11 @@ object OtaSoftwareUpdateRequestorTrait {
     val reason: ChangeReasonEnum?
     val targetSoftwareVersion: UInt?
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getDescriptor(): StructDescriptor =
       OtaSoftwareUpdateRequestor.StateTransitionEvent.EventFields.StructDescriptor
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         OtaSoftwareUpdateRequestor.StateTransitionEvent.EventFields.previousState.tag ->
@@ -293,11 +293,11 @@ object OtaSoftwareUpdateRequestorTrait {
     val softwareVersion: UInt?
     val productId: UShort?
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getDescriptor(): StructDescriptor =
       OtaSoftwareUpdateRequestor.VersionAppliedEvent.EventFields.StructDescriptor
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         OtaSoftwareUpdateRequestor.VersionAppliedEvent.EventFields.softwareVersion.tag ->
@@ -368,11 +368,11 @@ object OtaSoftwareUpdateRequestorTrait {
     val progressPercent: UByte?
     val platformCode: Long?
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getDescriptor(): StructDescriptor =
       OtaSoftwareUpdateRequestor.DownloadErrorEvent.EventFields.StructDescriptor
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         OtaSoftwareUpdateRequestor.DownloadErrorEvent.EventFields.softwareVersion.tag ->
@@ -470,7 +470,7 @@ object OtaSoftwareUpdateRequestorTrait {
   ) : ClusterStruct {
 
     /** Descriptor enum for this struct's fields. */
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     enum class StructFields(
       override val fieldName: String,
       override val tag: UInt,
@@ -488,9 +488,9 @@ object OtaSoftwareUpdateRequestorTrait {
       fabricIndex("fabricIndex", 254u, "UByte", FieldType.UByte, false, NoOpDescriptor, false),
     }
 
-    @HomeExperimentalGenericApi override fun getDescriptor(): StructDescriptor = Adapter
+    @OptIn(HomeExperimentalGenericApi::class) override fun getDescriptor(): StructDescriptor = Adapter
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         StructFields.providerNodeId.tag -> providerNodeId
@@ -518,11 +518,11 @@ object OtaSoftwareUpdateRequestorTrait {
         )
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       @Suppress("Immutable")
       override val fields: DescriptorMap = StructFields.entries.toDescriptorMap()
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
         return ProviderLocation(
           providerNodeId = fields[StructFields.providerNodeId] as ULong,
@@ -629,11 +629,11 @@ object OtaSoftwareUpdateRequestorTrait {
     /** The revision of the server cluster specification supported by the cluster instance. */
     val clusterRevision: UShort
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getDescriptor(): StructDescriptor =
       OtaSoftwareUpdateRequestor.Attribute.StructDescriptor
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getFieldValueById(tagId: TagId): Any? {
       return when (tagId) {
         OtaSoftwareUpdateRequestor.Attribute.defaultOtaProviders.tag -> defaultOtaProviders
@@ -889,12 +889,12 @@ object OtaSoftwareUpdateRequestorTrait {
     override val fields: DescriptorMap =
       Request.CommandFields.values().associateBy({ it.tag }, { it })
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldById(tagId: UInt): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.tag == tagId }
     }
 
-    @HomeExperimentalGenericApi
+    @OptIn(HomeExperimentalGenericApi::class)
     override fun getCommandRequestFieldByName(name: String): com.google.home.Field? {
       return Request.CommandFields.values().firstOrNull { it.name == name }
     }
@@ -919,7 +919,7 @@ object OtaSoftwareUpdateRequestorTrait {
     ) : ClusterStruct {
 
       /** Descriptor enum for this command's request fields. */
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       enum class CommandFields(
         override val fieldName: String,
         override val tag: UInt,
@@ -969,7 +969,7 @@ object OtaSoftwareUpdateRequestorTrait {
             object : StructDescriptor {
               @Suppress("Immutable") override val fields: DescriptorMap = entries.toDescriptorMap()
 
-              @HomeExperimentalGenericApi
+              @OptIn(HomeExperimentalGenericApi::class)
               override fun toStruct(fields: Map<com.google.home.Field, Any?>): ClusterStruct {
                 return Request(
                   providerNodeId = fields[CommandFields.providerNodeId] as ULong,
@@ -985,10 +985,10 @@ object OtaSoftwareUpdateRequestorTrait {
         }
       }
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getDescriptor(): StructDescriptor = CommandFields.Companion.StructDescriptor
 
-      @HomeExperimentalGenericApi
+      @OptIn(HomeExperimentalGenericApi::class)
       override fun getFieldValueById(tagId: TagId): Any? {
         return when (tagId) {
           CommandFields.providerNodeId.tag -> providerNodeId

@@ -30,18 +30,18 @@ import com.google.home.matter.serialization.BitmapAdapter
 import com.google.home.matter.serialization.EnumAdapter
 import com.google.home.toDescriptorMap
 import javax.annotation.processing.Generated
-import no.nordicsemi.nrf.matter.GeneralCommissioningTrait.ArmFailSafeCommand
-import no.nordicsemi.nrf.matter.GeneralCommissioningTrait.Attributes
-import no.nordicsemi.nrf.matter.GeneralCommissioningTrait.AttributesImpl
-import no.nordicsemi.nrf.matter.GeneralCommissioningTrait.BasicCommissioningInfo
-import no.nordicsemi.nrf.matter.GeneralCommissioningTrait.CommissioningCompleteCommand
-import no.nordicsemi.nrf.matter.GeneralCommissioningTrait.CommissioningErrorEnum
-import no.nordicsemi.nrf.matter.GeneralCommissioningTrait.Feature
-import no.nordicsemi.nrf.matter.GeneralCommissioningTrait.MutableAttributes
-import no.nordicsemi.nrf.matter.GeneralCommissioningTrait.NetworkRecoveryReasonEnum
-import no.nordicsemi.nrf.matter.GeneralCommissioningTrait.RegulatoryLocationTypeEnum
-import no.nordicsemi.nrf.matter.GeneralCommissioningTrait.SetRegulatoryConfigCommand
-import no.nordicsemi.nrf.matter.GeneralCommissioningTrait.SetTcAcknowledgementsCommand
+import no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.ArmFailSafeCommand
+import no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.Attributes
+import no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.AttributesImpl
+import no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.BasicCommissioningInfo
+import no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.CommissioningCompleteCommand
+import no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.CommissioningErrorEnum
+import no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.Feature
+import no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.MutableAttributes
+import no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.NetworkRecoveryReasonEnum
+import no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.RegulatoryLocationTypeEnum
+import no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.SetRegulatoryConfigCommand
+import no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.SetTcAcknowledgementsCommand
 
 /*
  * This file was machine generated via the code generator
@@ -59,40 +59,40 @@ interface GeneralCommissioningCommands {
   suspend fun armFailSafe(
     expiryLengthSeconds: UShort,
     breadcrumb: ULong,
-  ): GeneralCommissioningTrait.ArmFailSafeCommand.Response
+  ): no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.ArmFailSafeCommand.Response
 
   suspend fun setRegulatoryConfig(
     newRegulatoryConfig: RegulatoryLocationTypeEnum,
     countryCode: String,
     breadcrumb: ULong,
-  ): GeneralCommissioningTrait.SetRegulatoryConfigCommand.Response
+  ): no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.SetRegulatoryConfigCommand.Response
 
   suspend fun commissioningComplete():
-    GeneralCommissioningTrait.CommissioningCompleteCommand.Response
+    no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.CommissioningCompleteCommand.Response
 
   suspend fun setTcAcknowledgements(
     tcVersion: UShort,
     tcUserResponse: UShort,
-  ): GeneralCommissioningTrait.SetTcAcknowledgementsCommand.Response
+  ): no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.SetTcAcknowledgementsCommand.Response
 
   fun armFailSafeBatchable(
     expiryLengthSeconds: UShort,
     breadcrumb: ULong,
-  ): BatchableCommand<GeneralCommissioningTrait.ArmFailSafeCommand.Response>
+  ): BatchableCommand<no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.ArmFailSafeCommand.Response>
 
   fun setRegulatoryConfigBatchable(
     newRegulatoryConfig: RegulatoryLocationTypeEnum,
     countryCode: String,
     breadcrumb: ULong,
-  ): BatchableCommand<GeneralCommissioningTrait.SetRegulatoryConfigCommand.Response>
+  ): BatchableCommand<no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.SetRegulatoryConfigCommand.Response>
 
   fun commissioningCompleteBatchable():
-    BatchableCommand<GeneralCommissioningTrait.CommissioningCompleteCommand.Response>
+    BatchableCommand<no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.CommissioningCompleteCommand.Response>
 
   fun setTcAcknowledgementsBatchable(
     tcVersion: UShort,
     tcUserResponse: UShort,
-  ): BatchableCommand<GeneralCommissioningTrait.SetTcAcknowledgementsCommand.Response>
+  ): BatchableCommand<no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.SetTcAcknowledgementsCommand.Response>
 }
 
 /** @suppress */
@@ -101,7 +101,7 @@ interface GeneralCommissioningCommandsDefaultImpl : GeneralCommissioningCommands
   override suspend fun armFailSafe(
     expiryLengthSeconds: UShort,
     breadcrumb: ULong,
-  ): GeneralCommissioningTrait.ArmFailSafeCommand.Response {
+  ): no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.ArmFailSafeCommand.Response {
     TODO("Not Implemented")
   }
 
@@ -109,26 +109,26 @@ interface GeneralCommissioningCommandsDefaultImpl : GeneralCommissioningCommands
     newRegulatoryConfig: RegulatoryLocationTypeEnum,
     countryCode: String,
     breadcrumb: ULong,
-  ): GeneralCommissioningTrait.SetRegulatoryConfigCommand.Response {
+  ): no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.SetRegulatoryConfigCommand.Response {
     TODO("Not Implemented")
   }
 
   override suspend fun commissioningComplete():
-    GeneralCommissioningTrait.CommissioningCompleteCommand.Response {
+    no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.CommissioningCompleteCommand.Response {
     TODO("Not Implemented")
   }
 
   override suspend fun setTcAcknowledgements(
     tcVersion: UShort,
     tcUserResponse: UShort,
-  ): GeneralCommissioningTrait.SetTcAcknowledgementsCommand.Response {
+  ): no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.SetTcAcknowledgementsCommand.Response {
     TODO("Not Implemented")
   }
 
   override fun armFailSafeBatchable(
     expiryLengthSeconds: UShort,
     breadcrumb: ULong,
-  ): BatchableCommand<GeneralCommissioningTrait.ArmFailSafeCommand.Response> {
+  ): BatchableCommand<no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.ArmFailSafeCommand.Response> {
     TODO("Not Implemented")
   }
 
@@ -136,19 +136,19 @@ interface GeneralCommissioningCommandsDefaultImpl : GeneralCommissioningCommands
     newRegulatoryConfig: RegulatoryLocationTypeEnum,
     countryCode: String,
     breadcrumb: ULong,
-  ): BatchableCommand<GeneralCommissioningTrait.SetRegulatoryConfigCommand.Response> {
+  ): BatchableCommand<no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.SetRegulatoryConfigCommand.Response> {
     TODO("Not Implemented")
   }
 
   override fun commissioningCompleteBatchable():
-    BatchableCommand<GeneralCommissioningTrait.CommissioningCompleteCommand.Response> {
+    BatchableCommand<no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.CommissioningCompleteCommand.Response> {
     TODO("Not Implemented")
   }
 
   override fun setTcAcknowledgementsBatchable(
     tcVersion: UShort,
     tcUserResponse: UShort,
-  ): BatchableCommand<GeneralCommissioningTrait.SetTcAcknowledgementsCommand.Response> {
+  ): BatchableCommand<no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.SetTcAcknowledgementsCommand.Response> {
     TODO("Not Implemented")
   }
 }
@@ -170,10 +170,10 @@ interface GeneralCommissioning :
     override val descriptor: HomeDescriptor,
     val isNullable: Boolean,
   ) : Field {
-    /** The [breadcrumb][GeneralCommissioningTrait.Attributes.breadcrumb] trait attribute. */
+    /** The [breadcrumb][no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.Attributes.breadcrumb] trait attribute. */
     breadcrumb("breadcrumb", 0u, "ULong", FieldType.ULong, false, NoOpDescriptor, false),
     /**
-     * The [basicCommissioningInfo][GeneralCommissioningTrait.Attributes.basicCommissioningInfo]
+     * The [basicCommissioningInfo][no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.Attributes.basicCommissioningInfo]
      * trait attribute.
      */
     basicCommissioningInfo(
@@ -186,7 +186,7 @@ interface GeneralCommissioning :
       false,
     ),
     /**
-     * The [regulatoryConfig][GeneralCommissioningTrait.Attributes.regulatoryConfig] trait
+     * The [regulatoryConfig][no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.Attributes.regulatoryConfig] trait
      * attribute.
      */
     regulatoryConfig(
@@ -199,7 +199,7 @@ interface GeneralCommissioning :
       false,
     ),
     /**
-     * The [locationCapability][GeneralCommissioningTrait.Attributes.locationCapability] trait
+     * The [locationCapability][no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.Attributes.locationCapability] trait
      * attribute.
      */
     locationCapability(
@@ -213,7 +213,7 @@ interface GeneralCommissioning :
     ),
     /**
      * The
-     * [supportsConcurrentConnection][GeneralCommissioningTrait.Attributes.supportsConcurrentConnection]
+     * [supportsConcurrentConnection][no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.Attributes.supportsConcurrentConnection]
      * trait attribute.
      */
     supportsConcurrentConnection(
@@ -226,7 +226,7 @@ interface GeneralCommissioning :
       false,
     ),
     /**
-     * The [tcAcceptedVersion][GeneralCommissioningTrait.Attributes.tcAcceptedVersion] trait
+     * The [tcAcceptedVersion][no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.Attributes.tcAcceptedVersion] trait
      * attribute.
      */
     tcAcceptedVersion(
@@ -239,7 +239,7 @@ interface GeneralCommissioning :
       false,
     ),
     /**
-     * The [tcMinRequiredVersion][GeneralCommissioningTrait.Attributes.tcMinRequiredVersion] trait
+     * The [tcMinRequiredVersion][no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.Attributes.tcMinRequiredVersion] trait
      * attribute.
      */
     tcMinRequiredVersion(
@@ -252,7 +252,7 @@ interface GeneralCommissioning :
       false,
     ),
     /**
-     * The [tcAcknowledgements][GeneralCommissioningTrait.Attributes.tcAcknowledgements] trait
+     * The [tcAcknowledgements][no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.Attributes.tcAcknowledgements] trait
      * attribute.
      */
     tcAcknowledgements(
@@ -266,7 +266,7 @@ interface GeneralCommissioning :
     ),
     /**
      * The
-     * [tcAcknowledgementsRequired][GeneralCommissioningTrait.Attributes.tcAcknowledgementsRequired]
+     * [tcAcknowledgementsRequired][no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.Attributes.tcAcknowledgementsRequired]
      * trait attribute.
      */
     tcAcknowledgementsRequired(
@@ -279,12 +279,12 @@ interface GeneralCommissioning :
       false,
     ),
     /**
-     * The [tcUpdateDeadline][GeneralCommissioningTrait.Attributes.tcUpdateDeadline] trait
+     * The [tcUpdateDeadline][no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.Attributes.tcUpdateDeadline] trait
      * attribute.
      */
     tcUpdateDeadline("tcUpdateDeadline", 9u, "UInt", FieldType.UInt, false, NoOpDescriptor, true),
     /**
-     * The [recoveryIdentifier][GeneralCommissioningTrait.Attributes.recoveryIdentifier] trait
+     * The [recoveryIdentifier][no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.Attributes.recoveryIdentifier] trait
      * attribute.
      */
     recoveryIdentifier(
@@ -297,7 +297,7 @@ interface GeneralCommissioning :
       false,
     ),
     /**
-     * The [networkRecoveryReason][GeneralCommissioningTrait.Attributes.networkRecoveryReason] trait
+     * The [networkRecoveryReason][no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.Attributes.networkRecoveryReason] trait
      * attribute.
      */
     networkRecoveryReason(
@@ -311,7 +311,7 @@ interface GeneralCommissioning :
     ),
     /**
      * The
-     * [isCommissioningWithoutPower][GeneralCommissioningTrait.Attributes.isCommissioningWithoutPower]
+     * [isCommissioningWithoutPower][no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.Attributes.isCommissioningWithoutPower]
      * trait attribute.
      */
     isCommissioningWithoutPower(
@@ -324,7 +324,7 @@ interface GeneralCommissioning :
       false,
     ),
     /**
-     * The [generatedCommandList][GeneralCommissioningTrait.Attributes.generatedCommandList] trait
+     * The [generatedCommandList][no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.Attributes.generatedCommandList] trait
      * attribute.
      */
     generatedCommandList(
@@ -337,7 +337,7 @@ interface GeneralCommissioning :
       false,
     ),
     /**
-     * The [acceptedCommandList][GeneralCommissioningTrait.Attributes.acceptedCommandList] trait
+     * The [acceptedCommandList][no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.Attributes.acceptedCommandList] trait
      * attribute.
      */
     acceptedCommandList(
@@ -349,9 +349,9 @@ interface GeneralCommissioning :
       NoOpDescriptor,
       false,
     ),
-    /** The [attributeList][GeneralCommissioningTrait.Attributes.attributeList] trait attribute. */
+    /** The [attributeList][no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.Attributes.attributeList] trait attribute. */
     attributeList("attributeList", 65531u, "UInt", FieldType.UInt, false, NoOpDescriptor, false),
-    /** The [featureMap][GeneralCommissioningTrait.Attributes.featureMap] trait attribute. */
+    /** The [featureMap][no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.Attributes.featureMap] trait attribute. */
     featureMap(
       "featureMap",
       65532u,
@@ -362,7 +362,7 @@ interface GeneralCommissioning :
       false,
     ),
     /**
-     * The [clusterRevision][GeneralCommissioningTrait.Attributes.clusterRevision] trait attribute.
+     * The [clusterRevision][no.nordicsemi.nrf.matter.cluster.GeneralCommissioningTrait.Attributes.clusterRevision] trait attribute.
      */
     clusterRevision(
       "clusterRevision",
