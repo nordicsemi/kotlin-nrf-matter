@@ -69,7 +69,6 @@ class LocalMatterClusterDiscovery {
         let productName = await getProductName()
         
         let deviceTypes = await getDeviceType(endpoint: 0)
-        logger.debug("deviceTypes AAA: \(deviceTypes)")
         
         var deviceMatterInfo: [DeviceMatterInfo] = []
         let endpoints = await readEndpoints()

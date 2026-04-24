@@ -5,6 +5,7 @@ import io.github.aakira.napier.Napier
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -22,6 +23,7 @@ import no.nordicsemi.nrf.matter.model.UserPreferences
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.UserPreferencesRepository
+import kotlin.time.Duration.Companion.seconds
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -129,6 +131,22 @@ class HomeViewModel(
             scope.launch {
                 devicesStateRepository.updateDeviceState(deviceId, true, isOn)
                 deviceCommandHandler.execute(deviceId, isOn)
+            }
+        } catch (e: Exception) {
+            // revert or show error
+            Napier.e { "Error toggling power: ${e.message}" }
+        }
+    }
+
+    fun changeDeviceStat3Times(deviceId: DeviceId, isOn: Boolean) {
+        try {
+            scope.launch {
+                repeat(3) {
+                    changeDeviceState(deviceId, isOn)
+                    delay(1.seconds)
+                    changeDeviceState(deviceId, !isOn)
+                    delay(1.seconds)
+                }
             }
         } catch (e: Exception) {
             // revert or show error

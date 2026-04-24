@@ -44,7 +44,7 @@ class LocalMatterCustomClusterController: MatterManufacturerCustomDataController
             cluster: clusterId,
             command: commandId,
             type: MTRUnsignedIntegerValueType,
-            value: 2
+            value: isOn ? 1 : 0
         )
     }
     

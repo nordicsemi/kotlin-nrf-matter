@@ -34,13 +34,12 @@ class AttributeSubscriber {
             reportHandler: { result, error in
                 
                 if let error = error {
-//                    continuation.yield(AttributeUpdate(value: nil, error: error))
+                    // todo
                     return
                 }
                 
                 if let result = result, let value = try? T.parse(value: result[0].readAny()) {
                     onUpdate(value)
-//                    continuation.yield(AttributeUpdate(value: value, error: nil))
                 }
             }
         )

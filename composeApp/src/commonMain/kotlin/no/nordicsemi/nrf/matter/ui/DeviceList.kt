@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.flow.flow
 import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
@@ -31,6 +32,7 @@ import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.toDeviceId
 import no.nordicsemi.nrf.matter.screens.DeviceItemContainer
 import no.nordicsemi.nrf.matter.theme.NordicTheme
+import no.nordicsemi.nrf.matter.ui.blinky.BlinkyControlView
 import no.nordicsemi.nrf.matter.utils.title
 import no.nordicsemi.nrf.matter.utils.toSection
 import nrfmatterformobile.composeapp.generated.resources.Res
