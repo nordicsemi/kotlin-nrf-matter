@@ -47,6 +47,7 @@ fun HomeScreen(
     innerPaddings: PaddingValues,
     homeViewModel: HomeViewModel,
     onCommissionClick: () -> Unit,
+    onActivateHubClick: () -> Unit,
     onDeviceClick: (deviceId: DeviceId) -> Unit,
 ) {
     val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
@@ -54,7 +55,8 @@ fun HomeScreen(
     Box(modifier = Modifier.padding(innerPaddings)) {
         if (devicesUiModel.devices.isEmpty()) {
             NoDevicesScreen(
-                onAddDeviceClick = onCommissionClick
+                onAddDeviceClick = onCommissionClick,
+                onActivateHub = onActivateHubClick,
             )
         } else {
             DeviceList(

@@ -26,12 +26,14 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import no.nordicsemi.nrf.matter.commission.CommissionHandler
+import no.nordicsemi.nrf.matter.hub.ActivateHubScreen
 import no.nordicsemi.nrf.matter.logger.LoggerScreen
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
 import no.nordicsemi.nrf.matter.navigation.AppBar
 import no.nordicsemi.nrf.matter.navigation.DetailsRoute
 import no.nordicsemi.nrf.matter.navigation.HomeRoute
+import no.nordicsemi.nrf.matter.navigation.HubRoute
 import no.nordicsemi.nrf.matter.navigation.LoggerRoute
 import no.nordicsemi.nrf.matter.navigation.config
 import no.nordicsemi.nrf.matter.screens.DeviceScreen
@@ -137,6 +139,9 @@ fun App(homeViewModel: HomeViewModel) {
                             homeViewModel = homeViewModel,
                             onDeviceClick = { deviceId ->
                                 backStack.add(DetailsRoute(deviceId))
+                            },
+                            onActivateHubClick = {
+                                backStack.add(HubRoute)
                             }
                         )
                     },
@@ -156,6 +161,7 @@ private fun EntryProviderScope<NavKey>.screens(
     homeViewModel: HomeViewModel,
     backStack: NavBackStack<NavKey>,
     onCommissioningStarted: () -> Unit,
+    onActivateHubClick: () -> Unit,
     onDeviceClick: (deviceId: DeviceId) -> Unit,
 ) {
     entry<HomeRoute> {
@@ -163,6 +169,7 @@ private fun EntryProviderScope<NavKey>.screens(
             innerPaddings = padding,
             homeViewModel = homeViewModel,
             onCommissionClick = onCommissioningStarted,
+            onActivateHubClick = onActivateHubClick,
             onDeviceClick = { onDeviceClick(it) }
         )
 
@@ -181,6 +188,15 @@ private fun EntryProviderScope<NavKey>.screens(
     }
     entry<LoggerRoute> { key ->
         LoggerScreen(padding = padding)
+    }
+    entry<HubRoute> { key ->
+        ActivateHubScreen(
+            onBack = {
+                if (backStack.size > 1) {
+                    backStack.removeLastOrNull()
+                }
+            }
+        )
     }
 }
 

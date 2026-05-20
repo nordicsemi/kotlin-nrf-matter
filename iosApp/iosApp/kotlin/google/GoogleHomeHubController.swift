@@ -13,12 +13,12 @@ import GoogleHomeSDK
 class GoogleHubControllerImpl : GoogleHubController {
     
     func getHubs() async throws -> [GoogleHub] {
-        let controller = GoogleHomeController.instance()
+        let controller = await GoogleHomeController.instance()
         return try await controller.getHubs()
     }
 
     func activateHub(hub: GoogleHub) async throws {
-        let controller = GoogleHomeController.instance()
+        let controller = await GoogleHomeController.instance()
         try await controller.activateHub(hub)
     }
 }

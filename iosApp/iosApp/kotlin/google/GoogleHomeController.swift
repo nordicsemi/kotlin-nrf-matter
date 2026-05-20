@@ -27,17 +27,18 @@ class GoogleHomeController {
     private var home: Home? = nil
     private var cancellables: Set<AnyCancellable> = []
     
-    public static func instance() -> GoogleHomeController {
+    public static func instance() async -> GoogleHomeController {
         if let controller = Self.controller {
             return controller
         } else {
             let controller = GoogleHomeController()
             Self.controller = controller
+            await controller.initialize()
             return controller
         }
     }
     
-    func initialize() async {
+    private func initialize() async {
         guard home == nil else {
             return
         }
@@ -53,8 +54,11 @@ class GoogleHomeController {
     }
     
     func getHubs() async throws -> [GoogleHub] {
+        SharedLogger.info("Obtaining a list of hubs to activate.")
         guard let home else { throw GoogleHomeControllerError.noHomeFound }
         let hubs = await home.discoverAvailableHubs(duration: .seconds(5))
+        
+        SharedLogger.info("Obtained \(hubs.count) hubs.")
         
         hubs.forEach { hub in
             SharedLogger.debug("Hub discovered: name - \(hub.serviceInstanceName), type - \(hub.serviceType), canBeActivated - \(hub.canBeActivated)")
@@ -65,6 +69,7 @@ class GoogleHomeController {
     }
     
     func activateHub(_ googleHub: GoogleHub) async throws {
+        SharedLogger.info("Activating a hub.")
         guard let home else { throw GoogleHomeControllerError.noHomeFound }
         guard let structure else { throw GoogleHomeControllerError.noStructureFound }
         

@@ -20,8 +20,7 @@ class GoogleHomeOnOffController : MatterOnOffController {
      * Set the light on/off on a remote Matter device.
      */
     func setDeviceOnOff(deviceId: DeviceId, isOn: Bool, endpoint: Int32) async throws {
-        let controller = GoogleHomeController.instance()
-        await controller.initialize()
+        let controller = await GoogleHomeController.instance()
         let structure = await controller.getStructure()
         
         let device = await controller.getDevice(id: deviceId.stringValue)

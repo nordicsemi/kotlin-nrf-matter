@@ -34,8 +34,7 @@ class GoogleHomeCommissioner : @MainActor MatterCommissioner {
     }
     
     func commission() async -> Device? {
-        let controller = GoogleHomeController.instance()
-        await controller.initialize() //todo
+        let controller = await GoogleHomeController.instance()
         let structure = await controller.getStructure()
         
         do {

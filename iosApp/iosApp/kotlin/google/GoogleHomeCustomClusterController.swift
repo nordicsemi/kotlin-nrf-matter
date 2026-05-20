@@ -20,8 +20,7 @@ enum GoogleHomeCustomClusterError : Error {
 final class GoogleHomeCustomClusterController : @MainActor MatterManufacturerCustomDataController {
     
     private func getTrait(deviceId: DeviceId) async throws -> NordicSemiconductor.NordicDevKitTrait {
-        let controller = GoogleHomeController.instance()
-        await controller.initialize()
+        let controller = await GoogleHomeController.instance()
         
         let device = await controller.getDevice(id: deviceId.stringValue)
         
@@ -58,8 +57,7 @@ final class GoogleHomeCustomClusterController : @MainActor MatterManufacturerCus
     private var cancellables = Set<AnyCancellable>()
     
     func subscribeToButtonChanges(deviceId: DeviceId, endpoint: Int32, onUpdate: @escaping (KotlinBoolean) -> Void) async throws {
-        let controller = GoogleHomeController.instance()
-        await controller.initialize()
+        let controller = await GoogleHomeController.instance()
         
         let device = await controller.getDevice(id: deviceId.stringValue)
         

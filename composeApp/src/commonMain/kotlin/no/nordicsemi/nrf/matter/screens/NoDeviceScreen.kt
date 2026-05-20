@@ -81,7 +81,8 @@ import org.jetbrains.compose.resources.painterResource
 @Composable
 fun NoDevicesScreen(
     onAddDeviceClick: () -> Unit = {},
-    onMatterUrlClick: () -> Unit = {}
+    onActivateHub: () -> Unit = {},
+    onMatterUrlClick: () -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -134,6 +135,31 @@ fun NoDevicesScreen(
             Spacer(Modifier.width(8.dp))
             Text(
                 "Add New Device",
+                fontWeight = FontWeight.Bold,
+            )
+        }
+
+        Spacer(modifier = Modifier.height(32.dp))
+
+        // Action Button
+        Button(
+            onClick = { onActivateHub() },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp)
+                .widthIn(max = 320.dp),
+            shape = RoundedCornerShape(8.dp),
+            elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+        ) {
+            Icon(
+                Icons.Default.Add,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(Modifier.width(8.dp))
+            Text(
+                "Activate Hub",
                 fontWeight = FontWeight.Bold,
             )
         }

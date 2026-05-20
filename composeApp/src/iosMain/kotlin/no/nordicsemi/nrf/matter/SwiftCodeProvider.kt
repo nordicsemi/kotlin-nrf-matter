@@ -1,10 +1,10 @@
 package no.nordicsemi.nrf.matter
 
 import no.nordicsemi.nrf.matter.domain.ManufacturerSpecificData
+import no.nordicsemi.nrf.matter.hub.GoogleHubController
 import no.nordicsemi.nrf.matter.logger.PlatformLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
-import no.nordicsemi.nrf.matter.model.GoogleHub
 
 interface SwiftCodeProvider {
 
@@ -99,11 +99,4 @@ interface MatterClusterExtensionController {
     suspend fun getRandomNumber(deviceId: DeviceId): Int
 
     suspend fun generateRandomNumber(deviceId: DeviceId): Int
-}
-
-interface GoogleHubController {
-
-    suspend fun getHubs(): List<GoogleHub>
-
-    suspend fun activateHub(hub: GoogleHub)
 }
