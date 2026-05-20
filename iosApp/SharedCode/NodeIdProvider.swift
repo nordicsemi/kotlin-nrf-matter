@@ -13,5 +13,5 @@ import Foundation
  * node id should fail.
  */
 public class NodeIdProvider {
-    public static let id: NSNumber = 110 //TODO
+    public static let id: NSNumber = 112 //TODO
 }

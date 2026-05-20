@@ -54,4 +54,8 @@ class SwiftCodeProviderImpl : @MainActor SwiftCodeProvider {
     func getLogger() -> PlatformLogger {
         return PlatformLogger(logger: NativePlatformLoggerImpl())
     }
+    
+    func getHubController() -> any GoogleHubController {
+        return GoogleHubControllerImpl()
+    }
 }

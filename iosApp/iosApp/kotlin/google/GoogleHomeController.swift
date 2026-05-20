@@ -12,6 +12,7 @@ import SharedCode
 import GoogleHomeSDK
 
 enum GoogleHomeControllerError: Error {
+    case noHomeFound
     case noStructureFound
 }
 
@@ -49,6 +50,26 @@ class GoogleHomeController {
             structure = allStructures.first
         } catch {
         }
+    }
+    
+    func getHubs() async throws -> [GoogleHub] {
+        guard let home else { throw GoogleHomeControllerError.noHomeFound }
+        let hubs = await home.discoverAvailableHubs(duration: .seconds(5))
+        
+        hubs.forEach { hub in
+            SharedLogger.debug("Hub discovered: name - \(hub.serviceInstanceName), type - \(hub.serviceType), canBeActivated - \(hub.canBeActivated)")
+        }
+        
+        let result = hubs.map { GoogleHub(name: $0.serviceInstanceName, domainObject: $0) }
+        return result
+    }
+    
+    func activateHub(_ googleHub: GoogleHub) async throws {
+        guard let home else { throw GoogleHomeControllerError.noHomeFound }
+        guard let structure else { throw GoogleHomeControllerError.noStructureFound }
+        
+        let hub = googleHub.domainObject as! Hub
+        try await home.startHubActivation(hub, structureID: structure.id)
     }
     
     func getStructure() async -> Structure {
