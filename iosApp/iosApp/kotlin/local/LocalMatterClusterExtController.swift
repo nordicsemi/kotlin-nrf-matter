@@ -16,11 +16,12 @@ import OSLog
  * The flow requires first to send a "generate number" command and latter for reading the new value from the attribute.
  */
 class LocalMatterClusterExtController : MatterClusterExtensionController {
-
+    
     private let endpointId: NSNumber = 0 //todo: hardcoded
     private let clusterId: NSNumber = 0x28 //todo: hardcoded
     private let attributeId: NSNumber = 0x17 //todo: hardcoded
     private let commandId: NSNumber = 0x00 //todo: hardcoded
+    private let eventId: NSNumber = 0x4 //todo: hardcoded
     
     /**
      * Reads value from a "random number" attibute.
@@ -49,5 +50,14 @@ class LocalMatterClusterExtController : MatterClusterExtensionController {
         SharedLogger.debug("Generating random number command succeeded.")
         
         return try await getRandomNumber(deviceId: deviceId)
+    }
+    
+    func subscribeToRandomNumber(deviceId: DeviceId, endpoint: Int32, onUpdate: @escaping (KotlinUInt) -> Void) async throws {
+        SharedLogger.debug("Observing random number...")
+        let eventSubscriber = try EventSubscriber(deviceId: deviceId.nsNumber())
+        
+        eventSubscriber.subscribe(endpoint: endpointId, cluster: clusterId, event: eventId) { result in
+            onUpdate(KotlinUInt(value: result))
+        }
     }
 }

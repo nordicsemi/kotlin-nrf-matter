@@ -61,7 +61,6 @@ class HomeViewModel(
     userPreferencesRepository: UserPreferencesRepository,
     private val deviceCommandHandler: DeviceCommandHandler,
 ) : ViewModel() {
-    val randomNumber = MutableStateFlow<Int?>(null)
 
     private val scope = CoroutineScope(
         SupervisorJob() + Dispatchers.Main
@@ -143,9 +142,13 @@ class HomeViewModel(
         return deviceCommandHandler.subscribeToButtonChanges(deviceId)
     }
 
+    fun subscribeToRandomNumber(deviceId: DeviceId): Flow<UInt> {
+        return deviceCommandHandler.subscribeToRandomNumber(deviceId)
+    }
+
     fun generateRandomNumber(deviceId: DeviceId) {
         scope.launch {
-            randomNumber.value = deviceCommandHandler.generateRandomNumber(deviceId)
+            deviceCommandHandler.generateRandomNumber(deviceId)
         }
     }
 }

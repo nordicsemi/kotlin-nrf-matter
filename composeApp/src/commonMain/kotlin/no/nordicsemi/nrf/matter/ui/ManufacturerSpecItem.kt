@@ -95,7 +95,9 @@ private fun DeviceItemContainer(
     onDeviceClick: () -> Unit,
     content: @Composable () -> Unit
 ) {
-    val randomNumber = homeViewModel.randomNumber.collectAsStateWithLifecycle().value
+    val randomNumber = homeViewModel.subscribeToRandomNumber(device.device.deviceId)
+        .collectAsStateWithLifecycle(initialValue = null)
+        .value
 
     OutlinedCard(
         shape = RoundedCornerShape(16.dp),

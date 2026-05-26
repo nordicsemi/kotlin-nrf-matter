@@ -225,6 +225,10 @@ class DeviceCommandHandler(
         return deviceController.subscribeToButtonChanges(deviceId, 1)
     }
 
+    fun subscribeToRandomNumber(deviceId: DeviceId): Flow<UInt> {
+        return deviceController.subscribeToRandomNumber(deviceId, 1)
+    }
+
     suspend fun generateRandomNumber(deviceId: DeviceId): Int {
         return deviceController.generateRandomNumber(deviceId)
     }

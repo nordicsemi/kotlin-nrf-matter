@@ -17,7 +17,7 @@ import OSLog
  *  2. Observe button state changes.
  */
 class LocalMatterCustomClusterController: MatterManufacturerCustomDataController {
-    
+
     private let endpointId: NSNumber = 1 //todo: hardcoded
     private let clusterId: NSNumber = 0xFFF1FC01 //todo: hardcoded
     private let commandId: NSNumber = 0xFFF10000 //todo: hardcoded

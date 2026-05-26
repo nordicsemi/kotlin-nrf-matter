@@ -57,3 +57,14 @@ extension Int32: AttributeParser {
         throw OperationError.wrongType
     }
 }
+
+extension UInt32: AttributeParser {
+    
+    public static func parse(value: Any) throws -> UInt32 {
+        if let int = value as? UInt32 {
+            return int
+        }
+        
+        throw OperationError.wrongType
+    }
+}

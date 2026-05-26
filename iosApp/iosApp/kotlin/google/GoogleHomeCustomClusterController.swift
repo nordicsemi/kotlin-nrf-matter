@@ -18,7 +18,7 @@ enum GoogleHomeCustomClusterError : Error {
 
 @MainActor
 final class GoogleHomeCustomClusterController : @MainActor MatterManufacturerCustomDataController {
-    
+
     private func getTrait(deviceId: DeviceId) async throws -> NordicSemiconductor.NordicDevKitTrait {
         let controller = GoogleHomeController.instance()
         await controller.initialize()
