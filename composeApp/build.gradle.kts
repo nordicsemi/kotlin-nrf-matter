@@ -19,7 +19,6 @@ kotlin {
         }
     }
 
-    jvm()
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -33,7 +32,6 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(project(":androidDeps"))
-//            implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.core.splashscreen)
             implementation(libs.accompanist.permissions)
@@ -83,5 +81,7 @@ kotlin {
 }
 
 dependencies {
-    ksp(libs.room.compiler)
+    add("kspAndroid", libs.room.compiler)
+    add("kspIosSimulatorArm64", libs.room.compiler)
+    add("kspIosArm64", libs.room.compiler)
 }

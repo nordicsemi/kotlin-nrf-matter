@@ -13,9 +13,16 @@ plugins {
     alias(libs.plugins.nordic.android.application) apply false
     alias(libs.plugins.nordic.android.kmp.library) apply false
     alias(libs.plugins.nordic.android.library) apply false
-    alias(libs.plugins.nordic.dokka) apply false
     alias(libs.plugins.nordic.publish.android) apply false
     alias(libs.plugins.nordic.kotlin) apply false
     alias(libs.plugins.nordic.feature.compose) apply false
     alias(libs.plugins.nordic.publish.kmp) apply false
+
+    alias(libs.plugins.nordic.dokka) apply true
+}
+
+dokka {
+    pluginsConfiguration.html {
+        homepageLink.set("https://github.com/NordicSemiconductor/KMP-nRF-Matter")
+    }
 }
