@@ -20,6 +20,7 @@ android {
 dependencies {
     implementation(project(":androidDeps"))
     implementation(project(":composeApp"))
+    implementation(project(":core"))
 
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.core.splashscreen)

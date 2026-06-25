@@ -1,8 +1,6 @@
 package no.nordicsemi.nrf.matter.model
 
 import kotlinx.coroutines.flow.Flow
-import no.nordicsemi.nrf.matter.ui.light.LightDeviceState
-import no.nordicsemi.nrf.matter.ui.lock.LockDeviceState
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor

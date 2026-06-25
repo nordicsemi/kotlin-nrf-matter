@@ -44,6 +44,7 @@ import no.nordicsemi.nrf.matter.commission.DecommissionDevice
 import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
+import no.nordicsemi.nrf.matter.model.LockDeviceState
 import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.Res
 import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.door_lock
 import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.door_lock_open_right
