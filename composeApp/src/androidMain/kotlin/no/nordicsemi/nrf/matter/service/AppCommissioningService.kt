@@ -13,6 +13,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.chip.ChipClient
+import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import org.koin.android.ext.android.inject
@@ -83,7 +84,7 @@ class AppCommissioningService : Service(), CommissioningService.Callback, KoinCo
                     "port [${metadata.networkLocation.port}]\n" +
                     "\tpassCode [${metadata.passcode}]"
         )
-
+        
         // Perform commissioning on custom fabric for the sample app.
         serviceScope.launch {
             val deviceId = devicesRepository.getNextDeviceId()
@@ -95,7 +96,7 @@ class AppCommissioningService : Service(), CommissioningService.Callback, KoinCo
                     metadata.passcode
                 )
 
-                chipClient.awaitCommissionDevice(deviceId, null)
+                chipClient.awaitCommissionDevice(deviceId)
 
                 devicesStateRepository.addDeviceState(
                     deviceId,

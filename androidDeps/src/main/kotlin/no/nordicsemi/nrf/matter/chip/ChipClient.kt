@@ -312,7 +312,7 @@ class ChipClient(
     }
 
 
-    suspend fun awaitCommissionDevice(deviceId: DeviceId, networkCredentials: NetworkCredentials?) {
+    suspend fun awaitCommissionDevice(deviceId: DeviceId) {
         return suspendCancellableCoroutine { continuation ->
             chipDeviceController.setCompletionListener(
                 object : BaseCompletionListener() {
@@ -334,7 +334,7 @@ class ChipClient(
                 })
 
             val commissionParameters = CommissionParameters.Builder()
-                .setNetworkCredentials(networkCredentials)
+                .setNetworkCredentials(null)
                 .build()
 
             chipDeviceController.commissionDevice(deviceId.longValue, commissionParameters)
