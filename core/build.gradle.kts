@@ -8,11 +8,11 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
-group = "no.nordicsemi.nrf.matter.shared"
+group = "no.nordicsemi.nrf.matter.core"
 
 kotlin {
     android {
-        namespace = "no.nordicsemi.nrf.matter.shared"
+        namespace = "no.nordicsemi.nrf.matter.core"
 
         androidResources {
             enable = true
@@ -32,7 +32,6 @@ kotlin {
 
     sourceSets {
         androidMain.dependencies {
-            implementation(project(":androidDeps"))
 //            implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.core.splashscreen)
@@ -43,8 +42,6 @@ kotlin {
             implementation(libs.room.ktx)
         }
         commonMain.dependencies {
-            implementation(project(":core"))
-
             implementation(libs.jetbrains.compose.runtime)
             implementation(libs.jetbrains.foundation)
             implementation(libs.jetbrains.icons.extended)

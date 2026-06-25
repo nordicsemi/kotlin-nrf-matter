@@ -16,20 +16,9 @@ import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
+import no.nordicsemi.nrf.matter.model.LockDeviceState
 import no.nordicsemi.nrf.matter.ui.MatterController
 import kotlin.time.Duration.Companion.milliseconds
-
-enum class LockDeviceState(val value: Int) {
-    NOT_FULLY_LOCKED(0),
-    LOCKED(1),
-    UNLOCKED(2);
-
-    companion object {
-        fun create(value: Int): LockDeviceState {
-            return LockDeviceState.entries.first { it.value == value }
-        }
-    }
-}
 
 class LockController(
     private val device: DeviceUiModel,
