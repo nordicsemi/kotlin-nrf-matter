@@ -9,13 +9,13 @@ android {
 
     sourceSets {
         getByName("main") {
-            jniLibs.srcDirs("src/main/jniLibs")
+            jniLibs.srcDirs("libs/jniLibs")
         }
     }
 }
 
 dependencies {
-    api(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+    api(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.so"))))
 
     // Home API SDK dependency
     api(libs.play.services.home)
