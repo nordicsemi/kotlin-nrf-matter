@@ -3,6 +3,7 @@ package no.nordicsemi.nrf.matter
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import no.nordicsemi.nrf.matter.theme.NordicActivity
+import no.nordicsemi.nrf.matter.theme.SdkVersionGuard
 import org.koin.androidx.compose.koinViewModel
 
 class MainActivity : NordicActivity() {
@@ -12,8 +13,11 @@ class MainActivity : NordicActivity() {
 
         // Initialize CMP Toast.
         multiplatform.network.cmptoast.AppContext.apply { set(applicationContext) }
+
         setContent {
-            App(homeViewModel = koinViewModel())
+            SdkVersionGuard(onClose = { finishAndRemoveTask() }) {
+                App(homeViewModel = koinViewModel())
+            }
         }
     }
 }
