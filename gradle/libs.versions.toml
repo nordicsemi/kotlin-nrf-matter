@@ -2,7 +2,7 @@
 accompanistPermissions = "0.37.3"
 agp = "8.13.0"
 android-compileSdk = "36"
-android-minSdk = "27"
+android-minSdk = "24"
 android-targetSdk = "36"
 androidx-activity = "1.12.4"
 androidx-appcompat = "1.7.1"
