@@ -1,22 +1,10 @@
-import UIKit
-import SwiftUI
-import ComposeApp
 import SwiftUI
 
-/// Bridges the shared Compose Multiplatform UI into SwiftUI.
-///
-/// Wraps the Kotlin-defined `MainViewController`, injecting the native
-/// `SwiftCodeProviderImpl` so the shared code can call back into the iOS-specific
-/// Matter implementations.
-struct ContentView: UIViewControllerRepresentable {
-    
-    /// Creates the Compose Multiplatform view controller, wired up with the native
-    /// Swift implementation of `SwiftCodeProvider`.
-    func makeUIViewController(context: Context) -> UIViewController {
-        MainViewControllerKt.MainViewController(swiftCodeProvider: SwiftCodeProviderImpl())
-    }
-
-    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
-
+/// Root view: a native `TabView`/`NavigationStack` hierarchy so iOS 26 applies Liquid
+/// Glass to the tab bar and toolbars automatically. Each tab and detail screen renders
+/// its content via Compose (see `Navigation/ComposeViews.swift`).
+struct ContentView: View {
+    var body: some View {
+        NativeNavContentView()
     }
 }

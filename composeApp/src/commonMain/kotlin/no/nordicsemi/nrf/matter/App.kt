@@ -117,20 +117,18 @@ fun App(homeViewModel: HomeViewModel) {
                     )
                 },
                 floatingActionButton = {
-                    if (devicesUiModel.devices.isNotEmpty()) {
-                        FloatingActionButton(
-                            onClick = {
-                                // Recreate the last destination if the route is already at the top.
-                                val lastIndex = backStack.lastIndex
-                                if (lastIndex >= 0 && backStack[lastIndex] is CommissioningRoute) {
-                                    backStack[lastIndex] = CommissioningRoute()
-                                } else {
-                                    backStack.add(CommissioningRoute())
-                                }
+                    FloatingActionButton(
+                        onClick = {
+                            // Recreate the last destination if the route is already at the top.
+                            val lastIndex = backStack.lastIndex
+                            if (lastIndex >= 0 && backStack[lastIndex] is CommissioningRoute) {
+                                backStack[lastIndex] = CommissioningRoute()
+                            } else {
+                                backStack.add(CommissioningRoute())
                             }
-                        ) {
-                            Icon(Icons.Default.Add, null)
                         }
+                    ) {
+                        Icon(Icons.Default.Add, null)
                     }
                 },
                 bottomBar = {
