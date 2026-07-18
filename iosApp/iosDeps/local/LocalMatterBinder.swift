@@ -5,13 +5,14 @@
 //  Created by Sylwester Zielinski on 25/03/2026.
 //
 
-import ComposeApp
 import Matter
 import SharedCode
 
 /// Binds Matter device clusters directly to each other for device-to-device
 /// control, bypassing the controller.
-class LocalMatterBinder : BindingController {
+@objc public class LocalMatterBinder: NSObject {
+
+    @objc public override init() {}
 
     /// Binds a source device and a target device together.
     ///
@@ -26,17 +27,17 @@ class LocalMatterBinder : BindingController {
     ///   - targetEndpoint: The endpoint on the target device that hosts the server cluster.
     ///   - clusterId: The cluster ID used for the binding.
     /// - Throws: An error if granting access on target or creating the binding on source fails.
-    func bind(sourceNodeId: DeviceId, sourceEndpoint: Int32, targetNodeId: DeviceId, targetEndpoint: Int32, clusterId: Int64) async throws {
+    @objc public func bind(sourceNodeId: String, sourceEndpoint: Int32, targetNodeId: String, targetEndpoint: Int32, clusterId: Int64) async throws {
         SharedLogger.info("Binding clusters...")
         SharedLogger.debug("Source node id: \(sourceNodeId)")
         SharedLogger.debug("Target node it: \(targetNodeId)")
-        
-        let source = sourceNodeId.nsNumber()
-        let target = targetNodeId.nsNumber()
+
+        let source = sourceNodeId.toMatterNodeId()
+        let target = targetNodeId.toMatterNodeId()
         let sourceEnd = sourceEndpoint as NSNumber
         let targetEnd = targetEndpoint as NSNumber
         let cluster = clusterId as NSNumber
-        
+
         let controller = try LocalControllerProvider(logTag: "LocalMatterBinder").getController()
         SharedLogger.info("Granting access to source.")
         try await grantAccessToSource(targetDeviceID: target, sourceNodeID: source, clusterID: cluster, controller: controller)
@@ -68,25 +69,25 @@ class LocalMatterBinder : BindingController {
     private func grantAccessToSource(targetDeviceID: NSNumber, sourceNodeID: NSNumber, clusterID: NSNumber, controller: MTRDeviceController) async throws {
         let targetDevice = MTRBaseDevice(nodeID: targetDeviceID, controller: controller)
         guard let aclCluster = MTRBaseClusterAccessControl(device: targetDevice, endpointID: 0, queue: .main) else { return }
-        
+
         let target = MTRAccessControlClusterAccessControlTargetStruct()
         target.cluster = clusterID
         target.endpoint = nil
         target.deviceType = nil
-        
+
         let newEntry = MTRAccessControlClusterAccessControlEntryStruct()
         newEntry.privilege = NSNumber(value: 3) // Operate
         newEntry.authMode = NSNumber(value: 2)  // CASE (Certificate-based)
         newEntry.subjects = [sourceNodeID]
         newEntry.targets = [target]
-        
+
         SharedLogger.info("Reading attribute ACL...")
         var currentACLs = try await aclCluster.readAttributeACL(with: nil) as? [MTRAccessControlClusterAccessControlEntryStruct] ?? []
         SharedLogger.info("Amending ACL records...")
         let entryExists = currentACLs.contains { entry in
             (entry.subjects as? [NSNumber])?.contains(sourceNodeID) == true && entry.privilege == newEntry.privilege
         }
-        
+
         if !entryExists {
             SharedLogger.info("Storing new ACL record on the target device...")
             currentACLs.append(newEntry)
@@ -96,7 +97,7 @@ class LocalMatterBinder : BindingController {
             SharedLogger.debug("ACL entry already exists for node \(sourceNodeID). Skipping write.")
         }
     }
-    
+
     /// Creates a binding so the source device can send commands directly to the target device.
     ///
     /// The set of supported commands is defined by the cluster. The source must support those
@@ -117,18 +118,18 @@ class LocalMatterBinder : BindingController {
     private func bindSwitchToBulb(sourceDeviceID: NSNumber, sourceEndpoint: NSNumber, targetNodeID: NSNumber, targetEndpoint: NSNumber, clusterID: NSNumber, controller: MTRDeviceController) async throws {
         let sourceDevice = MTRBaseDevice(nodeID: sourceDeviceID, controller: controller)
         guard let bindingCluster = MTRBaseClusterBinding(device: sourceDevice, endpointID: sourceEndpoint, queue: .main) else { return }
-        
+
         SharedLogger.debug("Preparing a new binding record.")
         let bindingEntry = MTRBindingClusterTargetStruct()
         bindingEntry.node = targetNodeID
         bindingEntry.endpoint = targetEndpoint
         bindingEntry.cluster = clusterID
-        
+
         SharedLogger.debug("Storing record on a source device.")
         var bindings = try await bindingCluster.readAttributeBinding(with: nil)
         bindings.append(bindingEntry)
         try await bindingCluster.writeAttributeBinding(withValue: bindings)
-        
+
         SharedLogger.debug("Binding created successfully on source.")
     }
 }

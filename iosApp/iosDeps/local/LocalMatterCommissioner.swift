@@ -5,10 +5,8 @@
 //  Created by Sylwester Zielinski on 23/02/2026.
 //
 
-import ComposeApp
 import Matter
 import MatterSupport
-import nrfMatter
 import SharedCode
 
 /// Commissions a new Matter device into the local fabric.
@@ -17,7 +15,9 @@ import SharedCode
 /// requires a Thread Border Router available on the local network and Thread network
 /// credentials stored on the phone. Once commissioned, the device is added to the local fabric
 /// and managed by the phone.
-class LocalMatterCommissioner : MatterCommissioner {
+@objc public class LocalMatterCommissioner: NSObject {
+
+    @objc public override init() {}
 
     /// Commissions a new Matter device into the local fabric using Apple's MatterSupport
     /// add-device flow.
@@ -30,59 +30,54 @@ class LocalMatterCommissioner : MatterCommissioner {
     /// read and the resulting device metadata is returned.
     ///
     /// - Parameter deviceId: The Matter node ID to assign to the newly commissioned device.
-    /// - Returns: An `OperationResultSuccess` containing the discovered `Device` on success, or
-    ///   an `OperationResultError` describing the failure.
-    /// - Throws: An error if the local controller needed for post-commissioning cluster
-    ///   discovery cannot be obtained.
-    func startIosCommissioning(deviceId: DeviceId) async throws -> any OperationResult {
+    /// - Returns: The discovered `SwiftDevice` on success.
+    /// - Throws: A `SwiftCommissioningError` describing the failure (commissioning cancelled or
+    ///   failed, or post-commissioning cluster discovery failed).
+    @objc public func startIosCommissioning(deviceId: String) async throws -> SwiftDevice {
         let homes = [MatterAddDeviceRequest.Home(displayName: "Nordic Home")]
         let topology = MatterAddDeviceRequest.Topology(ecosystemName: "Nordic Ecosystem", homes: homes)
-        
+
         let request = MatterAddDeviceRequest(topology: topology, shouldScanNetworks: true)
-        
+
         let storage = SharedStorage(suitName: SharedConsts.sharedStorage)
         let _ = storage.removeStorageData(forKey: SharedConsts.resultKey)
         storage.storeString(key: SharedConsts.matterEnvStorageKey, value: MatterEnv.local.rawValue)
-        storage.storeNumber(key: SharedConsts.nodeIdKey, value: deviceId.nsNumber())
-        
+        storage.storeNumber(key: SharedConsts.nodeIdKey, value: deviceId.toMatterNodeId())
+
         do {
             try await request.perform()
         } catch {
             let error = error as NSError
-            return OperationResultError(t: CommissioningException(
-                deviceId: deviceId,
-                stage: Stage.commissioning,
-                errorCode: KotlinInt(int: Int32(error.code)),
+            throw SwiftCommissioningError(
+                stage: 0, // COMMISSIONING
+                errorCode: NSNumber(value: error.code),
                 displayMessage: error.localizedDescription,
                 fabricId: 1
-            ))
+            )
         }
-        
+
         let result = storage.getBool(key: SharedConsts.resultKey) ?? false
         guard result else {
-            return OperationResultError(t: CommissioningException(
-                deviceId: deviceId,
-                stage: Stage.commissioning,
+            throw SwiftCommissioningError(
+                stage: 0, // COMMISSIONING
                 errorCode: nil,
                 displayMessage: "Cancelled.",
                 fabricId: 1
-            ))
+            )
         }
-        
-        let descriptorCluster = try LocalMatterClusterDiscovery(nodeId: deviceId.nsNumber())
-        
+
+        let descriptorCluster = LocalMatterClusterDiscovery(nodeId: deviceId.toMatterNodeId())
+
         do {
-            let device = try await descriptorCluster.discoverClusters()
-            return OperationResultSuccess(data: device)
+            return try await descriptorCluster.discoverClusters()
         } catch {
             let error = error as NSError
-            return OperationResultError(t: CommissioningException(
-                deviceId: deviceId,
-                stage: descriptorCluster.stage,
-                errorCode: KotlinInt(int: Int32(error.code)),
+            throw SwiftCommissioningError(
+                stage: descriptorCluster.stage.rawValue,
+                errorCode: NSNumber(value: error.code),
                 displayMessage: error.localizedDescription,
                 fabricId: 1
-            ))
+            )
         }
     }
 }

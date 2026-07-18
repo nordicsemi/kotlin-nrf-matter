@@ -6,7 +6,6 @@
 //
 
 import Matter
-import ComposeApp
 import SharedCode
 import OSLog
 
@@ -14,11 +13,11 @@ import OSLog
 enum BasicInformationClusterExtension {
 
     static let id: NSNumber = 0x28 // Basic Information Cluster
-    
+
     enum Attribute {
         static let randomNumber: NSNumber = 0x17 // New field
     }
-    
+
     enum Command {
         static let generateRandomNumber: NSNumber = 0x00 // New command
     }
@@ -29,20 +28,22 @@ enum BasicInformationClusterExtension {
 ///
 /// The flow is to first send the "generate number" command, then read the new value from the
 /// attribute.
-class LocalMatterClusterExtController : MatterClusterExtensionController {
+@objc public class LocalMatterClusterExtController: NSObject {
+
+    @objc public override init() {}
 
     /// Sends the "generate random number" command and reads back the newly generated value.
     ///
     /// - Parameters:
     ///   - deviceId: The Matter node ID of the target device.
     ///   - endpoint: The endpoint hosting the cluster extension.
-    /// - Returns: The newly generated random number.
+    /// - Returns: The newly generated random number, or `nil` if it can't be resolved.
     /// - Throws: An error if the command invocation or the subsequent attribute read fails.
-    func generateRandomNumber(deviceId: DeviceId, endpoint: Int32) async throws -> KotlinLong {
+    @objc public func generateRandomNumber(deviceId: String, endpoint: Int32) async throws -> NSNumber? {
         SharedLogger.debug("Generating random number...")
-        let commandExecutor = try CommandExecutor(deviceId: deviceId.nsNumber())
+        let commandExecutor = try CommandExecutor(deviceId: deviceId.toMatterNodeId())
         let endpointId = NSNumber(value: endpoint)
-        
+
         try await commandExecutor.executeCommand(
             endpoint: endpointId,
             cluster: BasicInformationClusterExtension.id,
@@ -50,12 +51,12 @@ class LocalMatterClusterExtController : MatterClusterExtensionController {
             type: MTRBooleanValueType,
             value: true
         )
-        
+
         SharedLogger.debug("Generating random number command succeeded.")
-        
+
         return try await getRandomNumber(deviceId: deviceId, endpointId: endpointId)
     }
-    
+
     /// Reads the current value of the "random number" attribute.
     ///
     /// - Parameters:
@@ -63,13 +64,13 @@ class LocalMatterClusterExtController : MatterClusterExtensionController {
     ///   - endpointId: The endpoint hosting the cluster extension.
     /// - Returns: The current random number value.
     /// - Throws: An error if the attribute read fails.
-    private func getRandomNumber(deviceId: DeviceId, endpointId: NSNumber) async throws -> KotlinLong {
-        let attributeReader = try AttributeReader(deviceId: deviceId.nsNumber())
+    private func getRandomNumber(deviceId: String, endpointId: NSNumber) async throws -> NSNumber {
+        let attributeReader = try AttributeReader(deviceId: deviceId.toMatterNodeId())
         let result: Int32 = try await attributeReader.readAttribute(
             endpoint: endpointId,
             cluster: BasicInformationClusterExtension.id,
             attribute: BasicInformationClusterExtension.Attribute.randomNumber
         )
-        return KotlinLong(longLong: Int64(result))
+        return NSNumber(value: Int64(result))
     }
 }

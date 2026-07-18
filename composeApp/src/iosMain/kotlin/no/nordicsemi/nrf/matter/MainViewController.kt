@@ -7,13 +7,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.ComposeUIViewController
+import kotlinx.cinterop.ExperimentalForeignApi
+import no.nordicsemi.nrf.matter.iosdeps.createSwiftCodeProvider
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.dsl.module
 import platform.UIKit.UIViewController
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
-fun MainViewController(swiftCodeProvider: SwiftCodeProvider): UIViewController {
+@OptIn(ExperimentalForeignApi::class)
+fun MainViewController(): UIViewController {
+    val swiftCodeProvider = createSwiftCodeProvider()
     NordicLogger.setLogger(swiftCodeProvider.getLogger())
 
     initKoin(

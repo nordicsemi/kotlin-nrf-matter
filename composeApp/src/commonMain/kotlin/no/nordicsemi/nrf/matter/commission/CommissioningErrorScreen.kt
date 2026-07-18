@@ -39,7 +39,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import no.nordicsemi.nrf.matter.model.DeviceId
 
 private val SlatePrimary = Color(0xFF556791)
 private val CardLight = Color.White
@@ -52,43 +51,6 @@ private val BorderLight = Color(0xFFE2E8F0)
 private val BorderDark = Color(0xFF334155)
 private val PillBgLight = Color(0xFFF1F5F9)
 private val PillBgDark = Color(0xFF334155)
-
-data class CommissioningException(
-    val deviceId: DeviceId?,
-    val stage: Stage,
-    val errorCode: Int?,
-    val displayMessage: String,
-    val fabricId: Int = 1,
-) : Throwable(displayMessage) {
-
-    val displayFabricId = fabricId.toHexString(ShortHexFormat)
-    val displayDeviceId = deviceId?.longValue?.toHexString(ShortHexFormat) ?: "unknown"
-    val displayErrorCode = errorCode?.toHexString(ShortHexFormat) ?: "unknown"
-
-    companion object {
-
-        private val ShortHexFormat = HexFormat {
-            upperCase = true
-            number {
-                removeLeadingZeros = true
-                prefix = "0x"
-            }
-        }
-
-        fun unknown(stage: Stage) = CommissioningException(
-            deviceId = null,
-            stage = stage,
-            errorCode = null,
-            displayMessage = "Unknown error"
-        )
-    }
-}
-
-enum class Stage {
-    COMMISSIONING,
-    READ_BASIC_INFORMATION,
-    READ_DESCRIPTOR_CLUSTER
-}
 
 @Composable
 fun CommissioningErrorScreen(

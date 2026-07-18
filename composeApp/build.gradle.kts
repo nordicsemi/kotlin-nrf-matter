@@ -10,6 +10,24 @@ plugins {
 
 group = "no.nordicsemi.nrf.matter.shared"
 
+// iosDeps is a pure-Swift Xcode framework target (iosApp/iosDeps) implementing the native
+// Matter operations against Apple's Matter framework. It's built via xcodebuild and consumed
+// here through cinterop. Its public API is deliberately primitives-only (String/Bool/Int32/
+// closures) and never references a :core-compiled type: Kotlin/Native cannot link two
+// independently-compiled Kotlin/Native frameworks into one process ("runtime injected twice"),
+// so iosDeps must have zero dependency on Core's compiled runtime. composeApp adapts the
+// resulting cinterop bindings to :core's own interfaces (see IosModule.kt).
+val iosDepsDerivedDataDir = layout.buildDirectory.dir("iosDepsDerivedData")
+val iosDepsConfiguration = "Debug"
+
+data class IosDepsSdk(val sdkName: String, val productsDirName: String)
+
+fun iosDepsSdkFor(targetName: String): IosDepsSdk = when (targetName) {
+    "iosArm64" -> IosDepsSdk("iphoneos", "$iosDepsConfiguration-iphoneos")
+    "iosSimulatorArm64" -> IosDepsSdk("iphonesimulator", "$iosDepsConfiguration-iphonesimulator")
+    else -> error("Unsupported iOS target for iosDeps: $targetName")
+}
+
 kotlin {
     android {
         namespace = "no.nordicsemi.nrf.matter.shared"
@@ -24,11 +42,98 @@ kotlin {
         iosArm64(),
         iosSimulatorArm64()
     ).forEach { iosTarget ->
+        val sdk = iosDepsSdkFor(iosTarget.name)
+
+        // When this Gradle build is itself invoked from inside an Xcode build (iosApp's
+        // "Compile Kotlin Framework" run script), iosDeps is built by Xcode as a normal target
+        // dependency of iosApp instead — invoking `xcodebuild -scheme iosDeps` here too would be
+        // a *nested* xcodebuild call, which crashes Xcode's build system. In that case the outer
+        // build passes its own build products dir through; use that directly instead.
+        val externalIosDepsDir = (project.findProperty("iosDepsFrameworkDir") as String?)?.let { file(it) }
+        val iosDepsProductsDir = externalIosDepsDir?.let { project.layout.dir(provider { it }) }
+            ?: iosDepsDerivedDataDir.map { it.dir("Build/Products/${sdk.productsDirName}") }
+
+        val buildIosDepsFramework = if (externalIosDepsDir == null) {
+            tasks.register<Exec>("buildIosDepsFrameworkFor${iosTarget.name}") {
+                group = "ios interop"
+                description = "Builds iosDeps.framework via xcodebuild for ${iosTarget.name}"
+                commandLine(
+                    "xcodebuild",
+                    "-project", rootDir.resolve("iosApp/iosApp.xcodeproj").absolutePath,
+                    "-scheme", "iosDeps",
+                    "-sdk", sdk.sdkName,
+                    "-arch", "arm64",
+                    "-configuration", iosDepsConfiguration,
+                    "-derivedDataPath", iosDepsDerivedDataDir.get().asFile.absolutePath,
+                    "build"
+                )
+                inputs.dir(rootDir.resolve("iosApp/iosDeps"))
+                inputs.file(rootDir.resolve("iosApp/iosApp.xcodeproj/project.pbxproj"))
+                outputs.dir(iosDepsProductsDir)
+            }
+        } else {
+            null
+        }
+
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
             export(project(":core"))
         }
+
+        // iosDeps/SharedCode were built with this project's Xcode deployment target (26.0);
+        // Kotlin/Native's linker (ld directly, not the clang driver) otherwise defaults to a
+        // much older platform version, which makes ld64 look for Swift back-deployment shims
+        // that don't exist in this SDK.
+        val (platformVersionArgs, swiftCompatLibDir) = when (iosTarget.name) {
+            "iosArm64" -> listOf("-platform_version", "ios", "26.0", "26.0") to "iphoneos"
+            "iosSimulatorArm64" -> listOf("-platform_version", "ios-simulator", "26.0", "26.0") to "iphonesimulator"
+            else -> error("Unsupported iOS target for iosDeps: ${iosTarget.name}")
+        }
+        // Xcode's clang driver auto-adds this search path when it auto-links Swift's
+        // back-deployment compatibility libraries; Kotlin/Native's raw `ld` invocation doesn't.
+        val swiftCompatLibPath =
+            "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/$swiftCompatLibDir"
+
+        iosTarget.binaries.all {
+            // Note: Core.framework must never be linked here. iosDeps's public API is
+            // primitives-only precisely so its object code never needs Core's compiled
+            // Kotlin/Native runtime — linking it crashes with "runtime injected twice"
+            // since composeApp already has its own (it compiles :core directly).
+            linkerOpts(
+                "-F${iosDepsProductsDir.get().asFile.absolutePath}",
+                "-framework", "iosDeps",
+                "-L$swiftCompatLibPath",
+                *platformVersionArgs.toTypedArray()
+            )
+        }
+
+        iosTarget.compilations.getByName("main") {
+            cinterops {
+                create("iosDeps") {
+                    definitionFile.set(project.file("src/nativeInterop/cinterop/iosDeps.def"))
+                    packageName("no.nordicsemi.nrf.matter.iosdeps")
+                    compilerOpts(
+                        "-F${iosDepsProductsDir.get().asFile.absolutePath}",
+                        "-fmodules"
+                    )
+                }
+            }
+        }
+
+        // Track only the iosDeps.framework bundle itself as a task input, not the whole
+        // products directory: when nested inside an Xcode build, that directory is
+        // $BUILT_PRODUCTS_DIR, shared with iosApp's own app bundle (which composeApp's
+        // syncComposeResourcesForIos task also writes into) — declaring the whole shared
+        // directory as an input trips Gradle's implicit-dependency validation.
+        val iosDepsFrameworkBundle = iosDepsProductsDir.map { it.dir("iosDeps.framework") }
+
+        val targetNameCapitalized = iosTarget.name.replaceFirstChar(Char::uppercase)
+        tasks.matching { it.name.startsWith("cinteropIosDeps") && it.name.endsWith(targetNameCapitalized) }
+            .configureEach {
+                if (buildIosDepsFramework != null) dependsOn(buildIosDepsFramework)
+                inputs.dir(iosDepsFrameworkBundle).withPropertyName("iosDepsFrameworkBundle")
+            }
     }
 
     sourceSets {

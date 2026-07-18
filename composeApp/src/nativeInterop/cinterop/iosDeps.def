@@ -1,0 +1,3 @@
+language = Objective-C
+modules = iosDeps
+package = no.nordicsemi.nrf.matter.iosdeps
