@@ -29,6 +29,13 @@ kotlin {
             isStatic = true
             export(project(":core"))
         }
+        iosTarget.compilations.getByName("main") {
+            cinterops {
+                create("Matter") {
+                    defFile(project.file("src/nativeInterop/cinterop/Matter.def"))
+                }
+            }
+        }
     }
 
     sourceSets {

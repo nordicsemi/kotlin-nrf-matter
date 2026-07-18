@@ -6,7 +6,6 @@
 //
 
 import ComposeApp
-import Matter
 import MatterSupport
 import nrfMatter
 import SharedCode
@@ -69,16 +68,16 @@ class LocalMatterCommissioner : MatterCommissioner {
             ))
         }
         
-        let descriptorCluster = try LocalMatterClusterDiscovery(nodeId: deviceId.nsNumber())
-        
+        let discovery = IosClusterDiscovery()
+
         do {
-            let device = try await descriptorCluster.discoverClusters()
+            let device = try await discovery.discoverClusters(deviceId: deviceId)
             return OperationResultSuccess(data: device)
         } catch {
             let error = error as NSError
             return OperationResultError(t: CommissioningException(
                 deviceId: deviceId,
-                stage: descriptorCluster.stage,
+                stage: discovery.stage,
                 errorCode: KotlinInt(int: Int32(error.code)),
                 displayMessage: error.localizedDescription,
                 fabricId: 1

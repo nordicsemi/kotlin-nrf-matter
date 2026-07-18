@@ -8,6 +8,12 @@ import no.nordicsemi.nrf.matter.binding.DataStoreProvider
 import no.nordicsemi.nrf.matter.commission.CommissioningViewModelIos
 import no.nordicsemi.nrf.matter.controller.BindingController
 import no.nordicsemi.nrf.matter.controller.BindingLogsProvider
+import no.nordicsemi.nrf.matter.controller.IosBindingController
+import no.nordicsemi.nrf.matter.controller.IosMatterClusterExtensionController
+import no.nordicsemi.nrf.matter.controller.IosMatterDecommissioner
+import no.nordicsemi.nrf.matter.controller.IosMatterDoorLockController
+import no.nordicsemi.nrf.matter.controller.IosMatterLightController
+import no.nordicsemi.nrf.matter.controller.IosMatterManufacturerSpecificController
 import no.nordicsemi.nrf.matter.controller.MatterClusterExtensionController
 import no.nordicsemi.nrf.matter.controller.MatterDecommissioner
 import no.nordicsemi.nrf.matter.controller.MatterDoorLockController
@@ -94,13 +100,11 @@ val iosModule = module {
     factory { LockCommandHandler(get()) }
     factory { ManufacturerSpecCommandHandler(get(), get(), get()) }
 
-    single<MatterDecommissioner> { get<SwiftCodeProvider>().getDecommissioner() }
-    single<BindingController> { get<SwiftCodeProvider>().getMatterBinder() }
+    single<MatterDecommissioner> { IosMatterDecommissioner() }
+    single<BindingController> { IosBindingController() }
     single<BindingLogsProvider> { BindingLogsProviderImpl() }
-    single<MatterLightController> { get<SwiftCodeProvider>().getMatterOnOffController() }
-    single<MatterDoorLockController> { get<SwiftCodeProvider>().getMatterDoorController() }
-    single<MatterClusterExtensionController> { get<SwiftCodeProvider>().getMatterClusterExtensionController() }
-    single<MatterManufacturerSpecificController> {
-        get<SwiftCodeProvider>().getMatterManufacturerCustomDataController()
-    }
+    single<MatterLightController> { IosMatterLightController() }
+    single<MatterDoorLockController> { IosMatterDoorLockController() }
+    single<MatterClusterExtensionController> { IosMatterClusterExtensionController() }
+    single<MatterManufacturerSpecificController> { IosMatterManufacturerSpecificController() }
 }

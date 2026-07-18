@@ -1,0 +1,4 @@
+language = Objective-C
+package = platform.Matter
+modules = Matter
+compilerOpts = -mios-version-min=26.0 -mios-simulator-version-min=26.0
