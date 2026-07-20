@@ -90,9 +90,9 @@ class LocalMatterCustomClusterController: MatterManufacturerSpecificController {
         SharedLogger.debug("Observe button changes")
         let flowWrapper = IosFlowWrapper<KotlinBoolean>()
         
-        let attributeSubscriber = try? AttributeSubscriber.shared(deviceId: deviceId.nsNumber())
+        let attributeSubscriber = try? AttributeSubscriber(deviceId: deviceId.nsNumber())
         let endpointId = NSNumber(value: endpoint)
-
+        
         attributeSubscriber?.subscribe(endpoint: endpointId, cluster: ManufacturerSpecificCluster.id, attribute: ManufacturerSpecificCluster.Attribute.button, onUpdate: { (result: Bool) in
             SharedLogger.debug("Received new button state: \(result)")
             return flowWrapper.emit(value: KotlinBoolean(bool: result))

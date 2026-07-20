@@ -34,7 +34,7 @@ public class LocalControllerProvider {
     private let logTag: String
     private let factory = MTRDeviceControllerFactory.sharedInstance()
     
-    nonisolated(unsafe) private static var controller: MTRDeviceController? = nil
+    private static var controller: MTRDeviceController? = nil
     
     /// Creates a provider for accessing the shared local device controller.
     ///

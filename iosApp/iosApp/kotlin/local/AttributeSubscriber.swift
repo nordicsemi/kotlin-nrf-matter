@@ -16,103 +16,60 @@ struct AttributeUpdate<T : Sendable> : Sendable {
     let error: Error?
 }
 
-/// Observes attribute reports for a single Matter node via a shared, cached `MTRDevice`.
-///
-/// `MTRDevice` maintains one persistent, self-resubscribing report stream per node, unlike the
-/// lower-level `MTRBaseDevice`/`MTRBaseCluster*` APIs where every attribute opens its own
-/// independent subscription. Every observer of the same node must share one `AttributeSubscriber`
-/// instance (use `shared(deviceId:)`.
-///
-/// Using multiple delegates on the same device causes visible lags in received subscriptions.
-class AttributeSubscriber: NSObject, MTRDeviceDelegate {
+/// Subscribes to attribute value changes on a Matter device over the local (on-device) controller.
+class AttributeSubscriber {
 
-    /// Guarded by `cacheLock`; the concurrency checker can't see that, so this is manually
-    /// asserted safe rather than isolated to an actor.
-    nonisolated(unsafe) private static var instances: [NSNumber: AttributeSubscriber] = [:]
-    private static let cacheLock = NSLock()
+    private let baseDevice: MTRBaseDevice
 
-    /// Returns the shared observer for the given node, creating it if necessary.
+    /// Creates a subscriber for the device with the given node ID.
     ///
     /// - Parameter deviceId: The Matter node ID of the target device.
     /// - Throws: An error if the local controller cannot be obtained.
-    static func shared(deviceId: NSNumber) throws -> AttributeSubscriber {
-        cacheLock.lock()
-        defer { cacheLock.unlock() }
-
-        if let existing = instances[deviceId] {
-            return existing
-        }
-
-        let created = try AttributeSubscriber(deviceId: deviceId)
-        instances[deviceId] = created
-        return created
-    }
-
-    private struct Registration {
-        let endpoint: NSNumber
-        let cluster: NSNumber
-        let attribute: NSNumber
-        let handle: (Any) -> Void
-    }
-
-    private let device: MTRDevice
-    private let registrationsLock = NSLock()
-    private var registrations: [Registration] = []
-
-    private init(deviceId: NSNumber) throws {
+    init(deviceId: NSNumber) throws {
         let controller = try LocalControllerProvider(logTag: "AttributeSubscriber").getController()
-        device = MTRDevice(nodeID: deviceId, controller: controller)
-        super.init()
-        device.add(self, queue: DispatchQueue.global())
+        baseDevice = MTRBaseDevice(nodeID: deviceId, controller: controller)
     }
 
-    /// Registers interest in a single attribute and parses each report into `T`.
+    /// Subscribes to changes of a single attribute and parses each report into `T`.
     ///
-    /// Reports that fail to parse are silently ignored; `onUpdate` is only called for values
-    /// that parse successfully. Reports arrive as soon as `MTRDevice` receives them, including
-    /// the initial priming report right after the subscription is established.
+    /// Reports that fail to parse, or that carry an error, are silently ignored; `onUpdate` is
+    /// only called for values that parse successfully.
     ///
     /// - Parameters:
     ///   - endpoint: The endpoint ID hosting the attribute.
     ///   - cluster: The cluster ID the attribute belongs to.
-    ///   - attribute: The attribute ID to observe.
+    ///   - attribute: The attribute ID to subscribe to.
     ///   - onUpdate: Called on a background queue with each successfully parsed value.
     func subscribe<T: AttributeParser>(endpoint: NSNumber, cluster: NSNumber, attribute: NSNumber, onUpdate: @escaping (T) -> Void) {
-        let registration = Registration(endpoint: endpoint, cluster: cluster, attribute: attribute, handle: { raw in
-            if let value = try? T.parse(value: raw) {
-                onUpdate(value)
+        baseDevice.subscribeToAttributes(
+            withEndpointID: endpoint,
+            clusterID: cluster,
+            attributeID: attribute,
+            params: MTRSubscribeParams.defaultParams,
+            queue: DispatchQueue.global(),
+            reportHandler: { result, error in
+                
+                if let error = error {
+//                    continuation.yield(AttributeUpdate(value: nil, error: error))
+                    return
+                }
+                
+                if let result = result, let value = try? T.parse(value: result[0].readAny()) {
+                    onUpdate(value)
+//                    continuation.yield(AttributeUpdate(value: value, error: nil))
+                }
             }
-        })
-
-        registrationsLock.lock()
-        registrations.append(registration)
-        registrationsLock.unlock()
+        )
     }
+}
 
-    func device(_ device: MTRDevice, receivedAttributeReport attributeReport: [[String: Any]]) {
-        registrationsLock.lock()
-        let currentRegistrations = registrations
-        registrationsLock.unlock()
-
-        for entry in attributeReport {
-            guard let path = entry[MTRAttributePathKey] as? MTRAttributePath,
-                  let raw = try? entry.readAny() else {
-                continue
-            }
-
-            for registration in currentRegistrations where registration.endpoint == path.endpoint
-                && registration.cluster == path.cluster
-                && registration.attribute == path.attribute {
-                registration.handle(raw)
-            }
-        }
-    }
-
-    func device(_ device: MTRDevice, stateChanged state: MTRDeviceState) {
-        SharedLogger.debug("AttributeSubscriber device state changed: \(state.rawValue)")
-    }
-
-    func device(_ device: MTRDevice, receivedEventReport eventReport: [[String: Any]]) {
-        SharedLogger.debug("AttributeSubscriber received event report: \(eventReport)")
+extension MTRSubscribeParams {
+    
+    /// A subscription configuration with no minimum or maximum reporting interval.
+    ///
+    /// `maxInterval` is only a recommended value that can be changed by a Matter device.
+    static var defaultParams: MTRSubscribeParams {
+        let params = MTRSubscribeParams(minInterval: 0, maxInterval: 0)
+        return params
     }
 }

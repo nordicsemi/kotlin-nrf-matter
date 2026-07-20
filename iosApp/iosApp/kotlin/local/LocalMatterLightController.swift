@@ -10,24 +10,6 @@ import Matter
 import SharedCode
 import OSLog
 
-/// Namespace for identifiers of the dimmable light device type.
-enum DimmableLightDeviceType {
-    
-    enum OnOffCluster {
-        static let id: NSNumber = 0x0006
-        enum Attribute {
-            static let onOff: NSNumber = 0x0000
-        }
-    }
-
-    enum LevelControlCluster {
-        static let id: NSNumber = 0x0008
-        enum Attribute {
-            static let currentLevel: NSNumber = 0x0000
-        }
-    }
-}
-
 /// Controls a light type Matter device in the local fabric.
 class LocalMatterLightController : MatterLightController {
     
@@ -87,14 +69,22 @@ class LocalMatterLightController : MatterLightController {
     /// - Throws: An error if the local controller cannot be obtained.
     func observeLightState(deviceId: DeviceId, endpoint: Int32) async throws -> any Kotlinx_coroutines_coreFlow {
         SharedLogger.debug("subscribeToLedChanges")
+        let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
+        let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)
+
+        let cluster = MTRBaseClusterOnOff(device: baseDevice, endpointID: endpoint as NSNumber, queue: DispatchQueue.global())
+        SharedLogger.info("Cluster: \(String(describing: cluster))")
+        
         let flowWrapper = IosFlowWrapper<KotlinBoolean>()
-        let observer = try AttributeSubscriber.shared(deviceId: deviceId.nsNumber())
-
-        observer.subscribe(endpoint: endpoint as NSNumber, cluster: DimmableLightDeviceType.OnOffCluster.id, attribute: DimmableLightDeviceType.OnOffCluster.Attribute.onOff) { (result: Bool) in
-            SharedLogger.info("Received led state: \(result)")
-            flowWrapper.emit(value: KotlinBoolean(bool: result))
-        }
-
+        cluster?.subscribeAttributeOnOff(with: MTRSubscribeParams.defaultParams, subscriptionEstablished: { }, reportHandler: { result, error in
+            if let result {
+                SharedLogger.info("Received led state: \(result)")
+                flowWrapper.emit(value: KotlinBoolean(bool: result.boolValue))
+            }
+            if let error {
+                SharedLogger.debug("Received led on error: \(error)")
+            }
+        })
         return flowWrapper.flow
     }
     
@@ -110,16 +100,25 @@ class LocalMatterLightController : MatterLightController {
     /// - Throws: An error if the local controller cannot be obtained.
     func observeBrightnessState(deviceId: DeviceId, endpoint: Int32) async throws -> any Kotlinx_coroutines_coreFlow {
         SharedLogger.debug("subscribeToLightLevelChanges")
+        let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
+        let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)
+
+        let cluster = MTRBaseClusterLevelControl(device: baseDevice, endpointID: endpoint as NSNumber, queue: DispatchQueue.global())
+        SharedLogger.info("Cluster: \(String(describing: cluster))")
+        
         let flowWrapper = IosFlowWrapper<KotlinFloat>()
-        let observer = try AttributeSubscriber.shared(deviceId: deviceId.nsNumber())
-
-        observer.subscribe(endpoint: endpoint as NSNumber, cluster: DimmableLightDeviceType.LevelControlCluster.id, attribute: DimmableLightDeviceType.LevelControlCluster.Attribute.currentLevel) { (rawLevel: Int) in
-            SharedLogger.info("Received light level: \(rawLevel)")
-            let percent = max(0, min(1, (Float(rawLevel) - 1) / 253))
-            SharedLogger.info("Calculated percent: \(percent)")
-            flowWrapper.emit(value: KotlinFloat(float: percent))
-        }
-
+        cluster?.subscribeAttributeCurrentLevel(with: MTRSubscribeParams.defaultParams, subscriptionEstablished: { }, reportHandler: { result, error in
+            if let result {
+                SharedLogger.info("Received light level: \(result)")
+                let rawLevel = result.intValue
+                let percent = max(0, min(1, (Float(rawLevel) - 1) / 253))
+                SharedLogger.info("Calculated percent: \(percent)")
+                flowWrapper.emit(value: KotlinFloat(float: percent))
+            }
+            if let error {
+                SharedLogger.debug("Received light level error: \(error)")
+            }
+        })
         return flowWrapper.flow
     }
 }

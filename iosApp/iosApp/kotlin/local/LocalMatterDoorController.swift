@@ -10,14 +10,6 @@ import Matter
 import SharedCode
 import OSLog
 
-/// Namespace for identifiers of the door lock cluster.
-enum DoorLockCluster {
-    static let id: NSNumber = 0x0101
-    enum Attribute {
-        static let lockState: NSNumber = 0x0000
-    }
-}
-
 /// Controls a door-lock type Matter device in the local fabric.
 class LocalMatterDoorController : MatterDoorLockController {
 
@@ -50,14 +42,21 @@ class LocalMatterDoorController : MatterDoorLockController {
     /// - Throws: An error if the local controller cannot be obtained.
     func observeLockState(deviceId: DeviceId, endpoint: Int32) async throws -> any Kotlinx_coroutines_coreFlow {
         SharedLogger.debug(#function)
+        let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
+        let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)
+
+        let cluster = MTRBaseClusterDoorLock(device: baseDevice, endpointID: endpoint as NSNumber, queue: DispatchQueue.global())
+        
         let flowWrapper = IosFlowWrapper<LockDeviceState>()
-        let observer = try AttributeSubscriber.shared(deviceId: deviceId.nsNumber())
-
-        observer.subscribe(endpoint: endpoint as NSNumber, cluster: DoorLockCluster.id, attribute: DoorLockCluster.Attribute.lockState) { (result: Int32) in
-            SharedLogger.debug("Received door lock state: \(result)")
-            flowWrapper.emit(value: LockDeviceState.companion.create(value: result))
-        }
-
+        cluster!.subscribeAttributeLockState(with: MTRSubscribeParams.defaultParams, subscriptionEstablished: { }, reportHandler: { result, error in
+            if let result {
+                SharedLogger.debug("Received door lock state: \(result)")
+                flowWrapper.emit(value: LockDeviceState.companion.create(value: result.int32Value))
+            }
+            if let error {
+                SharedLogger.debug("Received door lock error: \(error)")
+            }
+        })
         return flowWrapper.flow
     }
 }
