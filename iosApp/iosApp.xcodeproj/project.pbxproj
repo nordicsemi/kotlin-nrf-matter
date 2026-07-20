@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		51FB5C02196FFB1AD81F866F /* iosDeps.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A926FFDD6180B8D8AE6F1632 /* iosDeps.framework */; };
 		8CE78698FB1B12D98BB7D978 /* SharedCode.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75B95472F58845E00902BE8 /* SharedCode.framework */; };
 		A725F1C12F4DAACB005BC977 /* nrfMatter.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A725F1BA2F4DAACB005BC977 /* nrfMatter.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A75B954D2F58845E00902BE8 /* SharedCode.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75B95472F58845E00902BE8 /* SharedCode.framework */; };
@@ -173,7 +172,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				A75B954D2F58845E00902BE8 /* SharedCode.framework in Frameworks */,
-				51FB5C02196FFB1AD81F866F /* iosDeps.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
