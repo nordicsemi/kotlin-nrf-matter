@@ -22,8 +22,7 @@ class LocalMatterDoorController : MatterDoorLockController {
     /// - Throws: An error if the local controller cannot be obtained or the command fails.
     func lockUnlockDoor(deviceId: DeviceId, isLocked: Bool, endpoint: Int32) async throws {
         SharedLogger.debug(#function)
-        let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
-        let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)
+        let baseDevice = try BaseDeviceProvider.shared(deviceId: deviceId.nsNumber())
 
         let cluster = MTRBaseClusterDoorLock(device: baseDevice, endpointID: endpoint as NSNumber, queue: DispatchQueue.global())
         if (isLocked) {
@@ -42,8 +41,7 @@ class LocalMatterDoorController : MatterDoorLockController {
     /// - Throws: An error if the local controller cannot be obtained.
     func observeLockState(deviceId: DeviceId, endpoint: Int32) async throws -> any Kotlinx_coroutines_coreFlow {
         SharedLogger.debug(#function)
-        let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
-        let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)
+        let baseDevice = try BaseDeviceProvider.shared(deviceId: deviceId.nsNumber())
 
         let cluster = MTRBaseClusterDoorLock(device: baseDevice, endpointID: endpoint as NSNumber, queue: DispatchQueue.global())
         

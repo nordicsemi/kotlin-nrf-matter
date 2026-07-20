@@ -18,8 +18,7 @@ class AttributeReader {
     /// - Parameter deviceId: The Matter node ID of the target device.
     /// - Throws: An error if the local controller cannot be obtained.
     init(deviceId: NSNumber) throws {
-        let controller = try LocalControllerProvider(logTag: "LocalMatterCustomClusterController").getController()
-        baseDevice = MTRBaseDevice(nodeID: deviceId, controller: controller)
+        baseDevice = try BaseDeviceProvider.shared(deviceId: deviceId)
     }
 
     /// Reads a single attribute from the device and parses it into the requested type.
@@ -44,7 +43,7 @@ class AttributeReader {
             clusterID: cluster,
             attributeID: attribute,
             params: nil,
-            queue: DispatchQueue.global()
+            queue: DispatchQueue.main
         )
         
         guard let result else {

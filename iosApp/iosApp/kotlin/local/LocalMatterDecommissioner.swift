@@ -21,7 +21,7 @@ class LocalMatterDecommissioner : MatterDecommissioner {
         let controller = try! LocalControllerProvider(logTag: "LocalControllerProvider").getController()
         
         SharedLogger.debug("Erasing data on a remote device.")
-        let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)
+        let baseDevice = try BaseDeviceProvider.shared(deviceId: deviceId.nsNumber())
         let operationalCredentials = MTRBaseClusterOperationalCredentials(device: baseDevice, endpointID: 0, queue: .main)
         
         let fabrics = try await operationalCredentials!.readAttributeFabrics(with: nil)

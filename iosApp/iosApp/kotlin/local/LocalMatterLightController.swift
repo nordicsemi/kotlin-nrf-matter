@@ -22,8 +22,7 @@ class LocalMatterLightController : MatterLightController {
     /// - Throws: An error if the local controller cannot be obtained or the command fails.
     func setDeviceOnOff(deviceId: DeviceId, isOn: Bool, endpoint: Int32) async throws {
         SharedLogger.debug("Set device on/off = \(isOn)")
-        let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
-        let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)
+        let baseDevice = try BaseDeviceProvider.shared(deviceId: deviceId.nsNumber())
 
         let cluster = MTRBaseClusterOnOff(device: baseDevice, endpointID: endpoint as NSNumber, queue: DispatchQueue.global())
         SharedLogger.debug("Cluster created: \(String(describing: cluster))")
@@ -44,8 +43,7 @@ class LocalMatterLightController : MatterLightController {
     func setBrightnessLevel(deviceId: DeviceId, brightnessLevel: Int32, endpoint: Int32) async throws {
         SharedLogger.debug("Set brightess level: \(brightnessLevel)")
 
-        let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
-        let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)
+        let baseDevice = try BaseDeviceProvider.shared(deviceId: deviceId.nsNumber())
 
         let cluster = MTRBaseClusterLevelControl(
             device: baseDevice,
@@ -69,8 +67,7 @@ class LocalMatterLightController : MatterLightController {
     /// - Throws: An error if the local controller cannot be obtained.
     func observeLightState(deviceId: DeviceId, endpoint: Int32) async throws -> any Kotlinx_coroutines_coreFlow {
         SharedLogger.debug("subscribeToLedChanges")
-        let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
-        let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)
+        let baseDevice = try BaseDeviceProvider.shared(deviceId: deviceId.nsNumber())
 
         let cluster = MTRBaseClusterOnOff(device: baseDevice, endpointID: endpoint as NSNumber, queue: DispatchQueue.global())
         SharedLogger.info("Cluster: \(String(describing: cluster))")
@@ -100,8 +97,7 @@ class LocalMatterLightController : MatterLightController {
     /// - Throws: An error if the local controller cannot be obtained.
     func observeBrightnessState(deviceId: DeviceId, endpoint: Int32) async throws -> any Kotlinx_coroutines_coreFlow {
         SharedLogger.debug("subscribeToLightLevelChanges")
-        let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
-        let baseDevice = MTRBaseDevice(nodeID: deviceId.nsNumber(), controller: controller)
+        let baseDevice = try BaseDeviceProvider.shared(deviceId: deviceId.nsNumber())
 
         let cluster = MTRBaseClusterLevelControl(device: baseDevice, endpointID: endpoint as NSNumber, queue: DispatchQueue.global())
         SharedLogger.info("Cluster: \(String(describing: cluster))")

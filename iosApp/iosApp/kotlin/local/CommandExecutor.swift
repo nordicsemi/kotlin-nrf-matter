@@ -18,8 +18,7 @@ class CommandExecutor {
     /// - Parameter deviceId: The Matter node ID of the target device.
     /// - Throws: An error if the local controller cannot be obtained.
     init(deviceId: NSNumber) throws {
-        let controller = try LocalControllerProvider(logTag: "AttributeWriter").getController()
-        baseDevice = MTRBaseDevice(nodeID: deviceId, controller: controller)
+        baseDevice = try BaseDeviceProvider.shared(deviceId: deviceId)
     }
 
     /// Invokes a cluster command with a single structured field value.

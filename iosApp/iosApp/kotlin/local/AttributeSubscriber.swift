@@ -26,8 +26,7 @@ class AttributeSubscriber {
     /// - Parameter deviceId: The Matter node ID of the target device.
     /// - Throws: An error if the local controller cannot be obtained.
     init(deviceId: NSNumber) throws {
-        let controller = try LocalControllerProvider(logTag: "AttributeSubscriber").getController()
-        baseDevice = MTRBaseDevice(nodeID: deviceId, controller: controller)
+        baseDevice = try BaseDeviceProvider.shared(deviceId: deviceId)
     }
 
     /// Subscribes to changes of a single attribute and parses each report into `T`.
@@ -46,7 +45,7 @@ class AttributeSubscriber {
             clusterID: cluster,
             attributeID: attribute,
             params: MTRSubscribeParams.defaultParams,
-            queue: DispatchQueue.global(),
+            queue: DispatchQueue.main,
             reportHandler: { result, error in
                 
                 if let error = error {
@@ -70,6 +69,7 @@ extension MTRSubscribeParams {
     /// `maxInterval` is only a recommended value that can be changed by a Matter device.
     static var defaultParams: MTRSubscribeParams {
         let params = MTRSubscribeParams(minInterval: 0, maxInterval: 0)
+        params.shouldReportEventsUrgently = true
         return params
     }
 }

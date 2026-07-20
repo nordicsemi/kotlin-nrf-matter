@@ -66,7 +66,7 @@ class LocalMatterBinder : BindingController {
     ///   - clusterID: The cluster ID the access grant applies to.
     ///   - controller: The Matter controller used to reach the target device.
     private func grantAccessToSource(targetDeviceID: NSNumber, sourceNodeID: NSNumber, clusterID: NSNumber, controller: MTRDeviceController) async throws {
-        let targetDevice = MTRBaseDevice(nodeID: targetDeviceID, controller: controller)
+        let targetDevice = try BaseDeviceProvider.shared(deviceId: targetDeviceID)
         guard let aclCluster = MTRBaseClusterAccessControl(device: targetDevice, endpointID: 0, queue: .main) else { return }
         
         let target = MTRAccessControlClusterAccessControlTargetStruct()
@@ -115,7 +115,7 @@ class LocalMatterBinder : BindingController {
     ///   - clusterID: The cluster ID used for the binding.
     ///   - controller: The Matter controller used to reach the source device.
     private func bindSwitchToBulb(sourceDeviceID: NSNumber, sourceEndpoint: NSNumber, targetNodeID: NSNumber, targetEndpoint: NSNumber, clusterID: NSNumber, controller: MTRDeviceController) async throws {
-        let sourceDevice = MTRBaseDevice(nodeID: sourceDeviceID, controller: controller)
+        let sourceDevice = try BaseDeviceProvider.shared(deviceId: sourceDeviceID)
         guard let bindingCluster = MTRBaseClusterBinding(device: sourceDevice, endpointID: sourceEndpoint, queue: .main) else { return }
         
         SharedLogger.debug("Preparing a new binding record.")
