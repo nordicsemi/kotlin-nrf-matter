@@ -6,9 +6,21 @@ plugins {
     alias(libs.plugins.nordic.android.kmp.library)
     alias(libs.plugins.nordic.kotlin)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.nordic.publish.kmp)
 }
 
 group = "no.nordicsemi.nrf.matter.shared"
+
+nordicPublishing {
+    POM_ARTIFACT_ID = "matter"
+    POM_NAME = "Nordic library for Matter connectivitgy."
+
+    POM_DESCRIPTION = "Nordic Matter library"
+    POM_URL = "https://github.com/nordicsemi/kotlin-nrf-matter"
+    POM_SCM_URL = "https://github.com/nordicsemi/kotlin-nrf-matter"
+    POM_SCM_CONNECTION = "scm:git@github.com:nordicsemi/kotlin-nrf-matter.git"
+    POM_SCM_DEV_CONNECTION = "scm:git@github.com:nordicsemi/kotlin-nrf-matter.git"
+}
 
 // iosDeps is a pure-Swift package (iosApp/iosDeps, a SwiftPM package — not an Xcode target) that
 // implements the native Matter operations against Apple's Matter framework. It's built via
