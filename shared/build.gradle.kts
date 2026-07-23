@@ -26,6 +26,11 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "shared"
             isStatic = true
+            // Re-export composeApp's own API so symbols like MainViewControllerKt are visible
+            // from Swift via `import shared`. Do NOT use transitiveExport: it would also export
+            // transitive deps such as cmptoast, whose own MainViewController.kt collides with
+            // composeApp's and forces MainViewController() into a "MainViewControllerKt_" class.
+            export("no.nordicsemi:composeApp:0.1.2")
         }
     }
 
