@@ -14,13 +14,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		3C5647DAC28A5C463E129E2B /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1D3437AFA1B1BD836742FA45 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = DC19EA1FE3EC52FFE7C55ED0;
-			remoteInfo = iosDeps;
-		};
 		495A5194F7E75AE6F8F7AF11 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 1D3437AFA1B1BD836742FA45 /* Project object */;
@@ -34,13 +27,6 @@
 			proxyType = 1;
 			remoteGlobalIDString = A725F1B92F4DAACB005BC977;
 			remoteInfo = nrfMatter;
-		};
-		A75B954B2F58845E00902BE8 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1D3437AFA1B1BD836742FA45 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = A75B95462F58845E00902BE8;
-			remoteInfo = SharedCode;
 		};
 		A7B81C542FF7EAA0000AF7E4 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -258,8 +244,6 @@
 			);
 			dependencies = (
 				A725F1C02F4DAACB005BC977 /* PBXTargetDependency */,
-				A75B954C2F58845E00902BE8 /* PBXTargetDependency */,
-				A69A6C4DF21D05673EDC7AF2 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				208BF3748A4E27EC7D0D131C /* iosApp */,
@@ -572,21 +556,10 @@
 			target = A75B95462F58845E00902BE8 /* SharedCode */;
 			targetProxy = 495A5194F7E75AE6F8F7AF11 /* PBXContainerItemProxy */;
 		};
-		A69A6C4DF21D05673EDC7AF2 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = iosDeps;
-			target = DC19EA1FE3EC52FFE7C55ED0 /* iosDeps */;
-			targetProxy = 3C5647DAC28A5C463E129E2B /* PBXContainerItemProxy */;
-		};
 		A725F1C02F4DAACB005BC977 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = A725F1B92F4DAACB005BC977 /* nrfMatter */;
 			targetProxy = A725F1BF2F4DAACB005BC977 /* PBXContainerItemProxy */;
-		};
-		A75B954C2F58845E00902BE8 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A75B95462F58845E00902BE8 /* SharedCode */;
-			targetProxy = A75B954B2F58845E00902BE8 /* PBXContainerItemProxy */;
 		};
 		A7B81C552FF7EAA0000AF7E4 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
