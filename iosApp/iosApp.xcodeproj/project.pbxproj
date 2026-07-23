@@ -10,7 +10,6 @@
 		8CE78698FB1B12D98BB7D978 /* SharedCode.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75B95472F58845E00902BE8 /* SharedCode.framework */; };
 		A725F1C12F4DAACB005BC977 /* nrfMatter.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A725F1BA2F4DAACB005BC977 /* nrfMatter.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		A75B954D2F58845E00902BE8 /* SharedCode.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75B95472F58845E00902BE8 /* SharedCode.framework */; };
-		A75B95522F58846C00902BE8 /* SharedCode.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A75B95472F58845E00902BE8 /* SharedCode.framework */; };
 		A7DEDDC12FA8A80D00196D69 /* Pulse in Frameworks */ = {isa = PBXBuildFile; productRef = A7DEDDC02FA8A80D00196D69 /* Pulse */; };
 /* End PBXBuildFile section */
 
@@ -37,13 +36,6 @@
 			remoteInfo = nrfMatter;
 		};
 		A75B954B2F58845E00902BE8 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 1D3437AFA1B1BD836742FA45 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = A75B95462F58845E00902BE8;
-			remoteInfo = SharedCode;
-		};
-		A75B95542F58846C00902BE8 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 1D3437AFA1B1BD836742FA45 /* Project object */;
 			proxyType = 1;
@@ -109,15 +101,11 @@
 		};
 		924494A307E640B6954B6B71 /* Configuration */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = Configuration;
 			sourceTree = "<group>";
 		};
 		A7228F212FD844A4009CC829 /* ../composeApp/src */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = ../composeApp/src;
 			sourceTree = SOURCE_ROOT;
 		};
@@ -131,36 +119,26 @@
 		};
 		A75B95482F58845E00902BE8 /* SharedCode */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = SharedCode;
 			sourceTree = "<group>";
 		};
 		A7B81C4F2FF7EAA0000AF7E4 /* iosAppUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = iosAppUITests;
 			sourceTree = "<group>";
 		};
 		A7B81D7B2FF7F45D000AF7E4 /* fastlane */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = fastlane;
 			sourceTree = "<group>";
 		};
 		A7B81D812FF7F490000AF7E4 /* screenshots */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = screenshots;
 			sourceTree = "<group>";
 		};
 		FFD8DE64707E49B3557648E5 /* iosDeps */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = iosDeps;
 			sourceTree = "<group>";
 		};
@@ -187,7 +165,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A75B95522F58846C00902BE8 /* SharedCode.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -304,7 +281,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				A75B95552F58846C00902BE8 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				A725F1BB2F4DAACB005BC977 /* nrfMatter */,
@@ -611,11 +587,6 @@
 			isa = PBXTargetDependency;
 			target = A75B95462F58845E00902BE8 /* SharedCode */;
 			targetProxy = A75B954B2F58845E00902BE8 /* PBXContainerItemProxy */;
-		};
-		A75B95552F58846C00902BE8 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A75B95462F58845E00902BE8 /* SharedCode */;
-			targetProxy = A75B95542F58846C00902BE8 /* PBXContainerItemProxy */;
 		};
 		A7B81C552FF7EAA0000AF7E4 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
