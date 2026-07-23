@@ -19,7 +19,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":androidDeps"))
     implementation(project(":shared"))
 
     // CMPToast: Toasts for Compose Multiplatform
