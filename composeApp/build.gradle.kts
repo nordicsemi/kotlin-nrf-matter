@@ -10,21 +10,31 @@ plugins {
 
 group = "no.nordicsemi.nrf.matter.shared"
 
-// iosDeps is a pure-Swift Xcode framework target (iosApp/iosDeps) implementing the native
-// Matter operations against Apple's Matter framework. It's built via xcodebuild and consumed
-// here through cinterop. Its public API is deliberately primitives-only (String/Bool/Int32/
-// closures) and never references a :core-compiled type: Kotlin/Native cannot link two
-// independently-compiled Kotlin/Native frameworks into one process ("runtime injected twice"),
-// so iosDeps must have zero dependency on Core's compiled runtime. composeApp adapts the
-// resulting cinterop bindings to :core's own interfaces (see IosModule.kt).
-val iosDepsDerivedDataDir = layout.buildDirectory.dir("iosDepsDerivedData")
+// iosDeps is a pure-Swift package (iosApp/iosDeps, a SwiftPM package — not an Xcode target) that
+// implements the native Matter operations against Apple's Matter framework. It's built via
+// `swift build` and consumed here through cinterop. Its public API is deliberately
+// primitives-only (String/Bool/Int32/closures) and never references a :core-compiled type:
+// Kotlin/Native cannot link two independently-compiled Kotlin/Native frameworks into one process
+// ("runtime injected twice"), so iosDeps must have zero dependency on Core's compiled runtime.
+// composeApp adapts the resulting cinterop bindings to :core's own interfaces (see IosModule.kt).
+//
+// iosDeps is deliberately NOT an Xcode target: iosApp/nrfMatter carry no Xcode-level dependency
+// on it and consume it only through this Gradle module, exactly as Kotlin/Native's cinterop
+// mechanism already implies. Building it via `swift build` rather than `xcodebuild -scheme
+// iosDeps` is also what makes that possible in practice — invoking xcodebuild for it from inside
+// iosApp's own "Compile Kotlin Framework" run script would be a *nested* xcodebuild call, which
+// crashes Xcode's shared build daemon (confirmed: "unexpected service error: The Xcode build
+// system has crashed" — deterministic, not a fluke). swift build never touches that daemon, so
+// it's safe to invoke here regardless of whether this Gradle build itself runs standalone or
+// nested inside an Xcode build.
+val iosDepsBuildDir = layout.buildDirectory.dir("iosDepsBuild")
 val iosDepsConfiguration = "Debug"
 
-data class IosDepsSdk(val sdkName: String, val productsDirName: String)
+data class IosDepsSdk(val sdkName: String, val productsDirName: String, val triple: String)
 
 fun iosDepsSdkFor(targetName: String): IosDepsSdk = when (targetName) {
-    "iosArm64" -> IosDepsSdk("iphoneos", "$iosDepsConfiguration-iphoneos")
-    "iosSimulatorArm64" -> IosDepsSdk("iphonesimulator", "$iosDepsConfiguration-iphonesimulator")
+    "iosArm64" -> IosDepsSdk("iphoneos", "$iosDepsConfiguration-iphoneos", "arm64-apple-ios26.0")
+    "iosSimulatorArm64" -> IosDepsSdk("iphonesimulator", "$iosDepsConfiguration-iphonesimulator", "arm64-apple-ios26.0-simulator")
     else -> error("Unsupported iOS target for iosDeps: $targetName")
 }
 
@@ -44,35 +54,22 @@ kotlin {
     ).forEach { iosTarget ->
         val sdk = iosDepsSdkFor(iosTarget.name)
 
-        // When this Gradle build is itself invoked from inside an Xcode build (iosApp's
-        // "Compile Kotlin Framework" run script), iosDeps is built by Xcode as a normal target
-        // dependency of iosApp instead — invoking `xcodebuild -scheme iosDeps` here too would be
-        // a *nested* xcodebuild call, which crashes Xcode's build system. In that case the outer
-        // build passes its own build products dir through; use that directly instead.
-        val externalIosDepsDir = (project.findProperty("iosDepsFrameworkDir") as String?)?.let { file(it) }
-        val iosDepsProductsDir = externalIosDepsDir?.let { project.layout.dir(provider { it }) }
-            ?: iosDepsDerivedDataDir.map { it.dir("Build/Products/${sdk.productsDirName}") }
+        val iosDepsProductsDir = iosDepsBuildDir.map { it.dir("Products/${sdk.productsDirName}") }
+        val iosDepsScratchDir = iosDepsBuildDir.map { it.dir("Scratch/${sdk.productsDirName}") }
 
-        val buildIosDepsFramework = if (externalIosDepsDir == null) {
-            tasks.register<Exec>("buildIosDepsFrameworkFor${iosTarget.name}") {
-                group = "ios interop"
-                description = "Builds iosDeps.framework via xcodebuild for ${iosTarget.name}"
-                commandLine(
-                    "xcodebuild",
-                    "-project", rootDir.resolve("iosApp/iosApp.xcodeproj").absolutePath,
-                    "-scheme", "iosDeps",
-                    "-sdk", sdk.sdkName,
-                    "-arch", "arm64",
-                    "-configuration", iosDepsConfiguration,
-                    "-derivedDataPath", iosDepsDerivedDataDir.get().asFile.absolutePath,
-                    "build"
-                )
-                inputs.dir(rootDir.resolve("iosApp/iosDeps"))
-                inputs.file(rootDir.resolve("iosApp/iosApp.xcodeproj/project.pbxproj"))
-                outputs.dir(iosDepsProductsDir)
-            }
-        } else {
-            null
+        val buildIosDepsFramework = tasks.register<Exec>("buildIosDepsFrameworkFor${iosTarget.name}") {
+            group = "ios interop"
+            description = "Builds iosDeps.framework via swift build for ${iosTarget.name}"
+            commandLine(
+                rootDir.resolve("iosApp/iosDeps/build-framework.sh").absolutePath,
+                sdk.sdkName,
+                sdk.triple,
+                iosDepsScratchDir.get().asFile.absolutePath,
+                iosDepsProductsDir.get().asFile.absolutePath,
+            )
+            inputs.dir(rootDir.resolve("iosApp/iosDeps"))
+            inputs.dir(rootDir.resolve("iosApp/SharedCode"))
+            outputs.dir(iosDepsProductsDir)
         }
 
         iosTarget.binaries.framework {
@@ -121,17 +118,12 @@ kotlin {
             }
         }
 
-        // Track only the iosDeps.framework bundle itself as a task input, not the whole
-        // products directory: when nested inside an Xcode build, that directory is
-        // $BUILT_PRODUCTS_DIR, shared with iosApp's own app bundle (which composeApp's
-        // syncComposeResourcesForIos task also writes into) — declaring the whole shared
-        // directory as an input trips Gradle's implicit-dependency validation.
         val iosDepsFrameworkBundle = iosDepsProductsDir.map { it.dir("iosDeps.framework") }
 
         val targetNameCapitalized = iosTarget.name.replaceFirstChar(Char::uppercase)
         tasks.matching { it.name.startsWith("cinteropIosDeps") && it.name.endsWith(targetNameCapitalized) }
             .configureEach {
-                if (buildIosDepsFramework != null) dependsOn(buildIosDepsFramework)
+                dependsOn(buildIosDepsFramework)
                 inputs.dir(iosDepsFrameworkBundle).withPropertyName("iosDepsFrameworkBundle")
             }
     }

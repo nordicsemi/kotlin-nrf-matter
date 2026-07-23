@@ -37,7 +37,7 @@ public struct LogItem {
 public class SharedLogger {
 
     /// Publishes every logged entry as it is recorded, for live observation.
-    public static let logPublisher = PassthroughSubject<LogItem, Never>()
+    nonisolated(unsafe) public static let logPublisher = PassthroughSubject<LogItem, Never>()
     
     private static let logger = Logger(subsystem: "nrf.matter", category: "SharedLogger")
     

@@ -6,7 +6,6 @@
 //
 
 import Matter
-import SharedCode
 
 /// `MTRDeviceControllerDelegate` implementation that drives commissioning of a specific node and
 /// resumes an async continuation once commissioning finishes.

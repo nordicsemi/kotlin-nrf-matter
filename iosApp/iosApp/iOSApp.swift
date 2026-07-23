@@ -1,4 +1,3 @@
-import SharedCode
 import SwiftUI
 
 /// The app's entry point, hosting the shared Compose Multiplatform UI.

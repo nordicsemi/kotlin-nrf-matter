@@ -8,7 +8,6 @@
 import MatterSupport
 import Matter
 import OSLog
-import SharedCode
 
 /// `RequestHandlerProtocol` implementation that commissions a device into a Matter fabric that
 /// already exists locally on the phone.

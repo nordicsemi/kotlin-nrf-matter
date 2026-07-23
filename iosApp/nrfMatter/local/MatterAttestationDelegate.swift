@@ -7,7 +7,6 @@
 
 import Foundation
 import Matter
-import SharedCode
 
 /// `MTRDeviceAttestationDelegate` implementation that ignores the attestation outcome and always
 /// allows commissioning to continue.

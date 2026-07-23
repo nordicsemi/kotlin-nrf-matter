@@ -7,7 +7,6 @@
 
 import MatterSupport
 import Matter
-import SharedCode
 
 /// Entry point class for the Matter "Add Device" app extension.
 ///
