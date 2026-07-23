@@ -17,7 +17,6 @@ kotlin {
         }
     }
 
-    jvm()
     listOf(
         iosArm64(),
         iosSimulatorArm64()
