@@ -191,7 +191,6 @@
 		};
 /* End PBXGroup section */
 
-
 /* Begin PBXNativeTarget section */
 		7A7259E03000A3A7C58EDE9B /* iosApp */ = {
 			isa = PBXNativeTarget;
@@ -535,16 +534,14 @@
 				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
 				DEVELOPMENT_TEAM = P3R8YQEV4L;
 				ENABLE_PREVIEWS = YES;
-				FRAMEWORK_SEARCH_PATHS = (
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]" = (
 					"$(inherited)",
+					"$(SRCROOT)/../composeApp/build/iosDepsBuild/Products/Debug-iphoneos",
 				);
 				"FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]" = (
 					"$(inherited)",
 					"$(SRCROOT)/../composeApp/build/iosDepsBuild/Products/Debug-iphonesimulator",
-				);
-				"FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]" = (
-					"$(inherited)",
-					"$(SRCROOT)/../composeApp/build/iosDepsBuild/Products/Debug-iphoneos",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = iosApp/Info.plist;
@@ -586,16 +583,14 @@
 				DEVELOPMENT_TEAM = P3R8YQEV4L;
 				"DEVELOPMENT_TEAM[sdk=iphoneos*]" = P3R8YQEV4L;
 				ENABLE_PREVIEWS = YES;
-				FRAMEWORK_SEARCH_PATHS = (
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]" = (
 					"$(inherited)",
+					"$(SRCROOT)/../composeApp/build/iosDepsBuild/Products/Debug-iphoneos",
 				);
 				"FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]" = (
 					"$(inherited)",
 					"$(SRCROOT)/../composeApp/build/iosDepsBuild/Products/Debug-iphonesimulator",
-				);
-				"FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]" = (
-					"$(inherited)",
-					"$(SRCROOT)/../composeApp/build/iosDepsBuild/Products/Debug-iphoneos",
 				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = iosApp/Info.plist;
