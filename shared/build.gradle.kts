@@ -36,6 +36,7 @@ kotlin {
 //            api(project(":composeApp"))
 
             implementation(libs.jetbrains.compose.runtime)
+            implementation(libs.jetbrains.compose.resources)
             api("no.nordicsemi:composeApp:0.1.2")
         }
         commonTest.dependencies {
