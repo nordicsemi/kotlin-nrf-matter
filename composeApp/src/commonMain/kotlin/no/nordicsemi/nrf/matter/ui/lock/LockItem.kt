@@ -41,14 +41,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.skydoves.cloudy.cloudy
+import no.nordicsemi.composeapp.generated.resources.Res
+import no.nordicsemi.composeapp.generated.resources.door_lock
+import no.nordicsemi.composeapp.generated.resources.door_lock_open_right
 import no.nordicsemi.nrf.matter.commission.DecommissionDevice
 import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.LockDeviceState
-import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.Res
-import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.door_lock
-import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.door_lock_open_right
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.theme.NordicTheme
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet

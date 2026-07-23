@@ -49,6 +49,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.skydoves.cloudy.cloudy
+import no.nordicsemi.composeapp.generated.resources.Res
+import no.nordicsemi.composeapp.generated.resources.light_bulb
 import no.nordicsemi.nrf.matter.commission.DecommissionDevice
 import no.nordicsemi.nrf.matter.device.UiState
 import no.nordicsemi.nrf.matter.domain.ManufacturerSpecificData
@@ -58,8 +60,6 @@ import no.nordicsemi.nrf.matter.model.DeviceMatterInfo
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.toDeviceId
-import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.Res
-import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.light_bulb
 import no.nordicsemi.nrf.matter.theme.NordicRed
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.theme.NordicTheme

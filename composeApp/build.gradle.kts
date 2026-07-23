@@ -9,7 +9,7 @@ plugins {
     alias(libs.plugins.nordic.publish.kmp)
 }
 
-group = "no.nordicsemi.nrf.matter.shared"
+group = "no.nordicsemi"
 
 nordicPublishing {
     POM_ARTIFACT_ID = "matter"
@@ -52,7 +52,7 @@ fun iosDepsSdkFor(targetName: String): IosDepsSdk = when (targetName) {
 
 kotlin {
     android {
-        namespace = "no.nordicsemi.nrf.matter.shared"
+        namespace = "no.nordicsemi.nrf.matter.lib"
 
         androidResources {
             enable = true

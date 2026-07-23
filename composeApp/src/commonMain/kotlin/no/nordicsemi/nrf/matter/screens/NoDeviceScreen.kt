@@ -42,8 +42,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.Res
-import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.no_matter_devices
+import no.nordicsemi.composeapp.generated.resources.Res
+import no.nordicsemi.composeapp.generated.resources.no_matter_devices
 import no.nordicsemi.nrf.matter.theme.NordicTheme
 import org.jetbrains.compose.resources.painterResource
 
