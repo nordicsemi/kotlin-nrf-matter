@@ -63,3 +63,23 @@ framework module iosDeps {
     module * { export * }
 }
 EOF
+
+# Emit artifacts for the Kotlin/Native cinterop so iosDeps's compiled Swift object code travels
+# INSIDE the published .m2 klib and consumers need no local iosDeps.framework at link time:
+#   * libiosDeps.a       — the static archive, bundled into the klib via cinterop's -staticLibrary.
+#   * iosDepsInterop/     — a *non-framework* clang module (no `link` directive), so `@import
+#                           iosDeps` during cinterop resolves the headers WITHOUT emitting a
+#                           `-framework iosDeps` autolink into consumers (which have no such
+#                           framework). System deps (Foundation/Matter/...) still autolink normally.
+cp "$ARCHIVE_PATH" "$OUTPUT_DIR/libiosDeps.a"
+
+INTEROP_DIR="$OUTPUT_DIR/iosDepsInterop"
+rm -rf "$INTEROP_DIR"
+mkdir -p "$INTEROP_DIR"
+cp "$OBJC_HEADER_PATH" "$INTEROP_DIR/iosDeps-Swift.h"
+cat > "$INTEROP_DIR/module.modulemap" <<EOF
+module iosDeps {
+    header "iosDeps-Swift.h"
+    export *
+}
+EOF

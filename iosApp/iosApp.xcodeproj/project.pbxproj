@@ -401,7 +401,7 @@
 			shellPath = /bin/sh;
 			shellScript = "# Techo \"Removing wrongly embedded static framework...\"\nrm -rf \"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleHomeTypes.framework\"\n";
 		};
-		CDF8714A2AA6774EF55697B2 /* Compile Kotlin Framework */ = {
+		A7F00D000000000000000001 /* Compile Kotlin Framework */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -420,7 +420,7 @@
 			shellPath = /bin/sh;
 			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\n./gradlew :shared:embedAndSignAppleFrameworkForXcode\n";
 		};
-		A7F00D000000000000000001 /* Compile Kotlin Framework */ = {
+		CDF8714A2AA6774EF55697B2 /* Compile Kotlin Framework */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;

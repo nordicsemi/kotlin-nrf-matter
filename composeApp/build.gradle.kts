@@ -108,9 +108,12 @@ kotlin {
             // primitives-only precisely so its object code never needs Core's compiled
             // Kotlin/Native runtime — linking it crashes with "runtime injected twice"
             // since composeApp already has its own (it compiles :core directly).
+            // iosDeps is no longer linked as a framework: its compiled static archive is bundled
+            // directly into the cinterop klib (see the cinterop block below), so it ships inside
+            // the published .m2 artifact and no local iosDeps.framework is needed at link time.
+            // Only the Swift back-deployment shim path + platform version remain (for Kotlin/Native's
+            // raw ld invocation), since the bundled archive contains Swift object code.
             linkerOpts(
-                "-F${iosDepsProductsDir.get().asFile.absolutePath}",
-                "-framework", "iosDeps",
                 "-L$swiftCompatLibPath",
                 *platformVersionArgs.toTypedArray()
             )
@@ -121,9 +124,19 @@ kotlin {
                 create("iosDeps") {
                     definitionFile.set(project.file("src/nativeInterop/cinterop/iosDeps.def"))
                     packageName("no.nordicsemi.nrf.matter.iosdeps")
+                    // Point at the *non-framework* clang module (no `-F`), so `@import iosDeps`
+                    // resolves the headers WITHOUT emitting a `-framework iosDeps` autolink into
+                    // consumers — they have no such framework; symbols come from the bundled archive.
                     compilerOpts(
-                        "-F${iosDepsProductsDir.get().asFile.absolutePath}",
-                        "-fmodules"
+                        "-fmodules",
+                        "-fmodule-map-file=${iosDepsProductsDir.get().asFile.absolutePath}/iosDepsInterop/module.modulemap",
+                        "-I${iosDepsProductsDir.get().asFile.absolutePath}/iosDepsInterop"
+                    )
+                    // Bundle the compiled Swift archive into the produced klib, so iosDeps's object
+                    // code travels inside the published artifact and links straight from .m2.
+                    extraOpts(
+                        "-staticLibrary", "libiosDeps.a",
+                        "-libraryPath", iosDepsProductsDir.get().asFile.absolutePath
                     )
                 }
             }
