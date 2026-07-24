@@ -211,7 +211,6 @@
 			);
 			fileSystemSynchronizedGroups = (
 				208BF3748A4E27EC7D0D131C /* iosApp */,
-				A75B95482F58845E00902BE8 /* SharedCode */,
 			);
 			name = iosApp;
 			packageProductDependencies = (
@@ -225,6 +224,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A725F1C22F4DAACB005BC977 /* Build configuration list for PBXNativeTarget "nrfMatter" */;
 			buildPhases = (
+				A7F00D000000000000000001 /* Compile Kotlin Framework */,
 				A725F1B62F4DAACB005BC977 /* Sources */,
 				A725F1B72F4DAACB005BC977 /* Frameworks */,
 				A725F1B82F4DAACB005BC977 /* Resources */,
@@ -236,7 +236,6 @@
 			);
 			fileSystemSynchronizedGroups = (
 				A725F1BB2F4DAACB005BC977 /* nrfMatter */,
-				A75B95482F58845E00902BE8 /* SharedCode */,
 			);
 			name = nrfMatter;
 			packageProductDependencies = (
@@ -403,6 +402,25 @@
 			shellScript = "# Techo \"Removing wrongly embedded static framework...\"\nrm -rf \"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/GoogleHomeTypes.framework\"\n";
 		};
 		CDF8714A2AA6774EF55697B2 /* Compile Kotlin Framework */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Compile Kotlin Framework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ \"YES\" = \"$OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED\" ]; then\n  echo \"Skipping Gradle build task invocation due to OVERRIDE_KOTLIN_BUILD_IDE_SUPPORTED environment variable set to \\\"YES\\\"\"\n  exit 0\nfi\ncd \"$SRCROOT/..\"\n./gradlew :shared:embedAndSignAppleFrameworkForXcode\n";
+		};
+		A7F00D000000000000000001 /* Compile Kotlin Framework */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
@@ -694,6 +712,15 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = P3R8YQEV4L;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"$(SRCROOT)/../composeApp/build/iosDepsBuild/Products/Debug-iphoneos",
+				);
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]" = (
+					"$(inherited)",
+					"$(SRCROOT)/../composeApp/build/iosDepsBuild/Products/Debug-iphonesimulator",
+				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = nrfMatter/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = nrfMatter;
@@ -727,6 +754,15 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = P3R8YQEV4L;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				FRAMEWORK_SEARCH_PATHS = "$(inherited)";
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphoneos*]" = (
+					"$(inherited)",
+					"$(SRCROOT)/../composeApp/build/iosDepsBuild/Products/Debug-iphoneos",
+				);
+				"FRAMEWORK_SEARCH_PATHS[sdk=iphonesimulator*]" = (
+					"$(inherited)",
+					"$(SRCROOT)/../composeApp/build/iosDepsBuild/Products/Debug-iphonesimulator",
+				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = nrfMatter/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = nrfMatter;

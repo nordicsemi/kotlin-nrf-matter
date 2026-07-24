@@ -7,39 +7,25 @@
 
 import MatterSupport
 import Matter
+import shared
 
 /// Entry point class for the Matter "Add Device" app extension.
 ///
-/// The system extension scans a commissioning QR code and delegates the add-device flow to a
-/// ``RequestHandlerProtocol`` implementation; currently only ``LocalRequestHandler`` is used, which
-/// adds a device to a Matter fabric that already exists on the phone.
-///
-/// The extension communicates with the app using a callback-based approach: consuming the payload
-/// read from the QR code, providing a list of rooms and homes the user may add their device to, and
-/// selecting the WiFi or Thread network the device will operate on.
+/// The system extension scans a commissioning QR code and delegates the add-device flow to the
+/// published library (`import shared`). All native Matter work — obtaining the local
+/// `MTRDeviceController`, driving `setupCommissioningSession`, storage — happens inside the
+/// library's Swift layer via ``MatterExtension``; this target compiles no `SharedCode`/`iosDeps`
+/// source of its own and only passes primitives (the onboarding payload string) across.
 final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
-    
-    private let handler: RequestHandlerProtocol = {
-        let storage = SharedStorage(suitName: SharedConsts.sharedStorage)
-        let value = storage.getString(key: SharedConsts.matterEnvStorageKey)
-        let env = MatterEnv(rawValue: value!)
-        
-        return switch env {
-        case .local:
-            LocalRequestHandler()
-        default:
-            fatalError("Invalid environment")
-        }
-    }()
 
     /// Returns the list of rooms available in the given home for placing a newly added device.
     ///
     /// - Parameter home: The home to fetch rooms for, or `nil` if no home was selected.
-    /// - Returns: The rooms the device can be assigned to, as reported by the active handler.
+    /// - Returns: The rooms the device can be assigned to, as reported by the library.
     override func rooms(in home: MatterAddDeviceRequest.Home?) async -> [MatterAddDeviceRequest.Room] {
-        SharedLogger.info("Received request to fetch rooms in home: \(String(describing: home?.displayName)).")
+        MatterExtension.shared.log(message: "Received request to fetch rooms in home: \(String(describing: home?.displayName)).")
 
-        return await handler.rooms(in: home)
+        return MatterExtension.shared.roomNames().map { MatterAddDeviceRequest.Room(displayName: $0) }
     }
 
     /// Commissions the device described by the onboarding payload into the given home.
@@ -50,9 +36,9 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     ///   - commissioningID: The unique identifier for this commissioning attempt.
     /// - Throws: An error if commissioning fails.
     override func commissionDevice(in home: MatterAddDeviceRequest.Home?, onboardingPayload: String, commissioningID: UUID) async throws {
-        SharedLogger.info("Commissioning device in home '\(String(describing: home?.displayName))' with payload: \(onboardingPayload).")
+        MatterExtension.shared.log(message: "Commissioning device in home '\(String(describing: home?.displayName))' with payload: \(onboardingPayload).")
 
-        try await handler.commissionDevice(in: home, onboardingPayload: onboardingPayload, commissioningID: commissioningID)
+        try await MatterExtension.shared.commissionDevice(payload: onboardingPayload)
     }
 
     /// Finishes configuring a newly added device with its chosen name and room, and records the result in shared storage.
@@ -61,12 +47,9 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     ///   - name: The display name chosen for the device.
     ///   - room: The room the device was placed in, or `nil` if no room was selected.
     override func configureDevice(named name: String, in room: MatterAddDeviceRequest.Room?) async {
-        SharedLogger.info("Configuring device '\(name)' in room: \(String(describing: room?.displayName))")
+        MatterExtension.shared.log(message: "Configuring device '\(name)' in room: \(String(describing: room?.displayName))")
 
-        await handler.configureDevice(named: name, in: room)
-
-        let storage = SharedStorage(suitName: SharedConsts.sharedStorage)
-        storage.storeBool(key: SharedConsts.resultKey, value: true)
+        MatterExtension.shared.finishConfigure()
     }
 
     /// Validates the device credential presented during commissioning.
@@ -74,9 +57,7 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     /// - Parameter deviceCredential: The credential to validate.
     /// - Throws: An error if the credential is invalid.
     override func validateDeviceCredential(_ deviceCredential: MatterAddDeviceExtensionRequestHandler.DeviceCredential) async throws {
-        SharedLogger.info("Validating device credential")
-
-        try await handler.validateDeviceCredential(deviceCredential)
+        MatterExtension.shared.log(message: "Validating device credential")
     }
 
     /// Selects a WiFi network for the device to join, from the networks found during scanning.
@@ -85,9 +66,9 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     /// - Returns: The network association the device should use.
     /// - Throws: An error if no suitable network can be selected.
     override func selectWiFiNetwork(from wifiScanResults: [MatterAddDeviceExtensionRequestHandler.WiFiScanResult]) async throws -> MatterAddDeviceExtensionRequestHandler.WiFiNetworkAssociation {
-        SharedLogger.info("Selecting WiFi network from \(wifiScanResults.count) scan results")
+        MatterExtension.shared.log(message: "Selecting WiFi network from \(wifiScanResults.count) scan results")
 
-        return try await handler.selectWiFiNetwork(from: wifiScanResults)
+        return .defaultSystemNetwork
     }
 
     /// Selects a Thread network for the device to join, from the networks found during scanning.
@@ -96,12 +77,9 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     /// - Returns: The network association the device should use.
     /// - Throws: An error if no suitable network can be selected.
     override func selectThreadNetwork(from threadScanResults: [MatterAddDeviceExtensionRequestHandler.ThreadScanResult]) async throws -> MatterAddDeviceExtensionRequestHandler.ThreadNetworkAssociation {
-        SharedLogger.info("Selecting Thread network from \(threadScanResults.count) scan results")
-        
-        threadScanResults.forEach { item in
-            SharedLogger.debug("Detected thread network: \(item.networkName)")
-        }
+        MatterExtension.shared.log(message: "Selecting Thread network from \(threadScanResults.count) scan results")
 
-        return try await handler.selectThreadNetwork(from: threadScanResults)
+        let scanResult = threadScanResults[0] // .defaultSystemNetwork doesn't work. Selecting first.
+        return MatterAddDeviceExtensionRequestHandler.ThreadNetworkAssociation.network(extendedPANID: scanResult.extendedPANID)
     }
 }

@@ -1,15 +1,16 @@
 //
-//  MatterControllerDelegate.swift
-//  iosApp
+//  ExtensionMatterControllerDelegate.swift
+//  iosDeps
 //
 //  Created by Sylwester Zielinski on 26/02/2026.
 //
 
 import Matter
+import SharedCode
 
 /// `MTRDeviceControllerDelegate` implementation that drives commissioning of a specific node and
 /// resumes an async continuation once commissioning finishes.
-class MatterControllerDelegate : NSObject, MTRDeviceControllerDelegate {
+class ExtensionMatterControllerDelegate: NSObject, MTRDeviceControllerDelegate {
 
     /// The node ID being commissioned.
     let nodeID: NSNumber
@@ -36,7 +37,7 @@ class MatterControllerDelegate : NSObject, MTRDeviceControllerDelegate {
     }
 
     /// Called once the commissioning session handshake completes; starts commissioning the node,
-    /// delegating device attestation to ``MatterAttestationDelegate``.
+    /// delegating device attestation to ``ExtensionMatterAttestationDelegate``.
     ///
     /// - Parameters:
     ///   - controller: The controller that established the commissioning session.
@@ -45,7 +46,7 @@ class MatterControllerDelegate : NSObject, MTRDeviceControllerDelegate {
         SharedLogger.debug("Commissioning session establishement done.")
         do {
             let commissioningParams = MTRCommissioningParameters()
-            commissioningParams.deviceAttestationDelegate = MatterAttestationDelegate()
+            commissioningParams.deviceAttestationDelegate = ExtensionMatterAttestationDelegate()
 
             if #available(iOS 26.2, *) {
                 commissioningParams.forceThreadScan = true

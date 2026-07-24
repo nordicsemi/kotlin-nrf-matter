@@ -1,16 +1,17 @@
 //
-//  MatterAttestationDelegate.swift
-//  iosApp
+//  ExtensionMatterAttestationDelegate.swift
+//  iosDeps
 //
 //  Created by Sylwester Zielinski on 27/02/2026.
 //
 
 import Foundation
 import Matter
+import SharedCode
 
 /// `MTRDeviceAttestationDelegate` implementation that ignores the attestation outcome and always
 /// allows commissioning to continue.
-class MatterAttestationDelegate: NSObject, MTRDeviceAttestationDelegate {
+class ExtensionMatterAttestationDelegate: NSObject, MTRDeviceAttestationDelegate {
 
     // MARK: - MTRDeviceAttestationDelegate
 
