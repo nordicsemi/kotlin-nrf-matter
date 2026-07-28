@@ -6,7 +6,6 @@
 //
 
 import Matter
-import SharedCode
 
 /// Binds Matter device clusters directly to each other for device-to-device
 /// control, bypassing the controller.

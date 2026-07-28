@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import SharedCode
 import Combine
 
 /// Native iOS implementation backing composeApp's `IOSLogger`.

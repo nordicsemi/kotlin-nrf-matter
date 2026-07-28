@@ -6,7 +6,6 @@
 //
 
 import Matter
-import SharedCode
 
 /// Discovery stage, used for error reporting if discovery fails. Ordinals mirror
 /// `no.nordicsemi.nrf.matter.commission.Stage` (`COMMISSIONING` = 0 is reported by

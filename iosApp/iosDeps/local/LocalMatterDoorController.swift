@@ -6,7 +6,6 @@
 //
 
 import Matter
-import SharedCode
 import OSLog
 
 /// Controls a door-lock type Matter device in the local fabric.

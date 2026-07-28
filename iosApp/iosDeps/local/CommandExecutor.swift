@@ -6,7 +6,6 @@
 //
 
 import Matter
-import SharedCode
 
 /// Invokes cluster commands on a Matter device over the local (on-device) controller.
 class CommandExecutor {

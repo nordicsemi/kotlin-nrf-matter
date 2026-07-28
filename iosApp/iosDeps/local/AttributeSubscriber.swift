@@ -6,7 +6,6 @@
 //
 
 import Matter
-import SharedCode
 
 /// A single update delivered by an attribute subscription, carrying either a parsed value or an error.
 struct AttributeUpdate<T : Sendable> : Sendable {

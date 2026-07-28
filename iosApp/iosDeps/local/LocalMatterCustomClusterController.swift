@@ -6,7 +6,6 @@
 //
 
 import Matter
-import SharedCode
 import OSLog
 
 /// Namespace for identifiers of the manufacturer-specific cluster used in this example.

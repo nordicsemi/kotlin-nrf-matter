@@ -6,7 +6,6 @@
 //
 
 import Matter
-import SharedCode
 
 /// Reads attribute values from a Matter device over the local (on-device) controller.
 class AttributeReader {

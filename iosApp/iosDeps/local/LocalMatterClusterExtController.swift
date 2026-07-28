@@ -6,7 +6,6 @@
 //
 
 import Matter
-import SharedCode
 import OSLog
 
 /// Namespace for identifiers used by the custom Basic Information cluster extension.

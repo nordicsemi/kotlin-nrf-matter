@@ -94,11 +94,6 @@
 			path = nrfMatter;
 			sourceTree = "<group>";
 		};
-		A75B95482F58845E00902BE8 /* SharedCode */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = SharedCode;
-			sourceTree = "<group>";
-		};
 		A7B81C4F2FF7EAA0000AF7E4 /* iosAppUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = iosAppUITests;
@@ -167,7 +162,6 @@
 				924494A307E640B6954B6B71 /* Configuration */,
 				208BF3748A4E27EC7D0D131C /* iosApp */,
 				A725F1BB2F4DAACB005BC977 /* nrfMatter */,
-				A75B95482F58845E00902BE8 /* SharedCode */,
 				A7B81C4F2FF7EAA0000AF7E4 /* iosAppUITests */,
 				A75B953C2F5883D900902BE8 /* Frameworks */,
 				5A2551E95002C7375D5F5A16 /* Products */,

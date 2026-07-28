@@ -6,7 +6,6 @@
 //
 
 import Matter
-import SharedCode
 
 /// Coordinates commissioning of a single Matter device using a locally managed controller.
 ///

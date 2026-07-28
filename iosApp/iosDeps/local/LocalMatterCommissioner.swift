@@ -7,7 +7,6 @@
 
 import Matter
 import MatterSupport
-import SharedCode
 
 /// Commissions a new Matter device into the local fabric.
 ///

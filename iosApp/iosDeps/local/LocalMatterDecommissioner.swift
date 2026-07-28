@@ -5,7 +5,6 @@
 //  Created by Sylwester Zielinski on 11/03/2026.
 //
 
-import SharedCode
 import Matter
 
 /// Decommissions a device, removing it from the local fabric.
