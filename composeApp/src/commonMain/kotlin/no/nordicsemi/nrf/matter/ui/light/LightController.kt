@@ -28,6 +28,7 @@ data class LightDeviceState(
     val isOn: Boolean = false,
     val localBrightness: Float = 0.0f,
     val remoteBrightness: Float = 0.0f,
+    val errorMessage: String? = null,
 )
 
 class LightController(
@@ -47,22 +48,46 @@ class LightController(
     private fun observeDeviceRealtimeState() {
         commandHandler.observeLightDeviceState(device.device)
             .onEach { state ->
+                NordicLogger.info("New light device state: $state")
+                when (state) {
+                    is UiState.Success -> lightDeviceState.update {
+                        it.copy(isOn = state.data, errorMessage = null)
                 NordicLogger.info("New light device state: $state", tag = TAG)
                 (state as? UiState.Success)?.let {
                     lightDeviceState.update {
                         it.copy(isOn = state.data)
                     }
+
+                    is UiState.Error -> lightDeviceState.update {
+                        it.copy(errorMessage = state.message)
+                    }
+
+                    else -> Unit
                 }
             }
             .launchIn(scope)
 
         commandHandler.observeBrightnessState(device.device)
             .onEach { state ->
+                NordicLogger.info("New brightness state: $state")
+                when (state) {
+                    is UiState.Success -> lightDeviceState.update {
+                        it.copy(
+                            localBrightness = state.data,
+                            remoteBrightness = state.data,
+                            errorMessage = null
+                        )
                 NordicLogger.info("New brightness state: $state", tag = TAG)
                 (state as? UiState.Success)?.let {
                     lightDeviceState.update {
                         it.copy(localBrightness = state.data, remoteBrightness = state.data)
                     }
+
+                    is UiState.Error -> lightDeviceState.update {
+                        it.copy(errorMessage = state.message)
+                    }
+
+                    else -> Unit
                 }
             }
             .launchIn(scope)
@@ -70,7 +95,7 @@ class LightController(
 
     fun setLet(device: Device, isOn: Boolean) {
         commandHandler.handleLed(device, isOn)
-            .onStart { lightDeviceState.update { it.copy(isOn = isOn) } }
+            .onStart { lightDeviceState.update { it.copy(isOn = isOn, errorMessage = null) } }
             .delaySuccess()
             .catch {
                 NordicLogger.error(
@@ -82,15 +107,16 @@ class LightController(
             .onEach {
                 NordicLogger.info("Led state $it", tag = TAG)
                 ledState.value = it.mapType { isOn }
-                (it.mapType { isOn } as? UiState.Success)?.data?.let { newState ->
-                    lightDeviceState.update {
-                        it.copy(isOn = newState)
+                when (val newState = it.mapType { isOn }) {
+                    is UiState.Success -> lightDeviceState.update {
+                        it.copy(isOn = newState.data)
                     }
-                }
-                (it.mapType { isOn } as? UiState.Error)?.let {
-                    lightDeviceState.update {
-                        it.copy(isOn = !isOn)
+
+                    is UiState.Error -> lightDeviceState.update {
+                        it.copy(isOn = !isOn, errorMessage = newState.message)
                     }
+
+                    else -> Unit
                 }
             }
             .launchIn(scope)
@@ -105,6 +131,7 @@ class LightController(
     fun updateRemoteBrightness(device: Device) {
         val brightnessLevel = lightDeviceState.value.localBrightness
         commandHandler.handleBrightness(device, brightnessLevel)
+            .onStart { lightDeviceState.update { it.copy(errorMessage = null) } }
             .delaySuccess()
             .catch {
                 NordicLogger.error(
@@ -117,15 +144,16 @@ class LightController(
                 NordicLogger.info("Brightness state $it", tag = TAG)
                 brightnessLevelState.value = it.mapType { brightnessLevel }
 
-                (it.mapType { brightnessLevel } as? UiState.Success)?.data?.let { newState ->
-                    lightDeviceState.update {
-                        it.copy(remoteBrightness = newState)
+                when (val newState = it.mapType { brightnessLevel }) {
+                    is UiState.Success -> lightDeviceState.update {
+                        it.copy(remoteBrightness = newState.data)
                     }
-                }
-                (it.mapType { brightnessLevel } as? UiState.Error)?.let { newState ->
-                    lightDeviceState.update {
-                        it.copy(localBrightness = it.remoteBrightness)
+
+                    is UiState.Error -> lightDeviceState.update {
+                        it.copy(localBrightness = it.remoteBrightness, errorMessage = newState.message)
                     }
+
+                    else -> Unit
                 }
             }
             .launchIn(scope)

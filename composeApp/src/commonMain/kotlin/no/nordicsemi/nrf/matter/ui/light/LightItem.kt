@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.outlined.Error
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Info
@@ -50,6 +51,7 @@ import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.Res
 import no.nordicsemi.nrf.matter.shared.composeapp.generated.resources.light_bulb
+import no.nordicsemi.nrf.matter.theme.NordicRed
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
 import no.nordicsemi.nrf.matter.ui.TestDeviceLight
@@ -76,6 +78,7 @@ fun LightItem(
         icon = painterResource(Res.drawable.light_bulb),
         isLightOn = lightDeviceState.isOn,
         brightnessLevel = lightDeviceState.localBrightness,
+        errorMessage = lightDeviceState.errorMessage,
         updateDeviceState = updateDeviceState,
         isEnabled = isEnabled,
         onBrightnessChange = onBrightnessChange,
@@ -94,6 +97,7 @@ internal fun LightItemContainer(
     isLightOn: Boolean,
     brightnessLevel: Float,
     isEnabled: Boolean,
+    errorMessage: String? = null,
     onBrightnessChange: (DeviceId, Float) -> Unit,
     onBrightnessChangeFinished: (DeviceId) -> Unit,
     updateDeviceState: (DeviceId, Boolean) -> Unit,
@@ -170,6 +174,27 @@ internal fun LightItemContainer(
                         .fillMaxWidth()
                         .alpha(0.5f)
                 )
+                AnimatedVisibility(errorMessage != null) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Error,
+                            contentDescription = "Error",
+                            tint = NordicRed,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Text(
+                            text = errorMessage ?: "",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = NordicRed,
+                            maxLines = 2,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
 
             }
             Switch(
@@ -375,11 +400,31 @@ private fun LightItemContainerPreview() {
         subtitle = "Turn light ON or OFF",
         icon = painterResource(Res.drawable.light_bulb),
         isLightOn = true,
-        brightnessLevel = 60f,
+        brightnessLevel = 0.6f,
+        isEnabled = true,
         onBrightnessChange = { _, _ -> },
         onBrightnessChangeFinished = { _-> },
         updateDeviceState = { _, _ -> },
+        onDecommission = {  },
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun LightItemContainerErrorPreview() {
+    LightItemContainer(
+        device = TestDeviceLight,
+        deviceId = DeviceId.Zero,
+        title = "Light",
+        subtitle = "Turn light ON or OFF",
+        icon = painterResource(Res.drawable.light_bulb),
+        isLightOn = true,
+        brightnessLevel = 0.6f,
         isEnabled = true,
+        errorMessage = "Error during executing operation.",
+        onBrightnessChange = { _, _ -> },
+        onBrightnessChangeFinished = { _-> },
+        updateDeviceState = { _, _ -> },
         onDecommission = {  },
     )
 }
