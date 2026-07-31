@@ -51,11 +51,8 @@ class LightController(
                 NordicLogger.info("New light device state: $state")
                 when (state) {
                     is UiState.Success -> lightDeviceState.update {
+                        NordicLogger.info("New light device state: $state", tag = TAG)
                         it.copy(isOn = state.data, errorMessage = null)
-                NordicLogger.info("New light device state: $state", tag = TAG)
-                (state as? UiState.Success)?.let {
-                    lightDeviceState.update {
-                        it.copy(isOn = state.data)
                     }
 
                     is UiState.Error -> lightDeviceState.update {
@@ -72,15 +69,12 @@ class LightController(
                 NordicLogger.info("New brightness state: $state")
                 when (state) {
                     is UiState.Success -> lightDeviceState.update {
+                        NordicLogger.info("New brightness state: $state", tag = TAG)
                         it.copy(
                             localBrightness = state.data,
                             remoteBrightness = state.data,
                             errorMessage = null
                         )
-                NordicLogger.info("New brightness state: $state", tag = TAG)
-                (state as? UiState.Success)?.let {
-                    lightDeviceState.update {
-                        it.copy(localBrightness = state.data, remoteBrightness = state.data)
                     }
 
                     is UiState.Error -> lightDeviceState.update {
@@ -93,9 +87,17 @@ class LightController(
             .launchIn(scope)
     }
 
+
     fun setLet(device: Device, isOn: Boolean) {
         commandHandler.handleLed(device, isOn)
-            .onStart { lightDeviceState.update { it.copy(isOn = isOn, errorMessage = null) } }
+            .onStart {
+                lightDeviceState.update {
+                    it.copy(
+                        isOn = isOn,
+                        errorMessage = null
+                    )
+                }
+            }
             .delaySuccess()
             .catch {
                 NordicLogger.error(
@@ -132,7 +134,6 @@ class LightController(
         val brightnessLevel = lightDeviceState.value.localBrightness
         commandHandler.handleBrightness(device, brightnessLevel)
             .onStart { lightDeviceState.update { it.copy(errorMessage = null) } }
-            .delaySuccess()
             .catch {
                 NordicLogger.error(
                     "Failed to send Brightness level adjustment",
@@ -150,7 +151,10 @@ class LightController(
                     }
 
                     is UiState.Error -> lightDeviceState.update {
-                        it.copy(localBrightness = it.remoteBrightness, errorMessage = newState.message)
+                        it.copy(
+                            localBrightness = it.remoteBrightness,
+                            errorMessage = newState.message
+                        )
                     }
 
                     else -> Unit
@@ -168,6 +172,7 @@ class LightController(
                     delay(300.milliseconds)
                     emit(state)
                 }
+
                 else -> flowOf(state)
             }
         }
@@ -176,8 +181,10 @@ class LightController(
     @Composable
     override fun Item(onDecommission: (DeviceId) -> Unit) {
         val ledRequestState = ledState.collectAsStateWithLifecycle().value
-        val brightnessRequestState = brightnessLevelState.collectAsStateWithLifecycle().value
-        val isEnabled = ledRequestState !is UiState.Loading && brightnessRequestState !is UiState.Loading
+        val brightnessRequestState =
+            brightnessLevelState.collectAsStateWithLifecycle().value
+        val isEnabled =
+            ledRequestState !is UiState.Loading && brightnessRequestState !is UiState.Loading
 
         LightItem(
             device = device,
