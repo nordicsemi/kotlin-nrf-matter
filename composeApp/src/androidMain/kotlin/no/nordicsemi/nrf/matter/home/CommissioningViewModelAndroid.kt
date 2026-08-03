@@ -3,14 +3,15 @@ package no.nordicsemi.nrf.matter.home
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import chip.devicecontroller.ChipDeviceControllerException
-import com.google.android.gms.home.matter.commissioning.CommissioningResult
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
 import no.nordicsemi.nrf.matter.chip.MatterBasicInfoProvider
 import no.nordicsemi.nrf.matter.commission.CommissioningException
+import no.nordicsemi.nrf.matter.model.CommissioningInput
 import no.nordicsemi.nrf.matter.commission.Stage
 import no.nordicsemi.nrf.matter.commission.toCommissioningException
 import no.nordicsemi.nrf.matter.domain.OperationResult
@@ -18,8 +19,8 @@ import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
-import no.nordicsemi.nrf.matter.model.toDeviceId
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
+import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import kotlin.time.Clock
 
 /*
@@ -54,9 +55,11 @@ import kotlin.time.Clock
  */
 
 class CommissioningViewModelAndroid(
+    private val chipClient: ChipClient,
     private val basicInfoProvider: MatterBasicInfoProvider,
     private val clustersHelper: ClustersHelper,
     private val devicesRepository: DevicesRepository,
+    private val devicesStateRepository: DevicesStateRepository,
 ) : ViewModel() {
 
     val nextNodeId = MutableStateFlow<DeviceId?>(null)
@@ -68,13 +71,26 @@ class CommissioningViewModelAndroid(
         }
     }
 
-    fun gpsCommissioningDeviceSucceeded(gpsCommissioningResult: CommissioningResult) {
+    /**
+     * Commissions a device end-to-end directly through the CHIP SDK — BLE discovery, PASE, network
+     * provisioning, and fabric commissioning — with no dependency on the Google Home / Play
+     * Services flow. Reuses the node ID reserved in [init].
+     */
+    fun commission(input: CommissioningInput) {
         viewModelScope.launch {
-            val deviceId = gpsCommissioningResult.token?.toDeviceId() ?: run {
-                deviceEvent.send(OperationResult.Error(Exception("Token is missing.")))
-                return@launch
-            }
+            // Wait for the reserved node id from init.
+            val deviceId = nextNodeId.first { it != null }!!
             try {
+                catchAndThrow(Stage.COMMISSIONING) {
+                    chipClient.awaitCommissionDeviceWithCode(
+                        deviceId = deviceId,
+                        setupCode = input.setupCode,
+                        networkConfig = input.network,
+                    )
+                }
+
+                devicesStateRepository.addDeviceState(deviceId, isOnline = true, isOn = false)
+
                 val basicInfo = catchAndThrow(Stage.READ_BASIC_INFORMATION) {
                     basicInfoProvider.fetchBasicInfo(deviceId)
                 }
@@ -103,7 +119,7 @@ class CommissioningViewModelAndroid(
                     productId = basicInfo.productId.toString(),
                     deviceType = deviceType.firstOrNull() ?: DeviceType.UNSUPPORTED,
                     deviceId = deviceId,
-                    name = gpsCommissioningResult.deviceName,
+                    name = basicInfo.productName,
                     uniqueId = basicInfo.uniqueId.toString(),
                     softwareVersion = basicInfo.softwareVersion,
                     serialNumer = basicInfo.serialNumber,
@@ -122,21 +138,20 @@ class CommissioningViewModelAndroid(
     private suspend fun <T> catchAndThrow(stage: Stage, block: suspend () -> T): T {
         try {
             return block()
-        } catch (t: ChipDeviceControllerException) {
-            throw CommissioningException(
-                nextNodeId.value,
-                stage,
-                t.errorCode.toInt(),
-                t.message ?: ""
-            )
         } catch (t: Throwable) {
             throw CommissioningException(
                 nextNodeId.value,
                 stage,
-                null,
+                t.chipErrorCodeOrNull(),
                 t.message ?: ""
             )
         }
+    }
+
+    private fun Throwable.chipErrorCodeOrNull(): Int? {
+        // Avoid compile-time coupling to CHIP exception classes that live in Android-only jars.
+        val getter = runCatching { javaClass.getMethod("getErrorCode") }.getOrNull() ?: return null
+        return (runCatching { getter.invoke(this) }.getOrNull() as? Number)?.toInt()
     }
 
     private fun convertToAppDeviceType(matterDeviceType: Long): DeviceType {
