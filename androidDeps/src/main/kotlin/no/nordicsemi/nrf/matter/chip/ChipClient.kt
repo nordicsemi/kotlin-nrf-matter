@@ -8,6 +8,7 @@ import chip.devicecontroller.CommissionParameters
 import chip.devicecontroller.ControllerParams
 import chip.devicecontroller.GetConnectedDeviceCallbackJni
 import chip.devicecontroller.InvokeCallback
+import chip.devicecontroller.NetworkCredentials
 import chip.devicecontroller.ReportCallback
 import chip.devicecontroller.SubscriptionEstablishedCallback
 import chip.devicecontroller.model.AttributeState
@@ -33,6 +34,7 @@ import matter.tlv.ContextSpecificTag
 import matter.tlv.TlvWriter
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
+import no.nordicsemi.nrf.matter.model.NetworkConfig
 import java.util.Optional
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -96,7 +98,6 @@ class ChipClient(
         extraBufferCapacity = 200,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
     )
-
     /**
      * The lazily-initialized [ChipDeviceController] backing all operations in this class.
      *
@@ -115,7 +116,10 @@ class ChipClient(
         }
 
         AndroidChipPlatform(
-            AndroidBleManager(),
+            // Pass the Android [Context] so the SDK's BLE manager can scan for and connect to
+            // devices itself during BLE-based commissioning (pairDeviceWithCode). The no-arg
+            // constructor has no adapter/context and cannot drive discovery.
+            AndroidBleManager(context),
             AndroidNfcCommissioningManager(),
             PreferencesKeyValueStoreManager(context),
             PreferencesConfigurationManager(context),
@@ -130,6 +134,18 @@ class ChipClient(
                 .setControllerVendorId(VENDOR_ID)
                 .build()
         )
+    }
+
+    private fun toNetworkCredentials(networkConfig: NetworkConfig): NetworkCredentials? = when (networkConfig) {
+        is NetworkConfig.Thread -> NetworkCredentials.forThread(
+            NetworkCredentials.ThreadCredentials(networkConfig.datasetHex.hexToByteArray())
+        )
+
+        is NetworkConfig.WiFi -> NetworkCredentials.forWiFi(
+            NetworkCredentials.WiFiCredentials(networkConfig.ssid, networkConfig.password)
+        )
+
+        NetworkConfig.OnNetwork -> null
     }
 
     /**
@@ -410,6 +426,68 @@ class ChipClient(
                 .build()
 
             chipDeviceController.commissionDevice(deviceId.longValue, commissionParameters)
+        }
+    }
+
+    /**
+     * Commissions a device end-to-end from its onboarding payload, without any dependency on the
+     * Google Home / Play Services commissioning flow.
+     *
+     * This drives the full Matter commissioning sequence directly on the native controller:
+     * the SDK parses [setupCode], discovers the device over BLE (via the [AndroidBleManager]
+     * configured with a [Context]) and/or on-network mDNS, performs PASE, provisions the supplied
+     * [networkCredentials] (Thread or Wi-Fi), and finalizes commissioning onto this app's fabric.
+     *
+     * @param deviceId The node ID to assign to the device being commissioned.
+     * @param setupCode The onboarding payload — a QR code string (e.g. `MT:...`) or an 11/21-digit
+     *   manual pairing code.
+     * @param networkConfig The selected network provisioning mode for commissioning.
+     * @throws IllegalStateException If commissioning completes with a non-zero error code.
+     * @throws Throwable If the native SDK reports an error during commissioning.
+     */
+    suspend fun awaitCommissionDeviceWithCode(
+        deviceId: DeviceId,
+        setupCode: String,
+        networkConfig: NetworkConfig,
+    ) {
+        val networkCredentials = toNetworkCredentials(networkConfig)
+
+        return suspendCancellableCoroutine { continuation ->
+            chipDeviceController.setCompletionListener(
+                object : BaseCompletionListener() {
+                    override fun onCommissioningComplete(nodeId: Long, errorCode: Long) {
+                        super.onCommissioningComplete(nodeId, errorCode)
+                        if (!continuation.isActive) return
+                        if (errorCode != 0L) {
+                            continuation.resumeWithException(
+                                IllegalStateException("Commissioning failed with error code [${errorCode}]")
+                            )
+                        } else {
+                            continuation.resume(Unit)
+                        }
+                    }
+
+                    override fun onError(error: Throwable) {
+                        super.onError(error)
+                        if (continuation.isActive) continuation.resumeWithException(error)
+                    }
+                })
+
+            continuation.invokeOnCancellation {
+                runCatching { chipDeviceController.stopDevicePairing(deviceId.longValue) }
+            }
+
+            val commissionParameters = CommissionParameters.Builder()
+                .setNetworkCredentials(networkCredentials)
+                .build()
+
+            chipDeviceController.pairDeviceWithCode(
+                deviceId.longValue,
+                setupCode,
+                /* discoverOnce = */ true,
+                /* useOnlyOnNetworkDiscovery = */ false,
+                commissionParameters,
+            )
         }
     }
 

@@ -34,6 +34,7 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(project(":androidDeps"))
+            implementation(fileTree(mapOf("dir" to "../androidDeps/libs", "include" to listOf("*.jar"))))
 //            implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.core.splashscreen)
@@ -42,6 +43,14 @@ kotlin {
             implementation(libs.jetbrains.compose.runtime)
             implementation(libs.room.runtime)
             implementation(libs.room.ktx)
+            // QR scanning for direct (non-Home) commissioning. Direct coordinates because the
+            // version catalog is a remote Nordic artifact; these resolve from the google() repo.
+            implementation("androidx.camera:camera-core:1.3.4")
+            implementation("androidx.camera:camera-camera2:1.3.4")
+            implementation("androidx.camera:camera-lifecycle:1.3.4")
+            implementation("androidx.camera:camera-view:1.3.4")
+            implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+            implementation("com.google.mlkit:barcode-scanning:17.3.0")
         }
         commonMain.dependencies {
             api(project(":core"))

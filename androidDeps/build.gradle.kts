@@ -22,7 +22,8 @@ dependencies {
     api(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar", "*.so"))))
 
     implementation(project(":core"))
-    // Home API SDK dependency
-    api(libs.play.services.home)
-    api(libs.play.services.types)
+    // ChipClient exposes coroutine types (e.g. MutableSharedFlow) in its public API. This was
+    // previously provided transitively via the Play Services Home dependency; declare it directly
+    // now that the Home API has been removed.
+    api(libs.kotlinx.coroutines.android)
 }
