@@ -19,9 +19,10 @@ sealed interface CommissioningScreenState {
 @Composable
 fun CommissioningScreen(onBack: () -> Unit, navigateToLogs: () -> Unit) {
     val homeViewModel: HomeViewModel = koinViewModel()
-    val state = remember { mutableStateOf<CommissioningScreenState>(CommissioningScreenState.InProgress) }
+    val state =
+        remember { mutableStateOf<CommissioningScreenState>(CommissioningScreenState.InProgress) }
 
-   CommissioningTask(
+    CommissioningTask(
         onSuccess = {
             homeViewModel.addCommissionedDevice(device = it, true, false)
             onBack()
@@ -32,14 +33,18 @@ fun CommissioningScreen(onBack: () -> Unit, navigateToLogs: () -> Unit) {
         },
     )
 
-    NordicLogger.info("State: ${state.value}")
-
     when (val state = state.value) {
         CommissioningScreenState.InProgress -> CommissioningInProgressScreen()
-        is CommissioningScreenState.Error -> CommissioningErrorScreen(
-            state.error,
-            onBack,
-            navigateToLogs
-        )
+        is CommissioningScreenState.Error -> {
+            NordicLogger.error(
+                "Commission Error: ${state.error.displayMessage}",
+                tag = "Commissioning"
+            )
+            CommissioningErrorScreen(
+                state.error,
+                onBack,
+                navigateToLogs
+            )
+        }
     }
 }
