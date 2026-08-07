@@ -1,7 +1,6 @@
 package no.nordicsemi.nrf.matter.screens
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -21,7 +19,6 @@ import androidx.compose.material.icons.automirrored.filled.TrendingFlat
 import androidx.compose.material.icons.filled.Cable
 import androidx.compose.material.icons.filled.SwapCalls
 import androidx.compose.material.icons.filled.Tag
-import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -54,19 +51,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.skydoves.cloudy.cloudy
-import multiplatform.network.cmptoast.ToastDuration
-import multiplatform.network.cmptoast.ToastGravity
-import multiplatform.network.cmptoast.showToast
-import no.nordicsemi.nrf.matter.binding.BindingLoaderDialog
+import no.nordicsemi.nrf.matter.binding.BindingStateHandler
 import no.nordicsemi.nrf.matter.binding.BindingUiState
 import no.nordicsemi.nrf.matter.binding.BindingViewModel
 import no.nordicsemi.nrf.matter.domain.UiState
-import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId
-import no.nordicsemi.nrf.matter.theme.NordicSun
+import no.nordicsemi.nrf.matter.model.toDeviceId
 import no.nordicsemi.nrf.matter.theme.NordicTheme
-import no.nordicsemi.nrf.matter.ui.AlertDialogView
 import no.nordicsemi.nrf.matter.ui.DeviceTest_LIGHT
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -108,63 +100,11 @@ internal fun BindingsScreen(
     val bindingUiState by bindingViewModel.bindingUiState.collectAsStateWithLifecycle()
     val bindingLogs by bindingViewModel.bindingLogs.collectAsStateWithLifecycle()
 
-    when (bindingUiState.bindingState) {
-        is UiState.Error -> {
-            AlertDialogView(
-                onDismiss = {
-                    // Change state to idle.
-                    bindingViewModel.updateBindingState(UiState.Idle())
-                },
-                onConfirm = {
-                    // Retry binding. Set state to loading and call the binding function again.
-                },
-                title = "Binding Failed.",
-                message = "Unable to bind the device, please try again.",
-                confirmText = "Retry"
-            )
-        }
+    BindingStateHandler(
+        bindingUiState,
+        bindingLogs
+    ) { bindingViewModel.updateBindingState(it) }
 
-        is UiState.Idle -> {
-            // Do nothing, show the normal UI.
-        }
-
-        is UiState.Loading -> {
-            BindingLoaderDialog(bindingLogs) {
-                // Text Content
-                Text(
-                    text = "Binding...",
-                    style = MaterialTheme.typography.headlineMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.inverseOnSurface
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.WarningAmber,
-                        contentDescription = null,
-                        tint = NordicSun
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Binding in progress, it might take few seconds. Please don't close the app.",
-                        color = if (isSystemInDarkTheme()) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.inverseOnSurface
-                    )
-                }
-            }
-        }
-
-        is UiState.Success -> {
-            NordicLogger.info("Binding Success", tag = "Bindings")
-            showToast(
-                message = "Binding completed successfully!",
-                duration = ToastDuration.Long,
-                gravity = ToastGravity.Center
-            )
-        }
-    }
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
