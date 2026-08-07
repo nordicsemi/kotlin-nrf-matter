@@ -33,6 +33,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -54,6 +55,7 @@ import com.skydoves.cloudy.cloudy
 import no.nordicsemi.nrf.matter.binding.BindingStateHandler
 import no.nordicsemi.nrf.matter.binding.BindingUiState
 import no.nordicsemi.nrf.matter.binding.BindingViewModel
+import no.nordicsemi.nrf.matter.binding.CastTabRow
 import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId
@@ -100,6 +102,8 @@ internal fun BindingsScreen(
     val bindingUiState by bindingViewModel.bindingUiState.collectAsStateWithLifecycle()
     val bindingLogs by bindingViewModel.bindingLogs.collectAsStateWithLifecycle()
 
+    var selectedTab by remember { mutableStateOf(1) } // todo: make it dynamic
+
     BindingStateHandler(
         bindingUiState,
         bindingLogs
@@ -141,6 +145,13 @@ internal fun BindingsScreen(
                 }
             }
         }
+        item {
+            CastTabRow(
+                selectedTab = selectedTab,
+                onTabSelected = { selectedTab = it }
+            )
+        }
+
 
         // Configuration Section
         item {
