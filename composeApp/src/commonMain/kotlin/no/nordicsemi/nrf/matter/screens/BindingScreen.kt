@@ -60,7 +60,6 @@ import multiplatform.network.cmptoast.showToast
 import no.nordicsemi.nrf.matter.binding.BindingLoaderDialog
 import no.nordicsemi.nrf.matter.binding.BindingUiState
 import no.nordicsemi.nrf.matter.binding.BindingViewModel
-import no.nordicsemi.nrf.matter.binding.DeviceBindingTest
 import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceBinding
@@ -598,3 +597,14 @@ private fun BindingCardRowPreview() {
         binding = DeviceBindingTest
     )
 }
+
+
+internal val DeviceBindingTest =
+    DeviceBinding(
+        sourceNodeId = DeviceId.Zero,
+        sourceEndpoint = 1,
+        targetNodeId = 2L.toDeviceId(),
+        targetEndpoint = 2,
+        clusterId = 6L,
+        id = "123",
+    )
