@@ -53,10 +53,9 @@ import androidx.compose.ui.zIndex
 internal fun CastTabRow(
     selectedTab: Int,
     onTabSelected: (Int) -> Unit,
+    tabs: List<String> = listOf("Unicast", "Group"),
     modifier: Modifier = Modifier
 ) {
-    val tabs = listOf("Unicast", "Multicast")
-
     OutlinedCard(modifier = modifier) {
         SecondaryTabRow(
             selectedTabIndex = selectedTab,

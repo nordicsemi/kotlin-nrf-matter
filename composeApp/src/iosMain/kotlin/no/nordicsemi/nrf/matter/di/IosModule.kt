@@ -24,6 +24,7 @@ import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.logger.LoggerViewModel
 import no.nordicsemi.nrf.matter.repository.BindingRepository
+import no.nordicsemi.nrf.matter.repository.GroupBindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.IosDevicesDataSource
@@ -89,6 +90,9 @@ val iosModule = module {
     single<BindingRepository> {
         BindingRepository(get())
     }
+    single<GroupBindingRepository> {
+        GroupBindingRepository(get())
+    }
 
     // View models.
     viewModelOf(::HomeViewModel)
@@ -96,7 +100,7 @@ val iosModule = module {
     viewModel { CommissioningViewModelIos(get(), get()) }
 
     viewModel { LoggerViewModel() }
-    viewModel { BindingViewModel(get(), get(), get()) }
+    viewModel { BindingViewModel(get(), get(), get(), get()) }
     factory { LightCommandHandler(get()) }
     factory { LockCommandHandler(get()) }
     factory { ManufacturerSpecCommandHandler(get(), get(), get()) }

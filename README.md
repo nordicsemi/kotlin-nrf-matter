@@ -16,7 +16,7 @@ The app lets you:
       extension providing the system QR-code scanning UI.
 - **Control** commissioned devices — door locks, lights, switches, and manufacturer-specific
   clusters.
-- **Manage bindings** between devices, e.g. a switch controlling a light.
+- **Manage bindings** between devices, e.g. a switch controlling a light or a multicast group.
 - **View logs** for diagnosing commissioning and cluster interactions.
 
 ## Preparing the work setup

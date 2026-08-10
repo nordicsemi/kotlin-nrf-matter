@@ -59,6 +59,7 @@ import no.nordicsemi.nrf.matter.binding.CastTabRow
 import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId
+import no.nordicsemi.nrf.matter.model.GroupBinding
 import no.nordicsemi.nrf.matter.model.toDeviceId
 import no.nordicsemi.nrf.matter.theme.NordicTheme
 import no.nordicsemi.nrf.matter.ui.DeviceTest_LIGHT
@@ -102,18 +103,41 @@ internal fun BindingsScreen(
     val bindingUiState by bindingViewModel.bindingUiState.collectAsStateWithLifecycle()
     val bindingLogs by bindingViewModel.bindingLogs.collectAsStateWithLifecycle()
 
-    var selectedTab by remember { mutableStateOf(1) } // todo: make it dynamic
+    var selectedTab by remember { mutableStateOf(0) }
+    val tabs = if (bindingUiState.groupBindingSupported) {
+        listOf("Unicast", "Group")
+    } else {
+        listOf("Unicast")
+    }
 
     BindingStateHandler(
         bindingUiState,
         bindingLogs
-    ) { bindingViewModel.updateBindingState(it) }
+        ,
+        bindingState = if (selectedTab == 0) {
+            bindingUiState.bindingState
+        } else {
+            bindingUiState.groupBindingState
+        }
+    ) { state ->
+        if (selectedTab == 0) {
+            bindingViewModel.updateBindingState(state as UiState<no.nordicsemi.nrf.matter.model.DeviceBinding>)
+        } else {
+            bindingViewModel.updateGroupBindingState(state as UiState<no.nordicsemi.nrf.matter.model.GroupBinding>)
+        }
+    }
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
-            .then(if (bindingUiState.bindingState is UiState.Loading) Modifier.cloudy() else Modifier),
+        .then(
+            if ((if (selectedTab == 0) bindingUiState.bindingState else bindingUiState.groupBindingState) is UiState.Loading) {
+                Modifier.cloudy()
+            } else {
+                Modifier
+            }
+        ),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         // Concept Header
@@ -136,7 +160,7 @@ internal fun BindingsScreen(
                             text = "Understanding Matter Bindings",
                         )
                         Text(
-                            text = "The Binding Cluster (0x001E) allows client devices (such as a light switch) to directly control or communicate with target devices (such as light bulbs) over the Matter fabric, without routing through an intermediate bridge or proxy.",
+                            text = "The Binding Cluster (0x001E) allows client devices (such as a light switch) to directly control target devices (such as light bulbs) over the Matter fabric. The group tab writes a multicast binding and provisions a shared group key for the devices.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.8f)
                         )
@@ -148,7 +172,8 @@ internal fun BindingsScreen(
         item {
             CastTabRow(
                 selectedTab = selectedTab,
-                onTabSelected = { selectedTab = it }
+                onTabSelected = { selectedTab = it },
+                tabs = tabs
             )
         }
 
@@ -156,7 +181,11 @@ internal fun BindingsScreen(
         // Configuration Section
         item {
             Text(
-                text = "Write Matter Binding Cluster (0x001E)",
+                text = if (selectedTab == 0) {
+                    "Write Matter Binding Cluster (0x001E)"
+                } else {
+                    "Write Matter Group Binding Cluster (0x001E)"
+                },
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary
             )
@@ -178,29 +207,50 @@ internal fun BindingsScreen(
             } else {
                 BindingTableDetails(
                     bindingScreenState = bindingUiState,
+                    bindingActionText = if (selectedTab == 0) {
+                        "Write Binding"
+                    } else {
+                        "Create Group Binding"
+                    },
+                    targetActionText = if (selectedTab == 0) {
+                        "Target Action: Write Cluster 0x0006 (OnOff Bind Struct)"
+                    } else {
+                        "Target Action: Install Group Key, add group membership, then write a multicast binding"
+                    },
                     onSourceSelected = {
                         bindingViewModel.onSourceSelected(it)
-
                     },
                     onTargetSelected = { targetId ->
                         bindingViewModel.onTargetSelected(targetId)
                     },
                     initiateBinding = { sourceId, targetId ->
-                        bindingViewModel.initiateBinding(sourceId, targetId)
-                    })
+                        if (selectedTab == 0) bindingViewModel.initiateBinding(sourceId, targetId)
+                        else bindingViewModel.initiateGroupBinding(sourceId, targetId)
+                    }
+                )
             }
         }
 
         // Active Binding Lists
         item {
             Text(
-                text = "Active Binding Table Entries (${bindingUiState.activeBindings.size})",
+                text = if (selectedTab == 0) {
+                    "Active Binding Table Entries (${bindingUiState.activeBindings.size})"
+                } else {
+                    "Active Group Binding Table Entries (${bindingUiState.activeGroupBindings.size})"
+                },
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary
             )
         }
 
-        if (bindingUiState.activeBindings.isEmpty()) {
+        val activeItems = if (selectedTab == 0) {
+            bindingUiState.activeBindings.map { ActiveBindingEntry.Unicast(it) }
+        } else {
+            bindingUiState.activeGroupBindings.map { ActiveBindingEntry.Group(it) }
+        }
+
+        if (activeItems.isEmpty()) {
             item {
                 Box(
                     modifier = Modifier
@@ -220,8 +270,11 @@ internal fun BindingsScreen(
                     verticalArrangement = Arrangement.spacedBy(18.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    bindingUiState.activeBindings.forEach { binding ->
-                        BindingCardRow(binding = binding)
+                    activeItems.forEach { binding ->
+                        when (binding) {
+                            is ActiveBindingEntry.Unicast -> BindingCardRow(binding = binding.binding)
+                            is ActiveBindingEntry.Group -> GroupBindingCardRow(binding = binding.binding)
+                        }
                     }
                 }
             }
@@ -233,6 +286,8 @@ internal fun BindingsScreen(
 @Composable
 private fun BindingTableDetails(
     bindingScreenState: BindingUiState,
+    bindingActionText: String,
+    targetActionText: String,
     onSourceSelected: (sourceDeviceId: DeviceId) -> Unit,
     onTargetSelected: (targetDeviceId: DeviceId) -> Unit,
     initiateBinding: (sourceDeviceId: DeviceId, targetDeviceId: DeviceId) -> Unit,
@@ -394,7 +449,7 @@ private fun BindingTableDetails(
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Target Action: Write Cluster 0x0006 (OnOff Bind Struct)",
+                    text = targetActionText,
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -415,7 +470,7 @@ private fun BindingTableDetails(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
                 shape = RoundedCornerShape(12.dp)
             ) {
-                Text("Write Binding")
+                Text(bindingActionText)
             }
         }
     }
@@ -434,9 +489,12 @@ private fun BindingTableDetailsPreview() {
                     DeviceTest_LIGHT
                 )
             ),
-            {},
-            {}
-        ) { _, _ -> }
+            bindingActionText = "Write Binding",
+            targetActionText = "Target Action: Write Cluster 0x0006 (OnOff Bind Struct)",
+            onSourceSelected = {},
+            onTargetSelected = {},
+            initiateBinding = { _, _ -> }
+        )
 
     }
 }
@@ -559,3 +617,81 @@ internal val DeviceBindingTest =
         clusterId = 6L,
         id = "123",
     )
+
+@Preview(showBackground = true)
+@Composable
+private fun GroupBindingCardRowPreview() {
+    GroupBindingCardRow(
+        binding = GroupBinding(
+            id = "group-1",
+            sourceNodeId = DeviceId.Zero,
+            sourceEndpoint = 1,
+            targetNodeId = 2L.toDeviceId(),
+            targetEndpoint = 1,
+            clusterId = 6L,
+            groupId = 42,
+            groupName = "Group 42",
+            keySetId = 7,
+        )
+    )
+}
+
+private sealed interface ActiveBindingEntry {
+    data class Unicast(val binding: DeviceBinding) : ActiveBindingEntry
+    data class Group(val binding: GroupBinding) : ActiveBindingEntry
+}
+
+@Composable
+fun GroupBindingCardRow(
+    binding: GroupBinding,
+) {
+    OutlinedCard(
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Tag,
+                        contentDescription = "Index",
+                        tint = MaterialTheme.colorScheme.secondary,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Text(
+                        text = "Group binding ID: ${binding.id}",
+                        style = MaterialTheme.typography.labelSmall,
+                        fontFamily = FontFamily.Monospace,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                }
+
+                Text(
+                    text = "Source Node ID: ${binding.sourceNodeId.longValue}",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace
+                )
+
+                Text(
+                    text = "Group ID: ${binding.groupId} (${binding.groupName})",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace,
+                    color = MaterialTheme.colorScheme.primary
+                )
+
+                Text(
+                    text = "Cluster ID: 0x00${binding.clusterId}L",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
