@@ -4,10 +4,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import no.nordicsemi.nrf.matter.binding.BaseBindingDataSource
+import no.nordicsemi.nrf.matter.binding.BaseGroupBindingDataSource
 import no.nordicsemi.nrf.matter.binding.BindDevicesUseCase
 import no.nordicsemi.nrf.matter.binding.BindingDataSource
+import no.nordicsemi.nrf.matter.binding.GroupBindingDataSource
 import no.nordicsemi.nrf.matter.commission.DecommissionUseCases
 import no.nordicsemi.nrf.matter.repository.BindingRepository
+import no.nordicsemi.nrf.matter.repository.GroupBindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.ui.MatterControllerCache
@@ -54,6 +57,7 @@ val commonModule = module {
     singleOf(::DevicesRepository)
     singleOf(::DevicesStateRepository)
     singleOf(::BindingRepository)
+    singleOf(::GroupBindingRepository)
     single {
         BindDevicesUseCase(
             get(),
@@ -74,5 +78,8 @@ val commonModule = module {
 
     single<BindingDataSource> {
         BaseBindingDataSource(get())
+    }
+    single<GroupBindingDataSource> {
+        BaseGroupBindingDataSource(get())
     }
 }

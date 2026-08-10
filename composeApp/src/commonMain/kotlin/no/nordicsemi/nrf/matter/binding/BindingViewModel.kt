@@ -22,7 +22,9 @@ import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
+import no.nordicsemi.nrf.matter.model.GroupBinding
 import no.nordicsemi.nrf.matter.repository.BindingRepository
+import no.nordicsemi.nrf.matter.repository.GroupBindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.ui.device.isBindingCapable
 import kotlin.time.Duration
@@ -60,17 +62,22 @@ import kotlin.time.Duration.Companion.seconds
  */
 data class BindingUiState(
     val bindingState: BindingState = UiState.Idle(),
+    val groupBindingState: UiState<GroupBinding> = UiState.Idle(),
     val sourceDevices: List<Device> = emptyList(),
     val activeBindings: List<DeviceBinding> = emptyList(),
+    val activeGroupBindings: List<GroupBinding> = emptyList(),
     val selectedSourceDeviceId: DeviceId? = null,
     val selectedTargetDeviceId: DeviceId? = null,
     val eligibleTargetDevices: List<Device> = emptyList(),
+    val groupBindingSupported: Boolean = false,
 )
 
 class BindingViewModel(
     private val bindingRepository: BindingRepository,
+    private val groupBindingRepository: GroupBindingRepository,
     private val devicesRepository: DevicesRepository,
     private val bindDevicesUseCase: BindDevicesUseCase,
+    private val bindGroupDevicesUseCase: BindGroupDevicesUseCase? = null,
 ) : ViewModel() {
 
     private val _bindingUiState = MutableStateFlow(BindingUiState())
@@ -82,11 +89,18 @@ class BindingViewModel(
     init {
         loadSourceDevices()
         getActiveBindings()
+        getActiveGroupBindings()
+        updateGroupSupport()
     }
 
     fun updateBindingState(state: BindingState) =
         _bindingUiState.update {
             it.copy(bindingState = state)
+        }
+
+    fun updateGroupBindingState(state: UiState<GroupBinding>) =
+        _bindingUiState.update {
+            it.copy(groupBindingState = state)
         }
 
     fun loadSourceDevices() = viewModelScope.launch {
@@ -106,6 +120,12 @@ class BindingViewModel(
                     state.copy(activeBindings = it)
                 }
             }
+    }
+
+    private fun updateGroupSupport() {
+        _bindingUiState.update {
+            it.copy(groupBindingSupported = bindGroupDevicesUseCase != null)
+        }
     }
 
     fun onSourceSelected(sourceDeviceId: DeviceId) {
@@ -150,11 +170,43 @@ class BindingViewModel(
             .launchIn(viewModelScope)
     }
 
+    fun initiateGroupBinding(sourceDeviceId: DeviceId, targetDeviceId: DeviceId) {
+        val groupUseCase = bindGroupDevicesUseCase
+        if (groupUseCase == null) {
+            updateBindingState(UiState.Error("Group binding is not available on this platform."))
+            return
+        }
+
+        val collectLogsJob = groupUseCase.bindingLogs
+            .onStart { _bindingLogs.update { it.cleared() } }
+            .onEach { log ->
+                _bindingLogs.update { it.adding(log) }
+            }.launchIn(viewModelScope)
+
+        groupUseCase.invoke(
+            switchNodeId = sourceDeviceId,
+            lightNodeId = targetDeviceId
+        )
+            .onStart { updateGroupBindingState(UiState.Loading()) }
+            .onCompletion { collectLogsJob.cancel() }
+            .delayIf(1.seconds) { it is UiState.Success }
+            .onEach { state ->
+                if (state is UiState.Success) {
+                    updateActiveGroupBinding(state.data)
+                    resetFormAndState()
+                } else {
+                    updateGroupBindingState(state)
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
     // Resets selections and UI status back to initial state
     private fun resetFormAndState() {
         _bindingUiState.update {
             it.copy(
                 bindingState = UiState.Idle(),
+                groupBindingState = UiState.Idle(),
                 selectedSourceDeviceId = null,
                 selectedTargetDeviceId = null,
             )
@@ -177,6 +229,15 @@ class BindingViewModel(
             }
     }
 
+    fun getActiveGroupBindings() = viewModelScope.launch {
+        groupBindingRepository.getAllBinding()
+            .collect {
+                _bindingUiState.update { state ->
+                    state.copy(activeGroupBindings = it)
+                }
+            }
+    }
+
 
     fun updateActiveBinding(binding: DeviceBinding) = viewModelScope.launch {
         val activeBindings = _bindingUiState.value.activeBindings.toMutableList()
@@ -190,6 +251,20 @@ class BindingViewModel(
 
         _bindingUiState.update {
             it.copy(activeBindings = activeBindings)
+        }
+    }
+
+    fun updateActiveGroupBinding(binding: GroupBinding) = viewModelScope.launch {
+        val activeBindings = _bindingUiState.value.activeGroupBindings.toMutableList()
+        val index = activeBindings.indexOfFirst { it.id == binding.id }
+        if (index != -1) {
+            activeBindings[index] = binding
+        } else {
+            activeBindings.add(binding)
+        }
+
+        _bindingUiState.update {
+            it.copy(activeGroupBindings = activeBindings)
         }
     }
 

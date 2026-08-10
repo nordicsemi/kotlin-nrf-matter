@@ -61,14 +61,15 @@ import no.nordicsemi.nrf.matter.ui.AlertDialogView
 internal fun BindingStateHandler(
     bindingUiState: BindingUiState,
     bindingLogs: PersistentList<String>,
-    onUpdateBindingState: (BindingState) -> Unit
+    bindingState: UiState<*>,
+    onUpdateBindingState: (UiState<*>) -> Unit
 ) {
-    when (bindingUiState.bindingState) {
+    when (bindingState) {
         is UiState.Error -> {
             AlertDialogView(
                 onDismiss = {
                     // Change state to idle.
-                    onUpdateBindingState(UiState.Idle())
+                    onUpdateBindingState(UiState.Idle<Any>())
                 },
                 onConfirm = {
                     // Retry binding. Set state to loading and call the binding function again.

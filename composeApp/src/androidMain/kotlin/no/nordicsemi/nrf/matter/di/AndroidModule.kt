@@ -2,9 +2,11 @@ package no.nordicsemi.nrf.matter.di
 
 import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.binding.BindingViewModel
+import no.nordicsemi.nrf.matter.binding.BindGroupDevicesUseCase
 import no.nordicsemi.nrf.matter.binding.DataStoreProvider
 import no.nordicsemi.nrf.matter.chip.BindingControllerImpl
 import no.nordicsemi.nrf.matter.chip.BindingLogsProviderImpl
+import no.nordicsemi.nrf.matter.chip.GroupBindingControllerImpl
 import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.ClustersHelper
 import no.nordicsemi.nrf.matter.chip.MatterDecommissionerImpl
@@ -21,6 +23,7 @@ import no.nordicsemi.nrf.matter.logger.LoggerViewModel
 import no.nordicsemi.nrf.matter.repository.AndroidDeviceStateDataSource
 import no.nordicsemi.nrf.matter.repository.AndroidDevicesDataSource
 import no.nordicsemi.nrf.matter.repository.BindingRepository
+import no.nordicsemi.nrf.matter.repository.GroupBindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import org.koin.android.ext.koin.androidContext
@@ -77,18 +80,37 @@ val androidModule = module {
     single<ClustersHelper> { ClustersHelper(chipClient = get()) }
     single<MatterDecommissioner> { MatterDecommissionerImpl(chipClient = get()) }
     single<BindingController> { BindingControllerImpl(chipClient = get()) }
+    single<no.nordicsemi.nrf.matter.controller.GroupBindingController> {
+        GroupBindingControllerImpl(chipClient = get())
+    }
     single<BindingLogsProvider> { BindingLogsProviderImpl(chipClient = get()) }
     single<MatterBasicInfoProvider> { MatterBasicInfoProvider(chipClient = get()) }
 
     single<DevicesRepository> { DevicesRepository(dataSource = get()) }
     single<DevicesStateRepository> { DevicesStateRepository(dataSource = get()) }
     single<BindingRepository> { BindingRepository(get()) }
+    single<GroupBindingRepository> { GroupBindingRepository(get()) }
+    single {
+        BindGroupDevicesUseCase(
+            get(),
+            get(),
+            get(),
+        )
+    }
 
 
 
     // Binding Viewmodel
     viewModelOf(::HomeViewModel)
     viewModelOf(::CommissioningViewModelAndroid)
-    viewModelOf(::BindingViewModel)
+    viewModel {
+        BindingViewModel(
+            get(),
+            get(),
+            get(),
+            get(),
+            get(),
+        )
+    }
     viewModel { LoggerViewModel() }
 }
