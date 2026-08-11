@@ -77,7 +77,7 @@ class BindingViewModel(
     private val groupBindingRepository: GroupBindingRepository,
     private val devicesRepository: DevicesRepository,
     private val bindDevicesUseCase: BindDevicesUseCase,
-    private val bindGroupDevicesUseCase: BindGroupDevicesUseCase? = null,
+    private val bindGroupDevicesUseCase: BindGroupDevicesUseCase,
 ) : ViewModel() {
 
     private val _bindingUiState = MutableStateFlow(BindingUiState())
@@ -124,7 +124,7 @@ class BindingViewModel(
 
     private fun updateGroupSupport() {
         _bindingUiState.update {
-            it.copy(groupBindingSupported = bindGroupDevicesUseCase != null)
+            it.copy(groupBindingSupported = bindGroupDevicesUseCase.isSupported)
         }
     }
 
@@ -171,19 +171,18 @@ class BindingViewModel(
     }
 
     fun initiateGroupBinding(sourceDeviceId: DeviceId, targetDeviceId: DeviceId) {
-        val groupUseCase = bindGroupDevicesUseCase
-        if (groupUseCase == null) {
-            updateBindingState(UiState.Error("Group binding is not available on this platform."))
+        if (!bindGroupDevicesUseCase.isSupported) {
+            updateGroupBindingState(UiState.Error("Group binding is not available on this platform."))
             return
         }
 
-        val collectLogsJob = groupUseCase.bindingLogs
+        val collectLogsJob = bindGroupDevicesUseCase.bindingLogs
             .onStart { _bindingLogs.update { it.cleared() } }
             .onEach { log ->
                 _bindingLogs.update { it.adding(log) }
             }.launchIn(viewModelScope)
 
-        groupUseCase.invoke(
+        bindGroupDevicesUseCase.invoke(
             switchNodeId = sourceDeviceId,
             lightNodeId = targetDeviceId
         )

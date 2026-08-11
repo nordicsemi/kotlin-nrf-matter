@@ -10,6 +10,7 @@ import no.nordicsemi.nrf.matter.binding.BindingViewModel
 import no.nordicsemi.nrf.matter.binding.DataStoreProvider
 import no.nordicsemi.nrf.matter.cluster.IosMatterClient
 import no.nordicsemi.nrf.matter.cluster.MatterClient
+import no.nordicsemi.nrf.matter.binding.IosBindGroupDevicesUseCase
 import no.nordicsemi.nrf.matter.commission.CommissioningViewModelIos
 import no.nordicsemi.nrf.matter.controller.BindingController
 import no.nordicsemi.nrf.matter.controller.BindingLogsProvider
@@ -83,6 +84,9 @@ val iosModule = module {
     }
     single<GroupBindingRepository> {
         GroupBindingRepository(get())
+    }
+    single<BindGroupDevicesUseCase> {
+        IosBindGroupDevicesUseCase(get())
     }
 
     // View models.

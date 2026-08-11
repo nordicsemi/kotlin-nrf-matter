@@ -4,6 +4,7 @@ import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.binding.BindingViewModel
 import no.nordicsemi.nrf.matter.binding.BindGroupDevicesUseCase
 import no.nordicsemi.nrf.matter.binding.DataStoreProvider
+import no.nordicsemi.nrf.matter.binding.DefaultBindGroupDevicesUseCase
 import no.nordicsemi.nrf.matter.chip.BindingControllerImpl
 import no.nordicsemi.nrf.matter.chip.BindingLogsProviderImpl
 import no.nordicsemi.nrf.matter.chip.GroupBindingControllerImpl
@@ -90,8 +91,8 @@ val androidModule = module {
     single<DevicesStateRepository> { DevicesStateRepository(dataSource = get()) }
     single<BindingRepository> { BindingRepository(get()) }
     single<GroupBindingRepository> { GroupBindingRepository(get()) }
-    single {
-        BindGroupDevicesUseCase(
+    single<BindGroupDevicesUseCase> {
+        DefaultBindGroupDevicesUseCase(
             get(),
             get(),
             get(),
