@@ -11,10 +11,12 @@ import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.nrf.matter.controller.MatterLightController
+import no.nordicsemi.nrf.matter.domain.DeviceOfflineException
+import no.nordicsemi.nrf.matter.domain.OperationResult
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
 import kotlin.coroutines.resumeWithException
@@ -69,7 +71,8 @@ class MatterLightControllerImpl(
         brightnessLevel: Int,
         endpoint: Int
     ) {
-        val connectedDevicePtr = getConnectedDevicePointerOrNull(deviceId) ?: return
+        val connectedDevicePtr = connectedDevicePointerOrNull(deviceId)
+            ?: throw DeviceOfflineException(deviceId)
         awaitClusterCallback { callback ->
             getLevelControlClusterForDevice(connectedDevicePtr, endpoint)
                 .moveToLevelWithOnOff(
@@ -88,55 +91,42 @@ class MatterLightControllerImpl(
      * @param deviceId the commissioned device to control.
      * @param isOn `true` to send the On command, `false` to send the Off command.
      * @param endpoint the Matter endpoint exposing the On/Off cluster.
-     * @throws Exception if the underlying cluster command fails (e.g. device unreachable, command
-     * rejected).
+     * @throws DeviceOfflineException if the device is unreachable and no connected device pointer
+     * can be resolved.
+     * @throws Exception if the underlying cluster command fails (e.g. command rejected).
      */
     override suspend fun setDeviceOnOff(deviceId: DeviceId, isOn: Boolean, endpoint: Int) {
-        val connectedDevicePtr = getConnectedDevicePointerOrNull(deviceId) ?: return
+        val connectedDevicePtr = connectedDevicePointerOrNull(deviceId)
+            ?: throw DeviceOfflineException(deviceId)
         val cluster = getOnOffClusterForDevice(connectedDevicePtr, endpoint)
         awaitClusterCallback { callback ->
             if (isOn) cluster.on(callback) else cluster.off(callback)
         }
     }
 
-    /**
-     * Subscribes to the On/Off attribute of a light endpoint and emits its state as it changes.
-     *
-     * The subscription reports changes instantly and otherwise sends a heartbeat every 10 seconds;
-     * establishing the underlying session is subject to a 10 second timeout. The returned [Flow]
-     * closes with an exception if the subscription cannot be established.
-     *
-     * @param deviceId the commissioned device to observe.
-     * @param endpoint the Matter endpoint exposing the On/Off cluster.
-     * @return a cold [Flow] emitting `true` when the light is on, `false` when it is off.
-     */
-    override suspend fun observeLightState(deviceId: DeviceId, endpoint: Int): Flow<Boolean> =
-        observeNodeState(deviceId, endpoint).mapNotNull { nodeState ->
-            readOnOff(
-                nodeState,
-                endpoint
-            )
-        }
+    override suspend fun observeLightState(
+        deviceId: DeviceId,
+        endpoint: Int
+    ): Flow<OperationResult<Boolean>> =
+        observeNodeState(deviceId, endpoint).mapSuccess { nodeState -> readOnOff(nodeState, endpoint) }
+
+    override suspend fun observeBrightnessState(
+        deviceId: DeviceId,
+        endpoint: Int
+    ): Flow<OperationResult<Float>> =
+        observeNodeState(deviceId, endpoint).mapSuccess { nodeState -> readBrightness(nodeState, endpoint) }
 
     /**
-     * Subscribes to the CurrentLevel attribute of a light endpoint and emits its brightness as it
-     * changes.
-     *
-     * The raw device level (1-254) is normalized to a 0f-1f percentage before being emitted. The
-     * subscription reports changes instantly and otherwise sends a heartbeat every 10 seconds;
-     * establishing the underlying session is subject to a 10 second timeout. The returned [Flow]
-     * closes with an exception if the subscription cannot be established.
-     *
-     * @param deviceId the commissioned device to observe.
-     * @param endpoint the Matter endpoint exposing the Level Control cluster.
-     * @return a cold [Flow] emitting brightness as a fraction between 0f (off) and 1f (max).
+     * Maps the [OperationResult.data] of a successful result, dropping reports that don't carry a
+     * value for the attribute this flow cares about. An [OperationResult.Error] always passes
+     * through unchanged so the caller never misses a report failure.
      */
-    override suspend fun observeBrightnessState(deviceId: DeviceId, endpoint: Int): Flow<Float> =
-        observeNodeState(deviceId, endpoint).mapNotNull { nodeState ->
-            readBrightness(
-                nodeState,
-                endpoint
-            )
+    private fun <T, R> Flow<OperationResult<T>>.mapSuccess(extract: (T) -> R?): Flow<OperationResult<R>> =
+        transform { result ->
+            when (result) {
+                is OperationResult.Success -> extract(result.data)?.let { emit(OperationResult.Success(it)) }
+                is OperationResult.Error -> emit(OperationResult.Error(result.t))
+            }
         }
 
     private fun readOnOff(nodeState: NodeState, endpoint: Int): Boolean? {
@@ -160,14 +150,6 @@ class MatterLightControllerImpl(
             NordicLogger.info("Received Brightness report: brightnessPercentage=$it", tag = TAG)
         }
     }
-
-    private suspend fun getConnectedDevicePointerOrNull(deviceId: DeviceId): Long? =
-        try {
-            connectedDevicePointer(deviceId)
-        } catch (e: IllegalStateException) {
-            NordicLogger.error("Can't get connectedDevicePointer.", e, tag = TAG)
-            null
-        }
 
     /**
      * Runs a cluster command that reports completion via [ChipClusters.DefaultClusterCallback],
@@ -208,9 +190,10 @@ class MatterLightControllerImpl(
      * On/Off and CurrentLevel live on the same endpoint for a Dimmable Light, so a single native
      * subscription covering both attributes (set up once per [deviceId]/[endpoint] by [nodeStateReports])
      * is shared between [observeLightState] and [observeBrightnessState] instead of each opening its own
-     * competing subscription.
+     * competing subscription. A report error is forwarded as an [OperationResult.Error] rather than
+     * closing the flow, since the underlying native subscription keeps running and can still recover.
      */
-    private fun observeNodeState(deviceId: DeviceId, endpoint: Int): Flow<NodeState> =
+    private fun observeNodeState(deviceId: DeviceId, endpoint: Int): Flow<OperationResult<NodeState>> =
         callbackFlow {
             val reports = nodeStateReports(deviceId, endpoint)
             val job = launch { reports.collect { trySend(it) } }
@@ -222,14 +205,15 @@ class MatterLightControllerImpl(
      * covering both the On/Off and Level Control attributes on first access; later callers just attach
      * to the already-running subscription.
      */
-    private suspend fun nodeStateReports(deviceId: DeviceId, endpoint: Int): Flow<NodeState> {
+    private suspend fun nodeStateReports(deviceId: DeviceId, endpoint: Int): Flow<OperationResult<NodeState>> {
         var isNew = false
         val subscription = synchronized(subscriptionsLock) {
             subscriptions.getOrPut(deviceId to endpoint) { isNew = true; NodeStateSubscription() }
         }
         if (isNew) {
             try {
-                val devicePtr = connectedDevicePointer(deviceId)
+                val devicePtr = connectedDevicePointerOrNull(deviceId)
+                    ?: throw DeviceOfflineException(deviceId)
                 chipClient.subscribeAttribute(
                     reportCallback = object : ReportCallback {
                         override fun onError(
@@ -242,10 +226,11 @@ class MatterLightControllerImpl(
                                 e,
                                 tag = TAG
                             )
+                            subscription.reports.tryEmit(OperationResult.Error(e))
                         }
 
                         override fun onReport(nodeState: NodeState) {
-                            subscription.reports.tryEmit(nodeState)
+                            subscription.reports.tryEmit(OperationResult.Success(nodeState))
                         }
                     },
                     devicePtr = devicePtr,
@@ -275,7 +260,7 @@ class MatterLightControllerImpl(
     }
 
     private class NodeStateSubscription {
-        val reports = MutableSharedFlow<NodeState>(
+        val reports = MutableSharedFlow<OperationResult<NodeState>>(
             extraBufferCapacity = 64,
             onBufferOverflow = BufferOverflow.DROP_OLDEST,
         )
@@ -287,8 +272,21 @@ class MatterLightControllerImpl(
     private val subscriptionsLock = Any()
     private val subscriptions = mutableMapOf<Pair<DeviceId, Int>, NodeStateSubscription>()
 
-    private suspend fun connectedDevicePointer(deviceId: DeviceId): Long =
-        chipClient.getConnectedDevicePointer(deviceId.longValue)
+    /**
+     * Resolves the connected device pointer for [deviceId], returning `null` when the device is
+     * unreachable so callers can treat "device offline" as a distinct, non-throwing outcome.
+     */
+    private suspend fun connectedDevicePointerOrNull(deviceId: DeviceId): Long? =
+        try {
+            chipClient.getConnectedDevicePointer(deviceId.longValue)
+        } catch (e: Exception) {
+            NordicLogger.error(
+                "Unable to resolve connected device pointer for ${deviceId.longValue}; device is offline",
+                e,
+                tag = TAG
+            )
+            null
+        }
 
     companion object {
         private const val ON_OFF_CLUSTER_ID = 6L

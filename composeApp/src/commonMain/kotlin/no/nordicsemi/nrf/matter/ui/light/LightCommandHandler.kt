@@ -59,7 +59,7 @@ class LightCommandHandler(
                 endpoint = resolveEndpoint(device, clusterId = ON_OFF_CLUSTER_ID)
             )
         )
-    }.withUiState()
+    }.toUiState()
 
     fun observeBrightnessState(
         device: Device
@@ -70,6 +70,6 @@ class LightCommandHandler(
                 endpoint = resolveEndpoint(device, clusterId = LEVEL_CONTROL_CLUSTER_ID)
             )
         )
-    }.withUiState()
+    }.toUiState()
 
 }

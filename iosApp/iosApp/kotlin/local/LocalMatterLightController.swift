@@ -83,21 +83,22 @@ class LocalMatterLightController : MatterLightController {
     /// - Parameters:
     ///   - deviceId: The Matter node ID of the target device.
     ///   - endpoint: The endpoint hosting the On/Off cluster.
-    /// - Returns: A flow emitting `true` when the light is on, `false` when it is off.
+    /// - Returns: A flow emitting `OperationResultSuccess` with `true` when the light is on,
+    ///   `false` when it is off, or `OperationResultError` if a report could not be read.
     /// - Throws: An error if the local controller cannot be obtained.
     func observeLightState(deviceId: DeviceId, endpoint: Int32) async throws -> any Kotlinx_coroutines_coreFlow {
         SharedLogger.debug("subscribeToLedChanges")
-        let flowWrapper = IosFlowWrapper<KotlinBoolean>()
+        let flowWrapper = IosFlowWrapper<OperationResult>()
         let observer = try AttributeSubscriber.shared(deviceId: deviceId.nsNumber())
 
         observer.subscribe(endpoint: endpoint as NSNumber, cluster: DimmableLightDeviceType.OnOffCluster.id, attribute: DimmableLightDeviceType.OnOffCluster.Attribute.onOff) { (result: Bool) in
             SharedLogger.info("Received led state: \(result)")
-            flowWrapper.emit(value: KotlinBoolean(bool: result))
+            flowWrapper.emit(value: OperationResultSuccess(data: KotlinBoolean(bool: result)))
         }
 
         return flowWrapper.flow
     }
-    
+
     /// Subscribes to brightness level changes reported by the device.
     ///
     /// Raw level values from the Level Control cluster are normalized to a `0...1` range
@@ -106,18 +107,19 @@ class LocalMatterLightController : MatterLightController {
     /// - Parameters:
     ///   - deviceId: The Matter node ID of the target device.
     ///   - endpoint: The endpoint hosting the Level Control cluster.
-    /// - Returns: A flow emitting brightness normalized to `0...1`.
+    /// - Returns: A flow emitting `OperationResultSuccess` with brightness normalized to `0...1`,
+    ///   or `OperationResultError` if a report could not be read.
     /// - Throws: An error if the local controller cannot be obtained.
     func observeBrightnessState(deviceId: DeviceId, endpoint: Int32) async throws -> any Kotlinx_coroutines_coreFlow {
         SharedLogger.debug("subscribeToLightLevelChanges")
-        let flowWrapper = IosFlowWrapper<KotlinFloat>()
+        let flowWrapper = IosFlowWrapper<OperationResult>()
         let observer = try AttributeSubscriber.shared(deviceId: deviceId.nsNumber())
 
         observer.subscribe(endpoint: endpoint as NSNumber, cluster: DimmableLightDeviceType.LevelControlCluster.id, attribute: DimmableLightDeviceType.LevelControlCluster.Attribute.currentLevel) { (rawLevel: Int) in
             SharedLogger.info("Received light level: \(rawLevel)")
             let percent = max(0, min(1, (Float(rawLevel) - 1) / 253))
             SharedLogger.info("Calculated percent: \(percent)")
-            flowWrapper.emit(value: KotlinFloat(float: percent))
+            flowWrapper.emit(value: OperationResultSuccess(data: KotlinFloat(float: percent)))
         }
 
         return flowWrapper.flow

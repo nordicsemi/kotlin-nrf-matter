@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter.controller
 
 import kotlinx.coroutines.flow.Flow
+import no.nordicsemi.nrf.matter.domain.OperationResult
 import no.nordicsemi.nrf.matter.model.DeviceId
 
 interface MatterLightController {
@@ -40,14 +41,17 @@ interface MatterLightController {
      * Subscribes to the On/Off attribute of a light endpoint and emits its state as it changes.
      *
      * The subscription reports changes instantly and otherwise sends a heartbeat every 10 seconds;
-     * establishing the underlying session is subject to a 10 second timeout. The returned [Flow]
-     * closes with an exception if the subscription cannot be established.
+     * establishing the underlying session is subject to a 10 second timeout. Once the subscription
+     * is established, a report error is delivered as an [OperationResult.Error] rather than
+     * terminating the flow, so later reports can still arrive. The returned [Flow] only closes
+     * with an exception if the subscription cannot be established in the first place.
      *
      * @param deviceId the commissioned device to observe.
      * @param endpoint the Matter endpoint exposing the On/Off cluster.
-     * @return a cold [Flow] emitting `true` when the light is on, `false` when it is off.
+     * @return a cold [Flow] emitting [OperationResult.Success] with `true` when the light is on,
+     * `false` when it is off, or [OperationResult.Error] when a report could not be read.
      */
-    suspend fun observeLightState(deviceId: DeviceId, endpoint: Int): Flow<Boolean>
+    suspend fun observeLightState(deviceId: DeviceId, endpoint: Int): Flow<OperationResult<Boolean>>
 
     /**
      * Subscribes to the CurrentLevel attribute of a light endpoint and emits its brightness as it
@@ -55,12 +59,15 @@ interface MatterLightController {
      *
      * The raw device level (1-254) is normalized to a 0f-1f percentage before being emitted. The
      * subscription reports changes instantly and otherwise sends a heartbeat every 10 seconds;
-     * establishing the underlying session is subject to a 10 second timeout. The returned [Flow]
-     * closes with an exception if the subscription cannot be established.
+     * establishing the underlying session is subject to a 10 second timeout. Once the subscription
+     * is established, a report error is delivered as an [OperationResult.Error] rather than
+     * terminating the flow, so later reports can still arrive. The returned [Flow] only closes
+     * with an exception if the subscription cannot be established in the first place.
      *
      * @param deviceId the commissioned device to observe.
      * @param endpoint the Matter endpoint exposing the Level Control cluster.
-     * @return a cold [Flow] emitting brightness as a fraction between 0f (off) and 1f (max).
+     * @return a cold [Flow] emitting [OperationResult.Success] with brightness as a fraction
+     * between 0f (off) and 1f (max), or [OperationResult.Error] when a report could not be read.
      */
-    suspend fun observeBrightnessState(deviceId: DeviceId, endpoint: Int): Flow<Float>
+    suspend fun observeBrightnessState(deviceId: DeviceId, endpoint: Int): Flow<OperationResult<Float>>
 }
