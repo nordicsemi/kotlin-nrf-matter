@@ -9,9 +9,12 @@ import no.nordicsemi.nrf.matter.adapters.MatterDecommissionerImpl
 import no.nordicsemi.nrf.matter.adapters.MatterDoorLockControllerImpl
 import no.nordicsemi.nrf.matter.adapters.MatterLightControllerImpl
 import no.nordicsemi.nrf.matter.adapters.MatterManufacturerSpecificControllerImpl
+import no.nordicsemi.nrf.matter.binding.BindGroupDevicesUseCase
+import no.nordicsemi.nrf.matter.SwiftCodeProvider
 import no.nordicsemi.nrf.matter.binding.BindingLogsProviderImpl
 import no.nordicsemi.nrf.matter.binding.BindingViewModel
 import no.nordicsemi.nrf.matter.binding.DataStoreProvider
+import no.nordicsemi.nrf.matter.binding.IosBindGroupDevicesUseCase
 import no.nordicsemi.nrf.matter.commission.CommissioningViewModelIos
 import no.nordicsemi.nrf.matter.controller.BindingController
 import no.nordicsemi.nrf.matter.controller.BindingLogsProvider
@@ -93,6 +96,9 @@ val iosModule = module {
     single<GroupBindingRepository> {
         GroupBindingRepository(get())
     }
+    single<BindGroupDevicesUseCase> {
+        IosBindGroupDevicesUseCase(get())
+    }
 
     // View models.
     viewModelOf(::HomeViewModel)
@@ -100,7 +106,7 @@ val iosModule = module {
     viewModel { CommissioningViewModelIos(get(), get()) }
 
     viewModel { LoggerViewModel() }
-    viewModel { BindingViewModel(get(), get(), get(), get()) }
+    viewModel { BindingViewModel(get(), get(), get(), get(), get()) }
     factory { LightCommandHandler(get()) }
     factory { LockCommandHandler(get()) }
     factory { ManufacturerSpecCommandHandler(get(), get(), get()) }
