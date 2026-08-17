@@ -93,8 +93,22 @@ class GroupBindingControllerImpl(
     }
 
     private fun nextGroupId(): Int {
-        val available = chipClient.chipDeviceController.availableGroupIds
-        return available.firstOrNull { it in 1..0xFFFF } ?: error("No group ids available")
+        val available = runCatching { chipClient.chipDeviceController.availableGroupIds }.getOrNull()
+        NordicLogger.debug("Available group ids: $available", tag = TAG)
+
+        val firstAvailable = available?.firstOrNull { it in 1..0xFEFF }
+        if (firstAvailable != null) return firstAvailable
+
+        NordicLogger.info("No available group ids reported by SDK, using fallback.", tag = TAG)
+        // Fallback: search for an unused ID in the valid range.
+        // We avoid 0x0000 (invalid) and 0xFF00-0xFFFF (reserved/fabric-wide).
+        val usedKeySets = chipClient.chipDeviceController.keySetIds.toSet()
+        for (candidate in 1..0xFEFF) {
+            if (candidate !in usedKeySets) {
+                return candidate
+            }
+        }
+        error("No group ids available")
     }
 
     private fun nextKeySetId(): Int {
