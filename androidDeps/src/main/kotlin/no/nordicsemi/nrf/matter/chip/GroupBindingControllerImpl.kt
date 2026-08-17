@@ -2,12 +2,7 @@ package no.nordicsemi.nrf.matter.chip
 
 import chip.devicecontroller.ChipClusters
 import chip.devicecontroller.ChipStructs
-import chip.devicecontroller.ClusterIDMapping
-import chip.devicecontroller.GroupKeySecurityPolicy
 import kotlinx.coroutines.suspendCancellableCoroutine
-import matter.tlv.AnonymousTag
-import matter.tlv.ContextSpecificTag
-import matter.tlv.TlvWriter
 import no.nordicsemi.nrf.matter.controller.GroupBindingController
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
@@ -34,45 +29,35 @@ class GroupBindingControllerImpl(
         val targetPtr = chipClient.getConnectedDevicePointer(targetNodeId.longValue)
 
         try {
-            val existingBindings = readBindings(sourcePtr, sourceEndpoint)
+            val fabrics = readFabrics(sourcePtr)
+            val fabricIndex = fabrics.firstOrNull()?.fabricIndex 
+                ?: error("Could not determine fabric index for node $sourceNodeId")
+
             val groupId = nextGroupId()
             val keySetId = nextKeySetId()
             val groupName = "Group $groupId"
             val keyMaterial = ByteArray(16).also { secureRandom.nextBytes(it) }
-            val epochStartTime = System.currentTimeMillis() / 1000L
 
-            writeGroupKeySet(
-                targetNodeId = sourceNodeId.longValue,
-                groupKeySetId = keySetId,
-                keyMaterial = keyMaterial,
-                epochStartTime = epochStartTime,
-            )
-            writeGroupKeySet(
-                targetNodeId = targetNodeId.longValue,
-                groupKeySetId = keySetId,
-                keyMaterial = keyMaterial,
-                epochStartTime = epochStartTime,
-            )
-            addTargetToGroup(
-                targetNodeId = targetNodeId.longValue,
-                targetEndpoint = targetEndpoint,
-                groupId = groupId,
-                groupName = groupName,
-            )
+            NordicLogger.info("Starting group binding: GroupId=$groupId, KeySetId=$keySetId, Fabric=$fabricIndex", tag = TAG)
 
-            val fabricIndex = existingBindings
-                .firstOrNull { it?.fabricIndex != null }
-                ?.fabricIndex
+            // Group key set on BOTH nodes.
+            keySetWrite(sourcePtr, keySetId, keyMaterial)
+            keySetWrite(targetPtr, keySetId, keyMaterial)
 
-            writeGroupBinding(
-                sourcePtr = sourcePtr,
-                sourceEndpoint = sourceEndpoint,
-                targetNodeId = targetNodeId.longValue,
-                targetEndpoint = targetEndpoint,
-                clusterId = clusterId,
-                groupId = groupId,
-                fabricIndex = fabricIndex,
-            )
+            // Map the group ID to the key set for this fabric on BOTH nodes.
+            writeGroupKeyMap(sourcePtr, groupId, keySetId, fabricIndex)
+            writeGroupKeyMap(targetPtr, groupId, keySetId, fabricIndex)
+
+            // Add the target endpoint to the group.
+            addGroup(targetPtr, targetEndpoint, groupId, groupName)
+
+            // Update ACL on the target node to allow the group to operate.
+            appendGroupAcl(targetPtr, groupId, fabricIndex)
+
+            // Write the group binding on the source node.
+            writeGroupBinding(sourcePtr, sourceEndpoint, groupId, clusterId, fabricIndex)
+
+            NordicLogger.info("Group binding completed successfully", tag = TAG)
 
             return GroupBinding(
                 id = "${sourceNodeId.longValue}_${targetNodeId.longValue}_group_$groupId",
@@ -86,6 +71,9 @@ class GroupBindingControllerImpl(
                 keySetId = keySetId,
                 fabricIndex = fabricIndex,
             )
+        } catch (e: Exception) {
+            NordicLogger.error("Group binding failed: ${e.message}", e, tag = TAG)
+            throw e
         } finally {
             chipClient.chipDeviceController.releaseConnectedDevicePointer(sourcePtr)
             chipClient.chipDeviceController.releaseConnectedDevicePointer(targetPtr)
@@ -93,15 +81,6 @@ class GroupBindingControllerImpl(
     }
 
     private fun nextGroupId(): Int {
-        val available = runCatching { chipClient.chipDeviceController.availableGroupIds }.getOrNull()
-        NordicLogger.debug("Available group ids: $available", tag = TAG)
-
-        val firstAvailable = available?.firstOrNull { it in 1..0xFEFF }
-        if (firstAvailable != null) return firstAvailable
-
-        NordicLogger.info("No available group ids reported by SDK, using fallback.", tag = TAG)
-        // Fallback: search for an unused ID in the valid range.
-        // We avoid 0x0000 (invalid) and 0xFF00-0xFFFF (reserved/fabric-wide).
         val usedKeySets = chipClient.chipDeviceController.keySetIds.toSet()
         for (candidate in 1..0xFEFF) {
             if (candidate !in usedKeySets) {
@@ -121,79 +100,82 @@ class GroupBindingControllerImpl(
         error("No key set ids available")
     }
 
-    private suspend fun writeGroupKeySet(
-        targetNodeId: Long,
-        groupKeySetId: Int,
-        keyMaterial: ByteArray,
-        epochStartTime: Long,
-    ) {
-        val payload = TlvWriter().apply {
-            startStructure(AnonymousTag)
-            startStructure(
-                ContextSpecificTag(
-                    ClusterIDMapping.GroupKeyManagement.KeySetWriteCommandField.GroupKeySet.getID()
-                )
+    /** Step 1 — install the group key set (single epoch key, TrustFirst policy). */
+    private suspend fun keySetWrite(devicePtr: Long, keySetId: Int, epochKey: ByteArray) =
+        awaitDefault { cb ->
+            val keySet = ChipStructs.GroupKeyManagementClusterGroupKeySetStruct(
+                keySetId,
+                GROUP_KEY_SECURITY_POLICY_TRUST_FIRST,
+                epochKey,
+                EPOCH_START_TIME_SAFE, // Using 1L as a safe non-zero starting time
+                null, null,
+                null, null,
             )
-            put(ContextSpecificTag(0), groupKeySetId)
-            put(ContextSpecificTag(1), GroupKeySecurityPolicy.TrustFirst.getID())
-            put(ContextSpecificTag(2), keyMaterial)
-            put(ContextSpecificTag(3), epochStartTime)
-            put(ContextSpecificTag(4), ByteArray(keyMaterial.size))
-            put(ContextSpecificTag(5), 0L)
-            put(ContextSpecificTag(6), ByteArray(keyMaterial.size))
-            put(ContextSpecificTag(7), 0L)
-            endStructure()
-            endStructure()
-        }.getEncoded()
+            ChipClusters.GroupKeyManagementCluster(devicePtr, ROOT_ENDPOINT)
+                .keySetWrite(cb, keySet)
+        }
 
-        invokeClusterCommand(
-            targetNodeId = targetNodeId,
-            endpoint = ROOT_ENDPOINT,
-            clusterId = GROUP_KEY_MANAGEMENT_CLUSTER_ID,
-            commandId = ClusterIDMapping.GroupKeyManagement.Command.KeySetWrite.id,
-            payload = payload,
+    /** Step 2 — map the group id to the key set for this fabric. */
+    private suspend fun writeGroupKeyMap(devicePtr: Long, groupId: Int, keySetId: Int, fabricIndex: Int) =
+        awaitDefault { cb ->
+            val map = ChipStructs.GroupKeyManagementClusterGroupKeyMapStruct(
+                groupId, keySetId, fabricIndex,
+            )
+            ChipClusters.GroupKeyManagementCluster(devicePtr, ROOT_ENDPOINT)
+                .writeGroupKeyMapAttribute(cb, arrayListOf(map))
+        }
+
+    /** Step 3 — add the endpoint to the group via the Groups cluster. */
+    private suspend fun addGroup(devicePtr: Long, endpoint: Int, groupId: Int, groupName: String) =
+        suspendCancellableCoroutine { cont ->
+            ChipClusters.GroupsCluster(devicePtr, endpoint).addGroup(
+                object : ChipClusters.GroupsCluster.AddGroupResponseCallback {
+                    override fun onSuccess(status: Int?, groupID: Int?) {
+                        if (cont.isActive) cont.resume(Unit)
+                    }
+
+                    override fun onError(error: Exception?) {
+                        if (cont.isActive) cont.resumeWithException(error ?: RuntimeException("addGroup failed"))
+                    }
+                },
+                groupId, groupName,
+            )
+        }
+
+    /**
+     * Step 4 — append a group ACL entry (read-modify-write so the admin entry is preserved).
+     * authMode = Group(3), subjects = [groupId], privilege = Operate(3).
+     */
+    private suspend fun appendGroupAcl(devicePtr: Long, groupId: Int, fabricIndex: Int) {
+        val aclCluster = ChipClusters.AccessControlCluster(devicePtr, ROOT_ENDPOINT)
+        val existing = readAcl(aclCluster)
+        
+        val alreadyPresent = existing.any { entry ->
+            entry.authMode == AUTH_MODE_GROUP && entry.subjects?.contains(groupId.toLong()) == true
+        }
+        if (alreadyPresent) return
+
+        val groupEntry = ChipStructs.AccessControlClusterAccessControlEntryStruct(
+            PRIVILEGE_OPERATE,
+            AUTH_MODE_GROUP,
+            arrayListOf(groupId.toLong()),
+            null, // targets (all)
+            fabricIndex,
         )
+        val updated = ArrayList(existing).apply { add(groupEntry) }
+        awaitDefault { cb -> aclCluster.writeAclAttribute(cb, updated) }
     }
 
-    private suspend fun addTargetToGroup(
-        targetNodeId: Long,
-        targetEndpoint: Int,
-        groupId: Int,
-        groupName: String,
-    ) {
-        val payload = TlvWriter().apply {
-            startStructure(AnonymousTag)
-            put(
-                ContextSpecificTag(ClusterIDMapping.Groups.AddGroupCommandField.GroupID.id),
-                groupId
-            )
-            put(
-                ContextSpecificTag(ClusterIDMapping.Groups.AddGroupCommandField.GroupName.id),
-                groupName
-            )
-            endStructure()
-        }.getEncoded()
-
-        invokeClusterCommand(
-            targetNodeId = targetNodeId,
-            endpoint = targetEndpoint,
-            clusterId = GROUPS_CLUSTER_ID,
-            commandId = ClusterIDMapping.Groups.Command.AddGroup.id,
-            payload = payload,
-        )
-    }
-
+    /** Step 5 — write the group binding on the switch's Binding cluster. */
     private suspend fun writeGroupBinding(
         sourcePtr: Long,
         sourceEndpoint: Int,
-        targetNodeId: Long,
-        targetEndpoint: Int,
-        clusterId: Long,
         groupId: Int,
-        fabricIndex: Int?,
+        clusterId: Long,
+        fabricIndex: Int
     ) {
-        val cluster = ChipClusters.BindingCluster(sourcePtr, sourceEndpoint)
-        val existingBindings = readBindings(sourcePtr, sourceEndpoint)
+        val bindingCluster = ChipClusters.BindingCluster(sourcePtr, sourceEndpoint)
+        val existing = readBindings(bindingCluster)
 
         val newEntry = ChipStructs.BindingClusterTargetStruct(
             Optional.empty(),
@@ -203,88 +185,75 @@ class GroupBindingControllerImpl(
             fabricIndex,
         )
 
-        val alreadyExists = existingBindings.any {
+        val alreadyExists = existing.any {
             it?.group?.orElse(null) == groupId &&
-                    it.cluster?.orElse(null) == clusterId &&
-                    it.endpoint?.orElse(null) == null
+            it.cluster?.orElse(null) == clusterId
         }
 
-        if (alreadyExists) {
-            NordicLogger.debug("Group binding already exists, skipping", tag = TAG)
-            return
-        }
+        if (alreadyExists) return
 
-        existingBindings.add(newEntry)
-        cluster.awaitWriteBinding(existingBindings)
+        val updated = ArrayList(existing).apply { add(newEntry) }
+        awaitDefault { cb -> bindingCluster.writeBindingAttribute(cb, updated) }
     }
 
-    private suspend fun invokeClusterCommand(
-        targetNodeId: Long,
-        endpoint: Int,
-        clusterId: Long,
-        commandId: Long,
-        payload: ByteArray,
-    ) {
-        val connectedDevicePtr = chipClient.getConnectedDevicePointer(targetNodeId)
-        try {
-            val invokeElement = chip.devicecontroller.model.InvokeElement.newInstance(
-                endpoint,
-                clusterId,
-                commandId,
-                payload,
-                null
-            )
-            chipClient.invoke(connectedDevicePtr, invokeElement)
-        } finally {
-            chipClient.chipDeviceController.releaseConnectedDevicePointer(connectedDevicePtr)
+    private suspend fun readFabrics(devicePtr: Long): List<ChipStructs.OperationalCredentialsClusterFabricDescriptorStruct> =
+        suspendCancellableCoroutine { cont ->
+            ChipClusters.OperationalCredentialsCluster(devicePtr, ROOT_ENDPOINT)
+                .readFabricsAttribute(object : ChipClusters.OperationalCredentialsCluster.FabricsAttributeCallback {
+                    override fun onSuccess(values: List<ChipStructs.OperationalCredentialsClusterFabricDescriptorStruct>) {
+                        if (cont.isActive) cont.resume(values)
+                    }
+                    override fun onError(error: Exception) {
+                        if (cont.isActive) cont.resumeWithException(error)
+                    }
+                })
         }
-    }
 
-    private suspend fun readBindings(
-        devicePtr: Long,
-        endpoint: Int,
-    ): ArrayList<ChipStructs.BindingClusterTargetStruct?> {
-        val cluster = ChipClusters.BindingCluster(devicePtr, endpoint)
-        return suspendCancellableCoroutine { continuation ->
-            cluster.readBindingAttribute(object : ChipClusters.BindingCluster.BindingAttributeCallback {
-                override fun onSuccess(valueList: List<ChipStructs.BindingClusterTargetStruct?>?) {
-                    continuation.resume(ArrayList(valueList ?: emptyList()))
+    private suspend fun readAcl(aclCluster: ChipClusters.AccessControlCluster): List<ChipStructs.AccessControlClusterAccessControlEntryStruct> =
+        suspendCancellableCoroutine { cont ->
+            aclCluster.readAclAttribute(object : ChipClusters.AccessControlCluster.AclAttributeCallback {
+                override fun onSuccess(value: MutableList<ChipStructs.AccessControlClusterAccessControlEntryStruct>?) {
+                    if (cont.isActive) cont.resume(value ?: emptyList())
                 }
-
-                override fun onError(ex: Exception) {
-                    continuation.resumeWithException(ex)
+                override fun onError(error: Exception?) {
+                    if (cont.isActive) cont.resumeWithException(error ?: RuntimeException("readAcl failed"))
                 }
             })
         }
-    }
 
-    private suspend fun ChipClusters.BindingCluster.awaitWriteBinding(
-        bindings: ArrayList<ChipStructs.BindingClusterTargetStruct?>
-    ) {
-        return suspendCancellableCoroutine { continuation ->
-            writeBindingAttribute(
-                object : ChipClusters.DefaultClusterCallback {
-                    override fun onSuccess() {
-                        if (continuation.isActive) {
-                            continuation.resume(Unit)
-                        }
-                    }
-
-                    override fun onError(ex: Exception) {
-                        if (continuation.isActive) {
-                            continuation.resumeWithException(ex)
-                        }
-                    }
-                },
-                bindings
-            )
+    private suspend fun readBindings(bindingCluster: ChipClusters.BindingCluster): List<ChipStructs.BindingClusterTargetStruct?> =
+        suspendCancellableCoroutine { cont ->
+            bindingCluster.readBindingAttribute(object : ChipClusters.BindingCluster.BindingAttributeCallback {
+                override fun onSuccess(valueList: List<ChipStructs.BindingClusterTargetStruct?>?) {
+                    if (cont.isActive) cont.resume(valueList ?: emptyList())
+                }
+                override fun onError(ex: Exception) {
+                    if (cont.isActive) cont.resumeWithException(ex)
+                }
+            })
         }
-    }
+
+    private suspend fun awaitDefault(block: (ChipClusters.DefaultClusterCallback) -> Unit) =
+        suspendCancellableCoroutine { cont ->
+            val cb = object : ChipClusters.DefaultClusterCallback {
+                override fun onSuccess() {
+                    if (cont.isActive) cont.resume(Unit)
+                }
+                override fun onError(error: Exception?) {
+                    if (cont.isActive) cont.resumeWithException(error ?: RuntimeException("cluster write failed"))
+                }
+            }
+            block(cb)
+        }
 
     companion object {
-        private const val GROUPS_CLUSTER_ID: Long = 0x0004L
-        private const val GROUP_KEY_MANAGEMENT_CLUSTER_ID: Long = 0x003FL
-        private const val ROOT_ENDPOINT: Int = 0
         private const val TAG = "GroupBinding"
+        private const val ROOT_ENDPOINT = 0
+
+        private const val GROUP_KEY_SECURITY_POLICY_TRUST_FIRST = 0
+        private const val EPOCH_START_TIME_SAFE = 1L
+        
+        private const val AUTH_MODE_GROUP = 3
+        private const val PRIVILEGE_OPERATE = 3
     }
 }
