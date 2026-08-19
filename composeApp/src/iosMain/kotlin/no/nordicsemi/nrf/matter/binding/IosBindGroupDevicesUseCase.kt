@@ -18,6 +18,8 @@ class IosBindGroupDevicesUseCase(
     override fun invoke(
         switchNodeId: DeviceId,
         lightNodeId: DeviceId,
+        groupId: Int?,
+        groupName: String?,
     ): Flow<UiState<GroupBinding>> {
         // TODO: Replace this placeholder once iOS group binding support is implemented.
         return flowOf(UiState.Error("Group binding is not supported on iOS yet."))

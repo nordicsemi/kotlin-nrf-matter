@@ -10,5 +10,7 @@ interface GroupBindingController {
         targetNodeId: DeviceId,
         targetEndpoint: Int,
         clusterId: Long,
+        groupId: Int? = null,
+        groupName: String? = null,
     ): GroupBinding
 }

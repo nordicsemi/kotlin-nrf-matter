@@ -70,6 +70,13 @@ data class BindingUiState(
     val selectedTargetDeviceId: DeviceId? = null,
     val eligibleTargetDevices: List<Device> = emptyList(),
     val groupBindingSupported: Boolean = false,
+    val availableGroups: List<GroupInfo> = emptyList(),
+    val selectedGroupId: Int? = null,
+)
+
+data class GroupInfo(
+    val groupId: Int,
+    val groupName: String,
 )
 
 class BindingViewModel(
@@ -143,6 +150,11 @@ class BindingViewModel(
         }
     }
 
+    fun onGroupSelected(groupId: Int?) {
+        _bindingUiState.update {
+            it.copy(selectedGroupId = groupId)
+        }
+    }
 
     fun initiateBinding(sourceDeviceId: DeviceId, targetDeviceId: DeviceId) {
         val collectLogsJob = bindDevicesUseCase.bindingLogs
@@ -170,7 +182,12 @@ class BindingViewModel(
             .launchIn(viewModelScope)
     }
 
-    fun initiateGroupBinding(sourceDeviceId: DeviceId, targetDeviceId: DeviceId) {
+    fun initiateGroupBinding(
+        sourceDeviceId: DeviceId,
+        targetDeviceId: DeviceId,
+        groupId: Int? = null,
+        groupName: String? = null,
+    ) {
         if (!bindGroupDevicesUseCase.isSupported) {
             updateGroupBindingState(UiState.Error("Group binding is not available on this platform."))
             return
@@ -184,7 +201,9 @@ class BindingViewModel(
 
         bindGroupDevicesUseCase.invoke(
             switchNodeId = sourceDeviceId,
-            lightNodeId = targetDeviceId
+            lightNodeId = targetDeviceId,
+            groupId = groupId,
+            groupName = groupName,
         )
             .onStart { updateGroupBindingState(UiState.Loading()) }
             .onCompletion { collectLogsJob.cancel() }
@@ -230,9 +249,15 @@ class BindingViewModel(
 
     fun getActiveGroupBindings() = viewModelScope.launch {
         groupBindingRepository.getAllBinding()
-            .collect {
+            .collect { bindings ->
+                val groups = bindings
+                    .distinctBy { it.groupId }
+                    .map { GroupInfo(it.groupId, it.groupName) }
                 _bindingUiState.update { state ->
-                    state.copy(activeGroupBindings = it)
+                    state.copy(
+                        activeGroupBindings = bindings,
+                        availableGroups = groups
+                    )
                 }
             }
     }

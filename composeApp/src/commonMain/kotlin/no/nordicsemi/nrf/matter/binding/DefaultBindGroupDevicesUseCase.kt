@@ -24,6 +24,8 @@ class DefaultBindGroupDevicesUseCase(
     override operator fun invoke(
         switchNodeId: DeviceId,
         lightNodeId: DeviceId,
+        groupId: Int?,
+        groupName: String?,
     ): Flow<UiState<GroupBinding>> = flow {
         emit(UiState.Loading())
         try {
@@ -32,7 +34,8 @@ class DefaultBindGroupDevicesUseCase(
                 .firstOrNull {
                     it.sourceNodeId == switchNodeId &&
                             it.targetNodeId == lightNodeId &&
-                            it.clusterId == 0x006L
+                            it.clusterId == 0x006L &&
+                            (groupId == null || it.groupId == groupId)
                 }
 
             if (existingBinding != null) {
@@ -46,6 +49,8 @@ class DefaultBindGroupDevicesUseCase(
                 targetNodeId = lightNodeId,
                 targetEndpoint = 1,
                 clusterId = 0x006L,
+                groupId = groupId,
+                groupName = groupName,
             )
             groupBindingRepository.save(binding)
             emit(UiState.Success(binding))

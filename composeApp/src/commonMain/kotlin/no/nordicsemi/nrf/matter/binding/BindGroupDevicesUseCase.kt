@@ -12,5 +12,7 @@ interface BindGroupDevicesUseCase {
     operator fun invoke(
         switchNodeId: DeviceId,
         lightNodeId: DeviceId,
+        groupId: Int? = null,
+        groupName: String? = null,
     ): Flow<UiState<GroupBinding>>
 }
