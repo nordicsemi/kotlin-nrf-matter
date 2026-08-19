@@ -19,6 +19,7 @@ import androidx.compose.material.icons.automirrored.filled.TrendingFlat
 import androidx.compose.material.icons.filled.Cable
 import androidx.compose.material.icons.filled.SwapCalls
 import androidx.compose.material.icons.filled.Tag
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -217,15 +219,21 @@ internal fun BindingsScreen(
                     } else {
                         "Target Action: Install Group Key, add group membership, then write a multicast binding"
                     },
+                    isGroupTab = selectedTab == 1,
                     onSourceSelected = {
                         bindingViewModel.onSourceSelected(it)
                     },
                     onTargetSelected = { targetId ->
                         bindingViewModel.onTargetSelected(targetId)
                     },
+                    onGroupSelected = { groupId ->
+                        bindingViewModel.onGroupSelected(groupId)
+                    },
                     initiateBinding = { sourceId, targetId ->
-                        if (selectedTab == 0) bindingViewModel.initiateBinding(sourceId, targetId)
-                        else bindingViewModel.initiateGroupBinding(sourceId, targetId)
+                        bindingViewModel.initiateBinding(sourceId, targetId)
+                    },
+                    initiateGroupBinding = { sourceId, targetId, groupId, groupName ->
+                        bindingViewModel.initiateGroupBinding(sourceId, targetId, groupId, groupName)
                     }
                 )
             }
@@ -288,12 +296,19 @@ private fun BindingTableDetails(
     bindingScreenState: BindingUiState,
     bindingActionText: String,
     targetActionText: String,
+    isGroupTab: Boolean = false,
     onSourceSelected: (sourceDeviceId: DeviceId) -> Unit,
     onTargetSelected: (targetDeviceId: DeviceId) -> Unit,
+    onGroupSelected: (groupId: Int?) -> Unit = {},
     initiateBinding: (sourceDeviceId: DeviceId, targetDeviceId: DeviceId) -> Unit,
+    initiateGroupBinding: (sourceDeviceId: DeviceId, targetDeviceId: DeviceId, groupId: Int?, groupName: String?) -> Unit = { _, _, _, _ -> },
 ) {
     var isSourceDropdownExpanded by rememberSaveable { mutableStateOf(false) }
     var isTargetDropdownExpanded by rememberSaveable { mutableStateOf(false) }
+    var isGroupDropdownExpanded by rememberSaveable { mutableStateOf(false) }
+
+    var showGroupNamePopup by rememberSaveable { mutableStateOf(false) }
+    var groupNameInput by rememberSaveable { mutableStateOf("") }
 
     // Derive displayed text from current UiState
     val sourceText = bindingScreenState.sourceDevices
@@ -305,6 +320,12 @@ private fun BindingTableDetails(
         .firstOrNull { it.deviceId == bindingScreenState.selectedTargetDeviceId }
         ?.let { it.productName ?: "Node ${it.deviceId.longValue}" }
         ?: "Select Light Bulb"
+
+    val groupText = if (bindingScreenState.selectedGroupId == null) {
+        "Add New Group"
+    } else {
+        bindingScreenState.availableGroups.firstOrNull { it.groupId == bindingScreenState.selectedGroupId }?.groupName ?: "Group ${bindingScreenState.selectedGroupId}"
+    }
 
     OutlinedCard(
         modifier = Modifier.fillMaxWidth()
@@ -432,6 +453,59 @@ private fun BindingTableDetails(
                 }
             }
 
+            if (isGroupTab && bindingScreenState.selectedTargetDeviceId != null) {
+                // Group Dropdown
+                Column {
+                    Text(
+                        text = "Select Group",
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(horizontal = 8.dp),
+                    )
+                    ExposedDropdownMenuBox(
+                        expanded = isGroupDropdownExpanded,
+                        onExpandedChange = { isGroupDropdownExpanded = !isGroupDropdownExpanded },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = groupText,
+                            onValueChange = {},
+                            readOnly = true,
+                            modifier = Modifier
+                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                                .fillMaxWidth(),
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = isGroupDropdownExpanded)
+                            },
+                            shape = RoundedCornerShape(8.dp)
+                        )
+
+                        ExposedDropdownMenu(
+                            expanded = isGroupDropdownExpanded,
+                            onDismissRequest = { isGroupDropdownExpanded = false }
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Add New Group") },
+                                onClick = {
+                                    isGroupDropdownExpanded = false
+                                    onGroupSelected(null)
+                                }
+                            )
+                            bindingScreenState.availableGroups.forEach { group ->
+                                DropdownMenuItem(
+                                    text = { Text(group.groupName) },
+                                    onClick = {
+                                        isGroupDropdownExpanded = false
+                                        onGroupSelected(group.groupId)
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             // Target Cluster Info Banner
             Row(
                 modifier = Modifier
@@ -462,8 +536,17 @@ private fun BindingTableDetails(
                 onClick = {
                     val source = bindingScreenState.selectedSourceDeviceId
                     val target = bindingScreenState.selectedTargetDeviceId
-                    if (target != null) {
-                        initiateBinding(source, target)
+                    if (source != null && target != null) {
+                        if (isGroupTab) {
+                            if (bindingScreenState.selectedGroupId == null) {
+                                showGroupNamePopup = true
+                            } else {
+                                val group = bindingScreenState.availableGroups.first { it.groupId == bindingScreenState.selectedGroupId }
+                                initiateGroupBinding(source, target, group.groupId, group.groupName)
+                            }
+                        } else {
+                            initiateBinding(source, target)
+                        }
                     }
                 },
                 enabled = canSubmit,
@@ -473,6 +556,43 @@ private fun BindingTableDetails(
                 Text(bindingActionText)
             }
         }
+    }
+
+    if (showGroupNamePopup) {
+        AlertDialog(
+            onDismissRequest = { showGroupNamePopup = false },
+            title = { Text("Name your Group") },
+            text = {
+                OutlinedTextField(
+                    value = groupNameInput,
+                    onValueChange = { groupNameInput = it },
+                    label = { Text("Group Name") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        val source = bindingScreenState.selectedSourceDeviceId
+                        val target = bindingScreenState.selectedTargetDeviceId
+                        if (source != null && target != null && groupNameInput.isNotBlank()) {
+                            initiateGroupBinding(source, target, null, groupNameInput)
+                            showGroupNamePopup = false
+                            groupNameInput = ""
+                        }
+                    },
+                    enabled = groupNameInput.isNotBlank()
+                ) {
+                    Text("Confirm")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showGroupNamePopup = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
 

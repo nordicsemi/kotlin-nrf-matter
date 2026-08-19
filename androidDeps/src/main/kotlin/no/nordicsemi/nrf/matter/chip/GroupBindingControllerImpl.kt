@@ -24,6 +24,8 @@ class GroupBindingControllerImpl(
         targetNodeId: DeviceId,
         targetEndpoint: Int,
         clusterId: Long,
+        groupId: Int?,
+        groupName: String?,
     ): GroupBinding {
         val sourcePtr = chipClient.getConnectedDevicePointer(sourceNodeId.longValue)
         val targetPtr = chipClient.getConnectedDevicePointer(targetNodeId.longValue)
@@ -33,41 +35,41 @@ class GroupBindingControllerImpl(
             val fabricIndex = fabrics.firstOrNull()?.fabricIndex 
                 ?: error("Could not determine fabric index for node $sourceNodeId")
 
-            val groupId = nextGroupId()
+            val finalGroupId = groupId ?: nextGroupId()
+            val finalGroupName = groupName ?: "Group $finalGroupId"
             val keySetId = nextKeySetId()
-            val groupName = "Group $groupId"
             val keyMaterial = ByteArray(16).also { secureRandom.nextBytes(it) }
 
-            NordicLogger.info("Starting group binding: GroupId=$groupId, KeySetId=$keySetId, Fabric=$fabricIndex", tag = TAG)
+            NordicLogger.info("Starting group binding: GroupId=$finalGroupId, KeySetId=$keySetId, Fabric=$fabricIndex", tag = TAG)
 
             // Group key set on BOTH nodes.
             keySetWrite(sourcePtr, keySetId, keyMaterial)
             keySetWrite(targetPtr, keySetId, keyMaterial)
 
             // Map the group ID to the key set for this fabric on BOTH nodes.
-            writeGroupKeyMap(sourcePtr, groupId, keySetId, fabricIndex)
-            writeGroupKeyMap(targetPtr, groupId, keySetId, fabricIndex)
+            writeGroupKeyMap(sourcePtr, finalGroupId, keySetId, fabricIndex)
+            writeGroupKeyMap(targetPtr, finalGroupId, keySetId, fabricIndex)
 
             // Add the target endpoint to the group.
-            addGroup(targetPtr, targetEndpoint, groupId, groupName)
+            addGroup(targetPtr, targetEndpoint, finalGroupId, finalGroupName)
 
             // Update ACL on the target node to allow the group to operate.
-            appendGroupAcl(targetPtr, groupId, fabricIndex)
+            appendGroupAcl(targetPtr, finalGroupId, fabricIndex)
 
             // Write the group binding on the source node.
-            writeGroupBinding(sourcePtr, sourceEndpoint, groupId, clusterId, fabricIndex)
+            writeGroupBinding(sourcePtr, sourceEndpoint, finalGroupId, clusterId, fabricIndex)
 
             NordicLogger.info("Group binding completed successfully", tag = TAG)
 
             return GroupBinding(
-                id = "${sourceNodeId.longValue}_${targetNodeId.longValue}_group_$groupId",
+                id = "${sourceNodeId.longValue}_${targetNodeId.longValue}_group_$finalGroupId",
                 sourceNodeId = sourceNodeId,
                 sourceEndpoint = sourceEndpoint,
                 targetNodeId = targetNodeId,
                 targetEndpoint = targetEndpoint,
                 clusterId = clusterId,
-                groupId = groupId,
-                groupName = groupName,
+                groupId = finalGroupId,
+                groupName = finalGroupName,
                 keySetId = keySetId,
                 fabricIndex = fabricIndex,
             )
