@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingFlat
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Cable
 import androidx.compose.material.icons.filled.SwapCalls
 import androidx.compose.material.icons.filled.Tag
@@ -27,6 +28,7 @@ import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
@@ -113,21 +115,13 @@ internal fun BindingsScreen(
     }
 
     BindingStateHandler(
-        bindingUiState,
-        bindingLogs
-        ,
-        bindingState = if (selectedTab == 0) {
-            bindingUiState.bindingState
-        } else {
-            bindingUiState.groupBindingState
-        }
-    ) { state ->
-        if (selectedTab == 0) {
-            bindingViewModel.updateBindingState(state as UiState<no.nordicsemi.nrf.matter.model.DeviceBinding>)
-        } else {
-            bindingViewModel.updateGroupBindingState(state as UiState<no.nordicsemi.nrf.matter.model.GroupBinding>)
-        }
-    }
+        bindingLogs = bindingLogs,
+        bindingState = bindingUiState.bindingState,
+        onUpdateBindingState = { bindingViewModel.updateBindingState(it) },
+        groupBindingState = bindingUiState.groupBindingState,
+        onUpdateGroupBindingState = { bindingViewModel.updateGroupBindingState(it) },
+        selectedTab = selectedTab
+    )
 
     LazyColumn(
         modifier = Modifier
