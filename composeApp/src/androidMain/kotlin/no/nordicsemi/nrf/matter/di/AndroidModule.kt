@@ -2,6 +2,7 @@ package no.nordicsemi.nrf.matter.di
 
 import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.binding.BindingViewModel
+import no.nordicsemi.nrf.matter.binding.GroupBindingViewModel
 import no.nordicsemi.nrf.matter.binding.BindGroupDevicesUseCase
 import no.nordicsemi.nrf.matter.binding.DataStoreProvider
 import no.nordicsemi.nrf.matter.binding.DefaultBindGroupDevicesUseCase
@@ -108,6 +109,11 @@ val androidModule = module {
         BindingViewModel(
             get(),
             get(),
+            get(),
+        )
+    }
+    viewModel {
+        GroupBindingViewModel(
             get(),
             get(),
             get(),
