@@ -13,6 +13,7 @@ import no.nordicsemi.nrf.matter.binding.BindGroupDevicesUseCase
 import no.nordicsemi.nrf.matter.SwiftCodeProvider
 import no.nordicsemi.nrf.matter.binding.BindingLogsProviderImpl
 import no.nordicsemi.nrf.matter.binding.BindingViewModel
+import no.nordicsemi.nrf.matter.binding.GroupBindingViewModel
 import no.nordicsemi.nrf.matter.binding.DataStoreProvider
 import no.nordicsemi.nrf.matter.binding.IosBindGroupDevicesUseCase
 import no.nordicsemi.nrf.matter.commission.CommissioningViewModelIos
@@ -106,7 +107,8 @@ val iosModule = module {
     viewModel { CommissioningViewModelIos(get(), get()) }
 
     viewModel { LoggerViewModel() }
-    viewModel { BindingViewModel(get(), get(), get(), get(), get()) }
+    viewModel { BindingViewModel(get(), get(), get()) }
+    viewModel { GroupBindingViewModel(get(), get(), get()) }
     factory { LightCommandHandler(get()) }
     factory { LockCommandHandler(get()) }
     factory { ManufacturerSpecCommandHandler(get(), get(), get()) }

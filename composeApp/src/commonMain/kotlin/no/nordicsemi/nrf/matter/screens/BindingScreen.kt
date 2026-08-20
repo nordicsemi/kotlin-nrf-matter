@@ -1,48 +1,30 @@
 package no.nordicsemi.nrf.matter.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.TrendingFlat
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Cable
-import androidx.compose.material.icons.filled.SwapCalls
 import androidx.compose.material.icons.filled.Tag
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuAnchorType
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
@@ -57,16 +39,16 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.skydoves.cloudy.cloudy
 import no.nordicsemi.nrf.matter.binding.BindingStateHandler
-import no.nordicsemi.nrf.matter.binding.BindingUiState
 import no.nordicsemi.nrf.matter.binding.BindingViewModel
 import no.nordicsemi.nrf.matter.binding.CastTabRow
+import no.nordicsemi.nrf.matter.binding.GroupBindingTable
+import no.nordicsemi.nrf.matter.binding.GroupBindingViewModel
+import no.nordicsemi.nrf.matter.binding.UnicastBindingTable
 import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.GroupBinding
 import no.nordicsemi.nrf.matter.model.toDeviceId
-import no.nordicsemi.nrf.matter.theme.NordicTheme
-import no.nordicsemi.nrf.matter.ui.DeviceTest_LIGHT
 import org.koin.compose.viewmodel.koinViewModel
 
 /*
@@ -104,36 +86,46 @@ import org.koin.compose.viewmodel.koinViewModel
 internal fun BindingsScreen(
 ) {
     val bindingViewModel: BindingViewModel = koinViewModel()
+    val groupBindingViewModel: GroupBindingViewModel = koinViewModel()
+
     val bindingUiState by bindingViewModel.bindingUiState.collectAsStateWithLifecycle()
+    val groupBindingUiState by groupBindingViewModel.uiState.collectAsStateWithLifecycle()
+
     val bindingLogs by bindingViewModel.bindingLogs.collectAsStateWithLifecycle()
+    val groupBindingLogs by groupBindingViewModel.bindingLogs.collectAsStateWithLifecycle()
 
     var selectedTab by remember { mutableStateOf(0) }
-    val tabs = if (bindingUiState.groupBindingSupported) {
+    val tabs = if (groupBindingUiState.groupBindingSupported) {
         listOf("Unicast", "Group")
     } else {
         listOf("Unicast")
     }
 
-    BindingStateHandler(
-        bindingLogs = bindingLogs,
-        bindingState = bindingUiState.bindingState,
-        onUpdateBindingState = { bindingViewModel.updateBindingState(it) },
-        groupBindingState = bindingUiState.groupBindingState,
-        onUpdateGroupBindingState = { bindingViewModel.updateGroupBindingState(it) },
-        selectedTab = selectedTab
-    )
+    if (selectedTab == 0) {
+        BindingStateHandler(
+            bindingLogs = bindingLogs,
+            bindingState = bindingUiState.bindingState,
+            onUpdateBindingState = { bindingViewModel.updateBindingState(it) }
+        )
+    } else {
+        BindingStateHandler(
+            bindingLogs = groupBindingLogs,
+            bindingState = groupBindingUiState.groupBindingState,
+            onUpdateBindingState = { groupBindingViewModel.updateGroupBindingState(it) }
+        )
+    }
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
-        .then(
-            if ((if (selectedTab == 0) bindingUiState.bindingState else bindingUiState.groupBindingState) is UiState.Loading) {
-                Modifier.cloudy()
-            } else {
-                Modifier
-            }
-        ),
+            .then(
+                if ((if (selectedTab == 0) bindingUiState.bindingState else groupBindingUiState.groupBindingState) is UiState.Loading) {
+                    Modifier.cloudy()
+                } else {
+                    Modifier
+                }
+            ),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         // Concept Header
@@ -188,7 +180,9 @@ internal fun BindingsScreen(
         }
 
         item {
-            if (bindingUiState.sourceDevices.isEmpty()) {
+            val sourceDevices =
+                if (selectedTab == 0) bindingUiState.sourceDevices else groupBindingUiState.sourceDevices
+            if (sourceDevices.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -199,37 +193,42 @@ internal fun BindingsScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                     )
                 }
-                return@item
             } else {
-                BindingTableDetails(
-                    bindingScreenState = bindingUiState,
-                    bindingActionText = if (selectedTab == 0) {
-                        "Write Binding"
-                    } else {
-                        "Create Group Binding"
-                    },
-                    targetActionText = if (selectedTab == 0) {
-                        "Target Action: Write Cluster 0x0006 (OnOff Bind Struct)"
-                    } else {
-                        "Target Action: Install Group Key, add group membership, then write a multicast binding"
-                    },
-                    isGroupTab = selectedTab == 1,
-                    onSourceSelected = {
-                        bindingViewModel.onSourceSelected(it)
-                    },
-                    onTargetSelected = { targetId ->
-                        bindingViewModel.onTargetSelected(targetId)
-                    },
-                    onGroupSelected = { groupId ->
-                        bindingViewModel.onGroupSelected(groupId)
-                    },
-                    initiateBinding = { sourceId, targetId ->
-                        bindingViewModel.initiateBinding(sourceId, targetId)
-                    },
-                    initiateGroupBinding = { sourceId, targetId, groupId, groupName ->
-                        bindingViewModel.initiateGroupBinding(sourceId, targetId, groupId, groupName)
-                    }
-                )
+                if (selectedTab == 0) {
+                    UnicastBindingTable(
+                        sourceDevices = bindingUiState.sourceDevices,
+                        selectedSourceDeviceId = bindingUiState.selectedSourceDeviceId,
+                        eligibleTargetDevices = bindingUiState.eligibleTargetDevices,
+                        selectedTargetDeviceId = bindingUiState.selectedTargetDeviceId,
+                        onSourceSelected = { bindingViewModel.onSourceSelected(it) },
+                        onTargetSelected = { bindingViewModel.onTargetSelected(it) },
+                        initiateBinding = { sourceId, targetId ->
+                            bindingViewModel.initiateBinding(sourceId, targetId)
+                        },
+                    )
+                } else {
+                    GroupBindingTable(
+                        sourceDevices = groupBindingUiState.sourceDevices,
+                        selectedSourceDeviceId = groupBindingUiState.selectedSourceDeviceId,
+                        eligibleTargetDevices = groupBindingUiState.eligibleTargetDevices,
+                        selectedTargetDeviceId = groupBindingUiState.selectedTargetDeviceId,
+                        availableGroups = groupBindingUiState.availableGroups,
+                        selectedGroupId = groupBindingUiState.selectedGroupId,
+                        newGroupName = groupBindingUiState.newGroupName,
+                        onSourceSelected = { groupBindingViewModel.onSourceSelected(it) },
+                        onTargetSelected = { groupBindingViewModel.onTargetSelected(it) },
+                        onGroupSelected = { groupBindingViewModel.onGroupSelected(it) },
+                        onGroupNameSet = { groupBindingViewModel.onGroupNameSet(it) },
+                        initiateGroupBinding = { sourceId, targetId, groupId, groupName ->
+                            groupBindingViewModel.initiateGroupBinding(
+                                sourceId,
+                                targetId,
+                                groupId,
+                                groupName
+                            )
+                        }
+                    )
+                }
             }
         }
 
@@ -239,7 +238,7 @@ internal fun BindingsScreen(
                 text = if (selectedTab == 0) {
                     "Active Binding Table Entries (${bindingUiState.activeBindings.size})"
                 } else {
-                    "Active Group Binding Table Entries (${bindingUiState.activeGroupBindings.size})"
+                    "Active Group Binding Table Entries (${groupBindingUiState.activeGroupBindings.size})"
                 },
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.primary
@@ -249,7 +248,7 @@ internal fun BindingsScreen(
         val activeItems = if (selectedTab == 0) {
             bindingUiState.activeBindings.map { ActiveBindingEntry.Unicast(it) }
         } else {
-            bindingUiState.activeGroupBindings.map { ActiveBindingEntry.Group(it) }
+            groupBindingUiState.activeGroupBindings.map { ActiveBindingEntry.Group(it) }
         }
 
         if (activeItems.isEmpty()) {
@@ -266,7 +265,7 @@ internal fun BindingsScreen(
                 }
             }
         } else {
-            // List active bindings
+// List active bindings
             item {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(18.dp),
@@ -281,335 +280,6 @@ internal fun BindingsScreen(
                 }
             }
         }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun BindingTableDetails(
-    bindingScreenState: BindingUiState,
-    bindingActionText: String,
-    targetActionText: String,
-    isGroupTab: Boolean = false,
-    onSourceSelected: (sourceDeviceId: DeviceId) -> Unit,
-    onTargetSelected: (targetDeviceId: DeviceId) -> Unit,
-    onGroupSelected: (groupId: Int?) -> Unit = {},
-    initiateBinding: (sourceDeviceId: DeviceId, targetDeviceId: DeviceId) -> Unit,
-    initiateGroupBinding: (sourceDeviceId: DeviceId, targetDeviceId: DeviceId, groupId: Int?, groupName: String?) -> Unit = { _, _, _, _ -> },
-) {
-    var isSourceDropdownExpanded by rememberSaveable { mutableStateOf(false) }
-    var isTargetDropdownExpanded by rememberSaveable { mutableStateOf(false) }
-    var isGroupDropdownExpanded by rememberSaveable { mutableStateOf(false) }
-
-    var showGroupNamePopup by rememberSaveable { mutableStateOf(false) }
-    var groupNameInput by rememberSaveable { mutableStateOf("") }
-
-    // Derive displayed text from current UiState
-    val sourceText = bindingScreenState.sourceDevices
-        .firstOrNull { it.deviceId == bindingScreenState.selectedSourceDeviceId }
-        ?.let { it.productName ?: "Node ${it.deviceId.longValue}" }
-        ?: "Select Light Switch"
-
-    val targetText = bindingScreenState.eligibleTargetDevices
-        .firstOrNull { it.deviceId == bindingScreenState.selectedTargetDeviceId }
-        ?.let { it.productName ?: "Node ${it.deviceId.longValue}" }
-        ?: "Select Light Bulb"
-
-    val groupText = if (bindingScreenState.selectedGroupId == null) {
-        "Add New Group"
-    } else {
-        bindingScreenState.availableGroups.firstOrNull { it.groupId == bindingScreenState.selectedGroupId }?.groupName ?: "Group ${bindingScreenState.selectedGroupId}"
-    }
-
-    OutlinedCard(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            // Source Dropdown
-            Column {
-                Text(
-                    text = "Select Client / Source Node (Write Client)",
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier.padding(horizontal = 8.dp),
-                )
-                ExposedDropdownMenuBox(
-                    expanded = isSourceDropdownExpanded,
-                    onExpandedChange = { isSourceDropdownExpanded = !isSourceDropdownExpanded },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp)
-                ) {
-                    OutlinedTextField(
-                        value = sourceText,
-                        onValueChange = {},
-                        readOnly = true,
-                        modifier = Modifier
-                            .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                            .fillMaxWidth(),
-                        trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = isSourceDropdownExpanded)
-                        },
-                        shape = RoundedCornerShape(8.dp)
-                    )
-
-                    ExposedDropdownMenu(
-                        expanded = isSourceDropdownExpanded,
-                        onDismissRequest = { isSourceDropdownExpanded = false }
-                    ) {
-                        bindingScreenState.sourceDevices.forEach { device ->
-                            DropdownMenuItem(
-                                text = {
-                                    Text("${device.productName} (Node ID: ${device.deviceId.longValue})")
-                                },
-                                onClick = {
-                                    isSourceDropdownExpanded = false
-                                    onSourceSelected(device.deviceId)
-                                }
-                            )
-                        }
-                    }
-                }
-            }
-
-            if (bindingScreenState.selectedSourceDeviceId == null) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "Please select a source device to see eligible target devices.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                    )
-                }
-                return@Column
-            } else if (bindingScreenState.eligibleTargetDevices.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                ) {
-                    Text(
-                        text = "No eligible target devices found for the selected source. Please ensure you have a compatible Light or Dimmable light device added.",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                    )
-                }
-                return@Column
-            } else {
-                // Target Dropdown
-                Column {
-                    Text(
-                        text = "Select Server / Target Node (Control Target)",
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(horizontal = 8.dp),
-                    )
-                    ExposedDropdownMenuBox(
-                        expanded = isTargetDropdownExpanded,
-                        onExpandedChange = { isTargetDropdownExpanded = !isTargetDropdownExpanded },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp)
-                    ) {
-                        OutlinedTextField(
-                            value = targetText,
-                            onValueChange = {},
-                            readOnly = true,
-                            modifier = Modifier
-                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                                .fillMaxWidth(),
-                            trailingIcon = {
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = isTargetDropdownExpanded)
-                            },
-                            shape = RoundedCornerShape(8.dp)
-                        )
-
-                        ExposedDropdownMenu(
-                            expanded = isTargetDropdownExpanded,
-                            onDismissRequest = { isTargetDropdownExpanded = false }
-                        ) {
-                            bindingScreenState.eligibleTargetDevices.forEach { device ->
-                                DropdownMenuItem(
-                                    text = {
-                                        Text("${device.productName} (Node ID: ${device.deviceId.longValue})")
-                                    },
-                                    onClick = {
-                                        isTargetDropdownExpanded = false
-                                        onTargetSelected(device.deviceId)
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            if (isGroupTab && bindingScreenState.selectedTargetDeviceId != null) {
-                // Group Dropdown
-                Column {
-                    Text(
-                        text = "Select Group",
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = Modifier.padding(horizontal = 8.dp),
-                    )
-                    ExposedDropdownMenuBox(
-                        expanded = isGroupDropdownExpanded,
-                        onExpandedChange = { isGroupDropdownExpanded = !isGroupDropdownExpanded },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp)
-                    ) {
-                        OutlinedTextField(
-                            value = groupText,
-                            onValueChange = {},
-                            readOnly = true,
-                            modifier = Modifier
-                                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
-                                .fillMaxWidth(),
-                            trailingIcon = {
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = isGroupDropdownExpanded)
-                            },
-                            shape = RoundedCornerShape(8.dp)
-                        )
-
-                        ExposedDropdownMenu(
-                            expanded = isGroupDropdownExpanded,
-                            onDismissRequest = { isGroupDropdownExpanded = false }
-                        ) {
-                            DropdownMenuItem(
-                                text = { Text("Add New Group") },
-                                onClick = {
-                                    isGroupDropdownExpanded = false
-                                    onGroupSelected(null)
-                                }
-                            )
-                            bindingScreenState.availableGroups.forEach { group ->
-                                DropdownMenuItem(
-                                    text = { Text(group.groupName) },
-                                    onClick = {
-                                        isGroupDropdownExpanded = false
-                                        onGroupSelected(group.groupId)
-                                    }
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Target Cluster Info Banner
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.05f))
-                    .padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.SwapCalls,
-                    contentDescription = "Target Cluster",
-                    tint = MaterialTheme.colorScheme.primary,
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(
-                    text = targetActionText,
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
-
-            // Execute Button
-            val canSubmit = bindingScreenState.selectedTargetDeviceId != null
-
-            Button(
-                onClick = {
-                    val source = bindingScreenState.selectedSourceDeviceId
-                    val target = bindingScreenState.selectedTargetDeviceId
-                    if (source != null && target != null) {
-                        if (isGroupTab) {
-                            if (bindingScreenState.selectedGroupId == null) {
-                                showGroupNamePopup = true
-                            } else {
-                                val group = bindingScreenState.availableGroups.first { it.groupId == bindingScreenState.selectedGroupId }
-                                initiateGroupBinding(source, target, group.groupId, group.groupName)
-                            }
-                        } else {
-                            initiateBinding(source, target)
-                        }
-                    }
-                },
-                enabled = canSubmit,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(bindingActionText)
-            }
-        }
-    }
-
-    if (showGroupNamePopup) {
-        AlertDialog(
-            onDismissRequest = { showGroupNamePopup = false },
-            title = { Text("Name your Group") },
-            text = {
-                OutlinedTextField(
-                    value = groupNameInput,
-                    onValueChange = { groupNameInput = it },
-                    label = { Text("Group Name") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        val source = bindingScreenState.selectedSourceDeviceId
-                        val target = bindingScreenState.selectedTargetDeviceId
-                        if (source != null && target != null && groupNameInput.isNotBlank()) {
-                            initiateGroupBinding(source, target, null, groupNameInput)
-                            showGroupNamePopup = false
-                            groupNameInput = ""
-                        }
-                    },
-                    enabled = groupNameInput.isNotBlank()
-                ) {
-                    Text("Confirm")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showGroupNamePopup = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun BindingTableDetailsPreview() {
-    NordicTheme {
-        BindingTableDetails(
-            bindingScreenState = BindingUiState(
-                sourceDevices = listOf(
-                    DeviceTest_LIGHT
-                ),
-                eligibleTargetDevices = listOf(
-                    DeviceTest_LIGHT
-                )
-            ),
-            bindingActionText = "Write Binding",
-            targetActionText = "Target Action: Write Cluster 0x0006 (OnOff Bind Struct)",
-            onSourceSelected = {},
-            onTargetSelected = {},
-            initiateBinding = { _, _ -> }
-        )
-
     }
 }
 

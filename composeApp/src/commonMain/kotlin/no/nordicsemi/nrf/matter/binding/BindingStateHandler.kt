@@ -20,11 +20,8 @@ import kotlinx.collections.immutable.PersistentList
 import multiplatform.network.cmptoast.ToastDuration
 import multiplatform.network.cmptoast.ToastGravity
 import multiplatform.network.cmptoast.showToast
-import no.nordicsemi.nrf.matter.domain.BindingState
 import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.logger.NordicLogger
-import no.nordicsemi.nrf.matter.model.DeviceBinding
-import no.nordicsemi.nrf.matter.model.GroupBinding
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.AlertDialogView
 
@@ -60,23 +57,7 @@ import no.nordicsemi.nrf.matter.ui.AlertDialogView
  */
 
 @Composable
-internal fun BindingStateHandler(
-    bindingLogs: PersistentList<String>,
-    bindingState: UiState<DeviceBinding>,
-    onUpdateBindingState: (UiState<DeviceBinding>) -> Unit,
-    groupBindingState: UiState<GroupBinding>,
-    onUpdateGroupBindingState: (UiState<GroupBinding>) -> Unit,
-    selectedTab: Int
-) {
-    if (selectedTab == 0) {
-        InternalBindingStateHandler(bindingLogs, bindingState, onUpdateBindingState)
-    } else {
-        InternalBindingStateHandler(bindingLogs, groupBindingState, onUpdateGroupBindingState)
-    }
-}
-
-@Composable
-private fun <T> InternalBindingStateHandler(
+internal fun <T> BindingStateHandler(
     bindingLogs: PersistentList<String>,
     bindingState: UiState<T>,
     onUpdateBindingState: (UiState<T>) -> Unit
