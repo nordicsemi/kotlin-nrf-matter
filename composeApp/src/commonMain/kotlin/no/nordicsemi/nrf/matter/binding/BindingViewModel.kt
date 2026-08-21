@@ -24,6 +24,7 @@ import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
+import no.nordicsemi.nrf.matter.ui.device.isBindingCapable
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -165,10 +166,7 @@ class BindingViewModel(
             .collect { bindings ->
                 // Filter out devices that are lights and are not already bound to the selected source device.
                 val lightDevicesInRepository =
-                    devicesRepository.getAllDevices().devicesList.filter {
-                        it.deviceType == DeviceType.LIGHT_ON_OFF ||
-                                it.deviceType == DeviceType.DIMMABLE_LIGHT
-                    }
+                    devicesRepository.getAllDevices().devicesList.filter { it.isBindingCapable() }
                 val targetIds = bindings.map { it.targetNodeId }.toSet()
 
                 val result = lightDevicesInRepository.filterNot { it.deviceId in targetIds }

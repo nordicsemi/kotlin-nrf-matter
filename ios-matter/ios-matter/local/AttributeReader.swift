@@ -31,11 +31,27 @@ class AttributeReader {
     /// - Throws: `OperationError.missingAttribute` if the read returns no data, or an error from
     ///   `T.parse` if the value has the wrong type.
     func readAttribute<T: AttributeParser>(endpoint: NSNumber, cluster: NSNumber, attribute: NSNumber) async throws -> T {
-        let result = try await readAttribute(endpoint: endpoint, cluster: cluster, attribute: attribute)
-        return try T.parse(value: result)
+        let value = try await readValue(endpoint: endpoint, cluster: cluster, attribute: attribute)
+
+        guard let rawValue = value.rawValue else {
+            throw OperationError.missingAttribute
+        }
+
+        return try T.parse(value: rawValue)
     }
-    
-    private func readAttribute(endpoint: NSNumber, cluster: NSNumber, attribute: NSNumber) async throws -> Any {
+
+    /// Reads a single attribute from the device without interpreting its value.
+    ///
+    /// Used by cluster agnostic callers, which do not know the attribute's type up front and
+    /// therefore have no ``AttributeParser`` to parse it with.
+    ///
+    /// - Parameters:
+    ///   - endpoint: The endpoint ID hosting the attribute.
+    ///   - cluster: The cluster ID the attribute belongs to.
+    ///   - attribute: The attribute ID to read.
+    /// - Returns: The attribute value together with its Matter type.
+    /// - Throws: `OperationError.missingAttribute` if the read returns no data.
+    func readValue(endpoint: NSNumber, cluster: NSNumber, attribute: NSNumber) async throws -> MatterValue {
         SwiftLogger.debug("readAttributes")
 
         let result = try? await baseDevice.readAttributes(
@@ -45,14 +61,14 @@ class AttributeReader {
             params: nil,
             queue: DispatchQueue.global()
         )
-        
-        guard let result else {
+
+        guard let report = result?.first else {
             throw OperationError.missingAttribute
         }
-        
+
         SwiftLogger.debug("Attirbutes for endpoint: \(endpoint), cluster: \(cluster)")
 
-        return try result[0].readAny()
+        return try report.readMatterValue()
     }
     
     private func printAttributes(_ array: [[String: Any]]) {

@@ -19,9 +19,10 @@ sealed interface CommissioningScreenState {
 @Composable
 fun CommissioningScreen(onBack: () -> Unit, navigateToLogs: () -> Unit) {
     val homeViewModel: HomeViewModel = koinViewModel()
-    val state = remember { mutableStateOf<CommissioningScreenState>(CommissioningScreenState.InProgress) }
+    val state =
+        remember { mutableStateOf<CommissioningScreenState>(CommissioningScreenState.InProgress) }
 
-   CommissioningTask(
+    CommissioningTask(
         onSuccess = {
             homeViewModel.addCommissionedDevice(device = it, true, false)
             onBack()

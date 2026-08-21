@@ -89,7 +89,7 @@ fun NordicTheme(
             surfaceContainerHigh = dark_md_theme_surfaceContainerHigh,
             surfaceContainerHighest = dark_md_theme_surfaceContainerHighest
 
-            )
+        )
     } else {
         lightColorScheme(
             primary = light_md_theme_primary,

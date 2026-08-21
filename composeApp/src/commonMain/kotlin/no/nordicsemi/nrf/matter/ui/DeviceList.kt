@@ -14,7 +14,6 @@ import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.commission.DecommissionState
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
-import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.toDeviceId
 
 /*
@@ -83,28 +82,3 @@ internal val DeviceTest_LIGHT =
         vendorName = "MyVendor",
         deviceMatterInfo = emptyList()
     )
-
-internal val DeviceTest_DOORLOCK =
-    Device(
-        dateCommissioned = 123456789L,
-        vendorId = "1234",
-        productId = "5678",
-        deviceType = DeviceType.DOOR_LOCK,
-        deviceId = 2L.toDeviceId(), // Fix: Changed deviceId to 2L to ensure unique keys in LazyColumn
-        name = "Front Door", // Updated name for consistency
-        productName = "My Lock",
-        vendorName = "MyVendor",
-        deviceMatterInfo = emptyList()
-    )
-
-internal val TestDeviceLockDoor = DeviceUiModel(
-    device = DeviceTest_DOORLOCK,
-    isOnline = true,
-    isOn = true
-)
-
-internal val TestDeviceLight = DeviceUiModel(
-    device = DeviceTest_LIGHT,
-    isOnline = true,
-    isOn = true
-)

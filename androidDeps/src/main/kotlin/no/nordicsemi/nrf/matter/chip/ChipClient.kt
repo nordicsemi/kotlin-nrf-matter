@@ -10,11 +10,14 @@ import chip.devicecontroller.GetConnectedDeviceCallbackJni
 import chip.devicecontroller.InvokeCallback
 import chip.devicecontroller.ReportCallback
 import chip.devicecontroller.SubscriptionEstablishedCallback
+import chip.devicecontroller.WriteAttributesCallback
 import chip.devicecontroller.model.AttributeState
+import chip.devicecontroller.model.AttributeWriteRequest
 import chip.devicecontroller.model.ChipAttributePath
 import chip.devicecontroller.model.ChipEventPath
 import chip.devicecontroller.model.InvokeElement
 import chip.devicecontroller.model.NodeState
+import chip.devicecontroller.model.Status
 import chip.platform.AndroidBleManager
 import chip.platform.AndroidChipLogging
 import chip.platform.AndroidChipPlatform
@@ -26,14 +29,15 @@ import chip.platform.NsdManagerServiceResolver
 import chip.platform.PreferencesConfigurationManager
 import chip.platform.PreferencesKeyValueStoreManager
 import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
-import matter.tlv.AnonymousTag
-import matter.tlv.ContextSpecificTag
-import matter.tlv.TlvWriter
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
 import java.util.Optional
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -72,6 +76,11 @@ import kotlin.coroutines.resumeWithException
 private const val VENDOR_ID = 0xFFF4
 
 private const val DEFAULT_TIMEOUT = 1000
+
+private const val DEFAULT_IM_TIMEOUT = 30_000
+private const val DEFAULT_SUBSCRIPTION_MIN_INTERVAL_S = 0
+private const val DEFAULT_SUBSCRIPTION_MAX_INTERVAL_S = 10
+private const val DEFAULT_SUBSCRIPTION_TIMEOUT_MS = 10_000
 
 /**
  * Manages the lifecycle of the Matter (CHIP) native device controller and provides
@@ -413,6 +422,166 @@ class ChipClient(
         }
     }
 
+    suspend fun readAttribute(devicePtr: Long, endpoint: Int, clusterId: Long, attributeId: Long): Any? {
+        val path = ChipAttributePath.newInstance(endpoint, clusterId, attributeId)
+        return readAttribute(devicePtr, path)?.value
+    }
+
+    suspend fun writeAttribute(
+        devicePtr: Long,
+        endpoint: Int,
+        clusterId: Long,
+        attributeId: Long,
+        value: Any?,
+        timedRequestTimeoutMs: Int = 0,
+        imTimeoutMs: Int = DEFAULT_IM_TIMEOUT,
+    ) {
+        val request = AttributeWriteRequest.newInstance(
+            endpoint,
+            clusterId,
+            attributeId,
+            encodeAttributeValue(value),
+        )
+        return suspendCancellableCoroutine { continuation ->
+            val callback = object : WriteAttributesCallback {
+                override fun onError(attributePath: ChipAttributePath?, e: Exception) {
+                    if (!continuation.isActive) return
+                    NordicLogger.error(
+                        "Error on writeAttribute callback for path: $attributePath",
+                        e,
+                        tag = TAG
+                    )
+                    continuation.resumeWithException(
+                        IllegalStateException("writeAttribute failed", e)
+                    )
+                }
+
+                override fun onResponse(attributePath: ChipAttributePath?, status: Status?) {
+                    if (!continuation.isActive) return
+                    val code = status?.status
+                    if (code != null && code != Status.Code.Success) {
+                        continuation.resumeWithException(
+                            IllegalStateException("writeAttribute failed with status $code")
+                        )
+                    } else {
+                        continuation.resume(Unit)
+                    }
+                }
+            }
+
+            chipDeviceController.write(
+                callback,
+                devicePtr,
+                listOf(request),
+                timedRequestTimeoutMs,
+                imTimeoutMs,
+            )
+        }
+    }
+
+    suspend fun invokeCommand(
+        devicePtr: Long,
+        endpoint: Int,
+        clusterId: Long,
+        commandId: Long,
+        value: Any?,
+        timedRequestTimeoutMs: Int = 0,
+        imTimeoutMs: Int = DEFAULT_IM_TIMEOUT,
+    ): Any? {
+        val invokeElement = InvokeElement.newInstance(
+            endpoint,
+            clusterId,
+            commandId,
+            encodeCommandFields(value),
+            null,
+        )
+        return suspendCancellableCoroutine { continuation ->
+            val callback = object : InvokeCallback {
+                override fun onError(e: Exception) {
+                    if (!continuation.isActive) return
+                    NordicLogger.error(
+                        "Error on invoke callback for command $commandId of cluster $clusterId",
+                        e,
+                        tag = TAG
+                    )
+                    continuation.resumeWithException(IllegalStateException("invoke failed", e))
+                }
+
+                override fun onResponse(invokeElement: InvokeElement?, successCode: Long) {
+                    if (!continuation.isActive) return
+                    continuation.resume(decodeCommandResponse(invokeElement?.tlvByteArray))
+                }
+            }
+
+            chipDeviceController.invoke(
+                callback,
+                devicePtr,
+                invokeElement,
+                timedRequestTimeoutMs,
+                imTimeoutMs,
+            )
+        }
+    }
+
+    fun observeAttribute(
+        deviceId: DeviceId,
+        endpoint: Int,
+        clusterId: Long,
+        attributeId: Long,
+        minIntervalS: Int = DEFAULT_SUBSCRIPTION_MIN_INTERVAL_S,
+        maxIntervalS: Int = DEFAULT_SUBSCRIPTION_MAX_INTERVAL_S,
+        timeoutMs: Int = DEFAULT_SUBSCRIPTION_TIMEOUT_MS,
+    ): Flow<Any?> = callbackFlow {
+        val devicePtr = getConnectedDevicePointer(deviceId.longValue)
+
+        val subscriptionId = AtomicReference<Long?>(null)
+        val reportCallback = object : ReportCallback {
+            override fun onError(
+                attributePath: ChipAttributePath?,
+                eventPath: ChipEventPath?,
+                e: Exception
+            ) {
+                NordicLogger.error(
+                    "Error receiving report for path: $attributePath",
+                    e,
+                    tag = TAG
+                )
+                close(e)
+            }
+
+            override fun onReport(nodeState: NodeState?) {
+                val attributeState = nodeState?.getEndpointState(endpoint)
+                    ?.getClusterState(clusterId)
+                    ?.getAttributeState(attributeId)
+                    ?: return
+                trySend(attributeState.value)
+            }
+        }
+
+        subscribeAttribute(
+            reportCallback = reportCallback,
+            devicePtr = devicePtr,
+            attributePaths = listOf(
+                ChipAttributePath.newInstance(endpoint, clusterId, attributeId)
+            ),
+            minIntervalS = minIntervalS,
+            maxIntervalS = maxIntervalS,
+            timeoutMs = timeoutMs,
+            onSubscriptionEstablished = { subscriptionId.set(it) },
+        )
+
+        awaitClose {
+            subscriptionId.get()?.let {
+                chipDeviceController.shutdownSubscriptions(
+                    chipDeviceController.fabricIndex,
+                    deviceId.longValue,
+                    it,
+                )
+            }
+            NordicLogger.debug("Stopped observing attribute $attributeId", tag = TAG)
+        }
+    }
+
     /**
      * Reads a single attribute from a device.
      *
@@ -482,136 +651,6 @@ class ChipClient(
     }
 
     /**
-     * Invokes a cluster command with a fixed TLV payload encoding an unsigned byte value of
-     * `2` in context-specific tag 0.
-     *
-     * Resolves a CASE session for [deviceId] before invoking. Errors from the invocation
-     * are logged and not propagated to the caller.
-     *
-     * @param deviceId The node ID of the target device.
-     * @param isOn `true` to send the On command, `false` to send the Off command.
-     * @param endpoint The endpoint hosting the target cluster.
-     * @param clusterId The cluster ID of the command to invoke.
-     * @param commandId The command ID to invoke.
-     */
-    suspend fun setLet(
-        deviceId: DeviceId,
-        isOn: Boolean,
-        endpoint: Int,
-        clusterId: Long,
-        commandId: Long,
-    ) {
-        val ptr = getConnectedDevicePointer(deviceId.longValue)
-        return suspendCancellableCoroutine { continuation ->
-
-            val onCommand = if (isOn) { 1 } else { 0 }.toUByte()
-
-            val tlvWriter = TlvWriter()
-            tlvWriter.startStructure(AnonymousTag)
-            tlvWriter.put(ContextSpecificTag(0), onCommand)
-            tlvWriter.endStructure()
-            val invokeElement =
-                InvokeElement.newInstance(
-                    endpoint,
-                    clusterId,
-                    commandId,
-                    tlvWriter.getEncoded(),
-                    null
-                )
-
-            val customInvokeCallback = object : InvokeCallback {
-
-                override fun onError(e: Exception) {
-                    NordicLogger.error("Error on invoke Callback!", e, tag = TAG)
-                    continuation.resume(Unit)
-                }
-
-                override fun onResponse(
-                    invokeElement: InvokeElement?,
-                    successCode: Long
-                ) {
-                    NordicLogger.info(
-                        "Command Response Success!",
-                        tag = "SetLet"
-                    )
-                    continuation.resume(Unit)
-                }
-
-            }
-
-            chipDeviceController.invoke(
-                customInvokeCallback,
-                ptr,
-                invokeElement,
-                15_000,
-                30_000,
-            )
-        }
-    }
-
-    /**
-     * Invokes a cluster command with a fixed TLV payload encoding a boolean `true` value
-     * in context-specific tag 0.
-     *
-     * @param devicePtr A native pointer to the connected device.
-     * @param path The attribute path whose endpoint, cluster, and attribute IDs are used as
-     *   the endpoint, cluster ID, and command ID for the invocation.
-     * @throws Exception If the invocation fails.
-     */
-    suspend fun generateRandomNumber(
-        devicePtr: Long,
-        path: ChipAttributePath
-    ) {
-        return suspendCancellableCoroutine { continuation ->
-            val fields = TlvWriter().apply {
-                startStructure(AnonymousTag)
-                put(
-                    ContextSpecificTag(0),
-                    true
-                )
-                endStructure()
-            }.getEncoded()
-
-
-            val customInvokeCallback = object : InvokeCallback {
-
-                override fun onError(e: Exception) {
-                    NordicLogger.error("Error on invoke Callback!", e, tag = TAG)
-                    continuation.resumeWithException(e)
-                }
-
-                override fun onResponse(
-                    invokeElement: InvokeElement?,
-                    successCode: Long
-                ) {
-                    NordicLogger.info(
-                        "Command Response Success!",
-                        tag = "GenerateRandomNumber"
-                    )
-                    continuation.resume(Unit)
-                }
-
-            }
-
-            val invokeElement = InvokeElement.newInstance(
-                path.endpointId,
-                path.clusterId,
-                path.attributeId,
-                fields,
-                null
-            )
-
-            chipDeviceController.invoke(
-                customInvokeCallback,
-                devicePtr,
-                invokeElement,
-                15_000,
-                30_000,
-            )
-        }
-    }
-
-    /**
      * Invokes a cluster command on a device and returns the response status code.
      *
      * @param devicePtr A native pointer to the connected device.
@@ -656,6 +695,9 @@ class ChipClient(
      * @param minIntervalS The minimum reporting interval in seconds.
      * @param maxIntervalS The maximum reporting interval in seconds.
      * @param timeoutMs The timeout in milliseconds for establishing the subscription.
+     * @param onSubscriptionEstablished Invoked with the subscription ID once the device confirms
+     *   the subscription. The ID can be passed to [ChipDeviceController.shutdownSubscriptions]
+     *   to tear down this subscription alone.
      */
     fun subscribeAttribute(
         reportCallback: ReportCallback,
@@ -664,21 +706,25 @@ class ChipClient(
         minIntervalS: Int,
         maxIntervalS: Int,
         timeoutMs: Int,
+        onSubscriptionEstablished: (Long) -> Unit = {},
     ) {
-        chipDeviceController.subscribeToAttributePath(
-            object : SubscriptionEstablishedCallback {
-                override fun onSubscriptionEstablished(subscriptionId: Long) {
-                    NordicLogger.debug(
-                        "Subscription established: $subscriptionId",
-                        tag = "SubscribeAttribute"
-                    )
-                }
+        chipDeviceController.subscribeToPath(
+            { subscriptionId ->
+                NordicLogger.debug(
+                    "Subscription established: $subscriptionId",
+                    tag = "SubscribeAttribute"
+                )
+                onSubscriptionEstablished(subscriptionId)
             },
+            null,
             reportCallback,
             devicePtr,
             attributePaths,
+            emptyList(),
             minIntervalS,
             maxIntervalS,
+            true,
+            false,
             timeoutMs,
         )
     }

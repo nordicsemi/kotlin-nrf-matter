@@ -74,7 +74,7 @@ class HomeViewModel(
             DevicesListUiModel(
                 devices = processDevices(devices, states),
 
-            )
+                )
         }
 
     val devices: StateFlow<List<MatterController>> =

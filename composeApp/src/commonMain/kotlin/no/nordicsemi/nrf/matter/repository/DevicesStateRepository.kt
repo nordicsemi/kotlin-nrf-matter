@@ -65,40 +65,6 @@ class DevicesStateRepository(
         }
     }
 
-    suspend fun updateDeviceState(
-        deviceId: DeviceId,
-        isOnline: Boolean,
-        isOn: Boolean
-    ) {
-        dataSource.update { currentState ->
-            val exists = currentState.devicesStateList.any {
-                it.deviceId == deviceId
-            }
-
-            val updatedList =
-                if (exists) {
-                    currentState.devicesStateList.map { device ->
-                        if (device.deviceId == deviceId) {
-                            device.copy(
-                                online = isOnline,
-                                on = isOn,
-                                dateCaptured = Clock.System.now()
-                            )
-                        } else device
-                    }
-                } else {
-                    currentState.devicesStateList + DeviceState(
-                        deviceId = deviceId,
-                        online = isOnline,
-                        on = isOn,
-                        dateCaptured = Clock.System.now()
-                    )
-                }
-
-            currentState.copy(devicesStateList = updatedList)
-        }
-    }
-
     suspend fun removeDevice(deviceId: DeviceId) {
         dataSource.removeDevice(deviceId)
     }

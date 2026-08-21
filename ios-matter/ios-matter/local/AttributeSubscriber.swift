@@ -51,7 +51,7 @@ class AttributeSubscriber: NSObject, MTRDeviceDelegate {
         let endpoint: NSNumber
         let cluster: NSNumber
         let attribute: NSNumber
-        let handle: (Any) -> Void
+        let handle: (MatterValue) -> Void
     }
 
     private let device: MTRDevice
@@ -77,11 +77,30 @@ class AttributeSubscriber: NSObject, MTRDeviceDelegate {
     ///   - attribute: The attribute ID to observe.
     ///   - onUpdate: Called on a background queue with each successfully parsed value.
     func subscribe<T: AttributeParser>(endpoint: NSNumber, cluster: NSNumber, attribute: NSNumber, onUpdate: @escaping (T) -> Void) {
-        let registration = Registration(endpoint: endpoint, cluster: cluster, attribute: attribute, handle: { raw in
-            if let value = try? T.parse(value: raw) {
+        subscribeToValues(endpoint: endpoint, cluster: cluster, attribute: attribute) { reported in
+            if let raw = reported.rawValue, let value = try? T.parse(value: raw) {
                 onUpdate(value)
             }
-        })
+        }
+    }
+
+    /// Registers interest in a single attribute without interpreting the reported values.
+    ///
+    /// Used by cluster agnostic callers, which do not know the attribute's type up front and
+    /// therefore have no ``AttributeParser`` to parse it with.
+    ///
+    /// - Parameters:
+    ///   - endpoint: The endpoint ID hosting the attribute.
+    ///   - cluster: The cluster ID the attribute belongs to.
+    ///   - attribute: The attribute ID to observe.
+    ///   - onUpdate: Called on a background queue with each reported value and its Matter type.
+    func subscribeToValues(endpoint: NSNumber, cluster: NSNumber, attribute: NSNumber, onUpdate: @escaping (MatterValue) -> Void) {
+        let registration = Registration(
+            endpoint: endpoint,
+            cluster: cluster,
+            attribute: attribute,
+            handle: onUpdate
+        )
 
         registrationsLock.lock()
         registrations.append(registration)
@@ -95,14 +114,14 @@ class AttributeSubscriber: NSObject, MTRDeviceDelegate {
 
         for entry in attributeReport {
             guard let path = entry[MTRAttributePathKey] as? MTRAttributePath,
-                  let raw = try? entry.readAny() else {
+                  let value = try? entry.readMatterValue() else {
                 continue
             }
 
             for registration in currentRegistrations where registration.endpoint == path.endpoint
                 && registration.cluster == path.cluster
                 && registration.attribute == path.attribute {
-                registration.handle(raw)
+                registration.handle(value)
             }
         }
     }

@@ -45,13 +45,4 @@ sealed interface UiState<out T> {
     ) : UiState<Nothing>
 }
 
-fun <T,R> UiState<T>.mapType(transform: (T) -> R): UiState<R> {
-    return when (this) {
-        is UiState.Error -> UiState.Error(message, cause)
-        is UiState.Idle -> UiState.Idle()
-        is UiState.Loading -> UiState.Loading()
-        is UiState.Success -> UiState.Success(transform(data))
-    }
-}
-
 typealias BindingState = UiState<DeviceBinding>

@@ -3,23 +3,17 @@ package no.nordicsemi.nrf.matter.di
 import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.MatterCommissioner
 import no.nordicsemi.nrf.matter.adapters.BindingControllerImpl
-import no.nordicsemi.nrf.matter.adapters.MatterClusterExtensionControllerImpl
 import no.nordicsemi.nrf.matter.adapters.MatterCommissionerImpl
 import no.nordicsemi.nrf.matter.adapters.MatterDecommissionerImpl
-import no.nordicsemi.nrf.matter.adapters.MatterDoorLockControllerImpl
-import no.nordicsemi.nrf.matter.adapters.MatterLightControllerImpl
-import no.nordicsemi.nrf.matter.adapters.MatterManufacturerSpecificControllerImpl
 import no.nordicsemi.nrf.matter.binding.BindingLogsProviderImpl
 import no.nordicsemi.nrf.matter.binding.BindingViewModel
 import no.nordicsemi.nrf.matter.binding.DataStoreProvider
+import no.nordicsemi.nrf.matter.cluster.IosMatterClient
+import no.nordicsemi.nrf.matter.cluster.MatterClient
 import no.nordicsemi.nrf.matter.commission.CommissioningViewModelIos
 import no.nordicsemi.nrf.matter.controller.BindingController
 import no.nordicsemi.nrf.matter.controller.BindingLogsProvider
-import no.nordicsemi.nrf.matter.controller.MatterClusterExtensionController
 import no.nordicsemi.nrf.matter.controller.MatterDecommissioner
-import no.nordicsemi.nrf.matter.controller.MatterDoorLockController
-import no.nordicsemi.nrf.matter.controller.MatterLightController
-import no.nordicsemi.nrf.matter.controller.MatterManufacturerSpecificController
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.logger.LoggerViewModel
@@ -28,9 +22,6 @@ import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.IosDevicesDataSource
 import no.nordicsemi.nrf.matter.repository.IosDevicesStateDataSource
-import no.nordicsemi.nrf.matter.ui.light.LightCommandHandler
-import no.nordicsemi.nrf.matter.ui.lock.LockCommandHandler
-import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecCommandHandler
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
@@ -97,18 +88,11 @@ val iosModule = module {
 
     viewModel { LoggerViewModel() }
     viewModel { BindingViewModel(get(), get(), get()) }
-    factory { LightCommandHandler(get()) }
-    factory { LockCommandHandler(get()) }
-    factory { ManufacturerSpecCommandHandler(get(), get(), get()) }
+
+    single<MatterClient> { IosMatterClient() }
 
     single<MatterCommissioner> { MatterCommissionerImpl() }
     single<MatterDecommissioner> { MatterDecommissionerImpl() }
     single<BindingController> { BindingControllerImpl() }
     single<BindingLogsProvider> { BindingLogsProviderImpl() }
-    single<MatterLightController> { MatterLightControllerImpl() }
-    single<MatterDoorLockController> { MatterDoorLockControllerImpl() }
-    single<MatterClusterExtensionController> { MatterClusterExtensionControllerImpl() }
-    single<MatterManufacturerSpecificController> {
-        MatterManufacturerSpecificControllerImpl()
-    }
 }

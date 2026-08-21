@@ -31,8 +31,6 @@ class CommandExecutor {
     ///   - value: The value to send for the command field.
     /// - Throws: An error if the command invocation fails.
     func executeCommand(endpoint: NSNumber, cluster: NSNumber, command: NSNumber, type: String, value: Any) async throws {
-        SwiftLogger.debug("Executing command: \(command)")
-
         let fields: NSDictionary = [
             MTRTypeKey: MTRStructureValueType,
             MTRValueKey: [
@@ -45,9 +43,58 @@ class CommandExecutor {
                 ]
             ]
         ]
-        
-        try await baseDevice.invokeCommand(withEndpointID: endpoint, clusterID: cluster, commandID: command, commandFields: fields, timedInvokeTimeout: nil, queue: DispatchQueue.global())
-        
+
+        _ = try await invoke(endpoint: endpoint, cluster: cluster, command: command, fields: fields)
+    }
+
+    /// Invokes a cluster command with at most a single field and returns its response.
+    ///
+    /// - Parameters:
+    ///   - endpoint: The endpoint ID hosting the cluster.
+    ///   - cluster: The cluster ID the command belongs to.
+    ///   - command: The command ID to invoke.
+    ///   - value: The command's single field, or `nil` for commands that take no fields, such as
+    ///     the On/Off cluster's `On`.
+    ///   - timedInvokeTimeoutMs: The timed invoke window in milliseconds, or `nil` to send an
+    ///     untimed invoke.
+    /// - Returns: The first field of the command response, or `nil` if the device answered with a
+    ///   status and no data.
+    /// - Throws: An error if the value cannot be encoded or if the command invocation fails.
+    func executeCommand(endpoint: NSNumber, cluster: NSNumber, command: NSNumber, value: MatterValue?, timedInvokeTimeoutMs: NSNumber? = nil) async throws -> MatterValue? {
+        var commandFields: [[String: Any]] = []
+
+        if let value {
+            commandFields = [[MTRContextTagKey: 0, MTRDataKey: try value.mtrDictionary()]]
+        }
+
+        let fields: NSDictionary = [
+            MTRTypeKey: MTRStructureValueType,
+            MTRValueKey: commandFields
+        ]
+
+        return try await invoke(
+            endpoint: endpoint,
+            cluster: cluster,
+            command: command,
+            fields: fields,
+            timedInvokeTimeoutMs: timedInvokeTimeoutMs
+        )
+    }
+
+    private func invoke(endpoint: NSNumber, cluster: NSNumber, command: NSNumber, fields: NSDictionary, timedInvokeTimeoutMs: NSNumber? = nil) async throws -> MatterValue? {
+        SwiftLogger.debug("Executing command: \(command), timed invoke timeout: \(String(describing: timedInvokeTimeoutMs))")
+
+        let response: [[String: Any]]? = try await baseDevice.invokeCommand(
+            withEndpointID: endpoint,
+            clusterID: cluster,
+            commandID: command,
+            commandFields: fields,
+            timedInvokeTimeout: timedInvokeTimeoutMs,
+            queue: DispatchQueue.global()
+        )
+
         SwiftLogger.debug("Command executed successfully.")
+
+        return response?.first?.readCommandResponseValue()
     }
 }
