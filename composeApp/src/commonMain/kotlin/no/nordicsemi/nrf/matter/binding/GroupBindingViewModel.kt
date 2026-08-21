@@ -21,8 +21,10 @@ import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.GroupBinding
+import no.nordicsemi.nrf.matter.model.MatterGroup
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.GroupBindingRepository
+import no.nordicsemi.nrf.matter.repository.MatterGroupRepository
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -65,7 +67,7 @@ data class GroupBindingUiState(
     val selectedTargetDeviceId: DeviceId? = null,
     val eligibleTargetDevices: List<Device> = emptyList(),
     val groupBindingSupported: Boolean = false,
-    val availableGroups: List<GroupInfo> = emptyList(),
+    val availableGroups: List<MatterGroup> = emptyList(),
     val selectedGroupId: Int? = null,
     val newGroupName: String? = null,
 )
@@ -73,6 +75,7 @@ data class GroupBindingUiState(
 class GroupBindingViewModel(
     private val groupBindingRepository: GroupBindingRepository,
     private val devicesRepository: DevicesRepository,
+    private val matterGroupRepository: MatterGroupRepository,
     private val bindGroupDevicesUseCase: BindGroupDevicesUseCase,
 ) : ViewModel() {
 
@@ -208,19 +211,24 @@ class GroupBindingViewModel(
             }
     }
 
-    fun getActiveGroupBindings() = viewModelScope.launch {
-        groupBindingRepository.getAllBinding()
-            .collect { bindings ->
-                val groups = bindings
-                    .distinctBy { it.groupId }
-                    .map { GroupInfo(it.groupId, it.groupName) }
-                _uiState.update { state ->
-                    state.copy(
-                        activeGroupBindings = bindings,
-                        availableGroups = groups
-                    )
+    fun getActiveGroupBindings() {
+        viewModelScope.launch {
+            groupBindingRepository.getAllBinding()
+                .collect { bindings ->
+                    _uiState.update { state ->
+                        state.copy(activeGroupBindings = bindings)
+                    }
                 }
-            }
+        }
+
+        viewModelScope.launch {
+            matterGroupRepository.getAll()
+                .collect { groups ->
+                    _uiState.update { state ->
+                        state.copy(availableGroups = groups)
+                    }
+                }
+        }
     }
 
     fun updateActiveGroupBinding(binding: GroupBinding) = viewModelScope.launch {

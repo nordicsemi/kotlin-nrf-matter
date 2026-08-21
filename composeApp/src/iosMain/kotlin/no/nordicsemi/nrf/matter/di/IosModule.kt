@@ -5,12 +5,13 @@ import no.nordicsemi.nrf.matter.MatterCommissioner
 import no.nordicsemi.nrf.matter.adapters.BindingControllerImpl
 import no.nordicsemi.nrf.matter.adapters.MatterCommissionerImpl
 import no.nordicsemi.nrf.matter.adapters.MatterDecommissionerImpl
+import no.nordicsemi.nrf.matter.binding.BindGroupDevicesUseCase
 import no.nordicsemi.nrf.matter.binding.BindingLogsProviderImpl
 import no.nordicsemi.nrf.matter.binding.BindingViewModel
-import no.nordicsemi.nrf.matter.binding.GroupBindingViewModel
 import no.nordicsemi.nrf.matter.binding.DataStoreProvider
 import no.nordicsemi.nrf.matter.cluster.IosMatterClient
 import no.nordicsemi.nrf.matter.cluster.MatterClient
+import no.nordicsemi.nrf.matter.binding.GroupBindingViewModel
 import no.nordicsemi.nrf.matter.binding.IosBindGroupDevicesUseCase
 import no.nordicsemi.nrf.matter.commission.CommissioningViewModelIos
 import no.nordicsemi.nrf.matter.controller.BindingController
@@ -97,7 +98,7 @@ val iosModule = module {
 
     viewModel { LoggerViewModel() }
     viewModel { BindingViewModel(get(), get(), get(), get()) }
-
+    viewModel { GroupBindingViewModel(get(), get(), get(), get()) }
     single<MatterClient> { IosMatterClient() }
 
     single<MatterCommissioner> { MatterCommissionerImpl() }

@@ -97,6 +97,7 @@ val androidModule = module {
             get(),
             get(),
             get(),
+            get(),
         )
     }
 
@@ -114,6 +115,7 @@ val androidModule = module {
     }
     viewModel {
         GroupBindingViewModel(
+            get(),
             get(),
             get(),
             get(),

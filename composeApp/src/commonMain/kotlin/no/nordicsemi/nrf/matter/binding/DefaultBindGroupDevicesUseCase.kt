@@ -12,12 +12,15 @@ import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.GroupBinding
+import no.nordicsemi.nrf.matter.model.MatterGroup
 import no.nordicsemi.nrf.matter.repository.GroupBindingRepository
+import no.nordicsemi.nrf.matter.repository.MatterGroupRepository
 
 class DefaultBindGroupDevicesUseCase(
     private val groupBindingController: GroupBindingController,
     private val bindingLogsProvider: BindingLogsProvider,
     private val groupBindingRepository: GroupBindingRepository,
+    private val matterGroupRepository: MatterGroupRepository,
 ) : BindGroupDevicesUseCase {
     override val isSupported: Boolean = true
 
@@ -53,6 +56,7 @@ class DefaultBindGroupDevicesUseCase(
                 groupName = groupName,
             )
             groupBindingRepository.save(binding)
+            matterGroupRepository.save(MatterGroup(binding.groupId, binding.groupName))
             emit(UiState.Success(binding))
         } catch (e: Exception) {
             NordicLogger.error("Group binding failed: ${e.message}", e)
