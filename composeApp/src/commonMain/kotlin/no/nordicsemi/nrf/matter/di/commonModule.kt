@@ -75,6 +75,7 @@ val commonModule = module {
             get(),
             get(),
             get(),
+            get(),
         )
     }
 
