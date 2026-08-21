@@ -196,30 +196,21 @@ internal fun BindingsScreen(
             } else {
                 if (selectedTab == 0) {
                     UnicastBindingTable(
-                        sourceDevices = bindingUiState.sourceDevices,
-                        selectedSourceDeviceId = bindingUiState.selectedSourceDeviceId,
-                        eligibleTargetDevices = bindingUiState.eligibleTargetDevices,
-                        selectedTargetDeviceId = bindingUiState.selectedTargetDeviceId,
+                        uiState = bindingUiState,
                         onSourceSelected = { bindingViewModel.onSourceSelected(it) },
                         onTargetSelected = { bindingViewModel.onTargetSelected(it) },
-                        initiateBinding = { sourceId, targetId ->
+                        onInitiateBinding = { sourceId, targetId ->
                             bindingViewModel.initiateBinding(sourceId, targetId)
-                        },
+                        }
                     )
                 } else {
                     GroupBindingTable(
-                        sourceDevices = groupBindingUiState.sourceDevices,
-                        selectedSourceDeviceId = groupBindingUiState.selectedSourceDeviceId,
-                        eligibleTargetDevices = groupBindingUiState.eligibleTargetDevices,
-                        selectedTargetDeviceId = groupBindingUiState.selectedTargetDeviceId,
-                        availableGroups = groupBindingUiState.availableGroups,
-                        selectedGroupId = groupBindingUiState.selectedGroupId,
-                        newGroupName = groupBindingUiState.newGroupName,
+                        uiState = groupBindingUiState,
                         onSourceSelected = { groupBindingViewModel.onSourceSelected(it) },
                         onTargetSelected = { groupBindingViewModel.onTargetSelected(it) },
                         onGroupSelected = { groupBindingViewModel.onGroupSelected(it) },
                         onGroupNameSet = { groupBindingViewModel.onGroupNameSet(it) },
-                        initiateGroupBinding = { sourceId, targetId, groupId, groupName ->
+                        onInitiateGroupBinding = { sourceId, targetId, groupId, groupName ->
                             groupBindingViewModel.initiateGroupBinding(
                                 sourceId,
                                 targetId,

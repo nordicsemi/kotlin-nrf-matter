@@ -36,24 +36,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun GroupBindingTable(
-    sourceDevices: List<Device>,
-    selectedSourceDeviceId: DeviceId?,
-    eligibleTargetDevices: List<Device>,
-    selectedTargetDeviceId: DeviceId?,
-    availableGroups: List<GroupInfo>,
-    selectedGroupId: Int?,
-    newGroupName: String?,
-    onSourceSelected: (sourceDeviceId: DeviceId) -> Unit,
-    onTargetSelected: (targetDeviceId: DeviceId) -> Unit,
-    onGroupSelected: (groupId: Int?) -> Unit,
+    uiState: GroupBindingUiState,
+    onSourceSelected: (DeviceId) -> Unit,
+    onTargetSelected: (DeviceId) -> Unit,
+    onGroupSelected: (Int?) -> Unit,
     onGroupNameSet: (groupName: String?) -> Unit,
-    initiateGroupBinding: (sourceDeviceId: DeviceId, targetDeviceId: DeviceId, groupId: Int?, groupName: String?) -> Unit,
+    onInitiateGroupBinding: (DeviceId, DeviceId, Int?, String?) -> Unit,
 ) {
     var isSourceDropdownExpanded by rememberSaveable { mutableStateOf(false) }
     var isTargetDropdownExpanded by rememberSaveable { mutableStateOf(false) }
@@ -62,24 +55,24 @@ internal fun GroupBindingTable(
     var showGroupNamePopup by rememberSaveable { mutableStateOf(false) }
     var groupNameInput by rememberSaveable { mutableStateOf("") }
 
-    val sourceText = sourceDevices
-        .firstOrNull { it.deviceId == selectedSourceDeviceId }
+    val sourceText = uiState.sourceDevices
+        .firstOrNull { it.deviceId == uiState.selectedSourceDeviceId }
         ?.let { it.productName ?: "Node ${it.deviceId.longValue}" }
         ?: "Select Light Switch"
 
-    val targetText = eligibleTargetDevices
-        .firstOrNull { it.deviceId == selectedTargetDeviceId }
+    val targetText = uiState.eligibleTargetDevices
+        .firstOrNull { it.deviceId == uiState.selectedTargetDeviceId }
         ?.let { it.productName ?: "Node ${it.deviceId.longValue}" }
         ?: "Select Light Bulb"
 
     val groupText = when {
-        selectedGroupId != null -> {
-            availableGroups.firstOrNull { it.groupId == selectedGroupId }?.groupName
-                ?: "Group $selectedGroupId"
+        uiState.selectedGroupId != null -> {
+            uiState.availableGroups.firstOrNull { it.groupId == uiState.selectedGroupId }?.groupName
+                ?: "Group ${uiState.selectedGroupId}"
         }
 
-        newGroupName != null -> {
-            newGroupName
+        uiState.newGroupName != null -> {
+            uiState.newGroupName
         }
 
         else -> "Select a Group"
@@ -123,7 +116,7 @@ internal fun GroupBindingTable(
                         expanded = isSourceDropdownExpanded,
                         onDismissRequest = { isSourceDropdownExpanded = false }
                     ) {
-                        sourceDevices.forEach { device ->
+                        uiState.sourceDevices.forEach { device ->
                             DropdownMenuItem(
                                 text = {
                                     Text("${device.productName} (Node ID: ${device.deviceId.longValue})")
@@ -138,7 +131,7 @@ internal fun GroupBindingTable(
                 }
             }
 
-            if (selectedSourceDeviceId == null) {
+            if (uiState.selectedSourceDeviceId == null) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -151,7 +144,7 @@ internal fun GroupBindingTable(
                     )
                 }
                 return@Column
-            } else if (eligibleTargetDevices.isEmpty()) {
+            } else if (uiState.eligibleTargetDevices.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -195,7 +188,7 @@ internal fun GroupBindingTable(
                             expanded = isTargetDropdownExpanded,
                             onDismissRequest = { isTargetDropdownExpanded = false }
                         ) {
-                            eligibleTargetDevices.forEach { device ->
+                            uiState.eligibleTargetDevices.forEach { device ->
                                 DropdownMenuItem(
                                     text = {
                                         Text("${device.productName} (Node ID: ${device.deviceId.longValue})")
@@ -211,7 +204,7 @@ internal fun GroupBindingTable(
                 }
             }
 
-            if (selectedTargetDeviceId != null) {
+            if (uiState.selectedTargetDeviceId != null) {
                 // Group Configuration
                 Column {
                     Text(
@@ -226,7 +219,7 @@ internal fun GroupBindingTable(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        if (availableGroups.isNotEmpty() || newGroupName != null) {
+                        if (uiState.availableGroups.isNotEmpty() || uiState.newGroupName != null) {
                             ExposedDropdownMenuBox(
                                 expanded = isGroupDropdownExpanded,
                                 onExpandedChange = {
@@ -251,7 +244,7 @@ internal fun GroupBindingTable(
                                     expanded = isGroupDropdownExpanded,
                                     onDismissRequest = { isGroupDropdownExpanded = false }
                                 ) {
-                                    availableGroups.forEach { group ->
+                                    uiState.availableGroups.forEach { group ->
                                         DropdownMenuItem(
                                             text = { Text(group.groupName) },
                                             onClick = {
@@ -260,12 +253,12 @@ internal fun GroupBindingTable(
                                             }
                                         )
                                     }
-                                    if (newGroupName != null) {
+                                    if (uiState.newGroupName != null) {
                                         DropdownMenuItem(
-                                            text = { Text(newGroupName) },
+                                            text = { Text(uiState.newGroupName) },
                                             onClick = {
                                                 isGroupDropdownExpanded = false
-                                                onGroupNameSet(newGroupName)
+                                                onGroupNameSet(uiState.newGroupName)
                                             }
                                         )
                                     }
@@ -320,17 +313,20 @@ internal fun GroupBindingTable(
             }
 
             // Execute Button
-            val canSubmit = selectedTargetDeviceId != null &&
-                        (selectedGroupId != null || newGroupName != null)
+            val canSubmit = uiState.selectedTargetDeviceId != null &&
+                    (uiState.selectedGroupId != null || uiState.newGroupName != null)
 
             Button(
                 onClick = {
-                    if (selectedTargetDeviceId != null) {
-                        if (selectedGroupId != null) {
-                            val group = availableGroups.first { it.groupId == selectedGroupId }
-                            initiateGroupBinding(selectedSourceDeviceId, selectedTargetDeviceId, group.groupId, group.groupName)
-                        } else if (newGroupName != null) {
-                            initiateGroupBinding(selectedSourceDeviceId, selectedTargetDeviceId, null, newGroupName)
+                    val source = uiState.selectedSourceDeviceId
+                    val target = uiState.selectedTargetDeviceId
+                    if (target != null) {
+                        if (uiState.selectedGroupId != null) {
+                            val group =
+                                uiState.availableGroups.first { it.groupId == uiState.selectedGroupId }
+                            onInitiateGroupBinding(source, target, group.groupId, group.groupName)
+                        } else if (uiState.newGroupName != null) {
+                            onInitiateGroupBinding(source, target, null, uiState.newGroupName)
                         }
                     }
                 },

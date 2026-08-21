@@ -32,30 +32,26 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun UnicastBindingTable(
-    sourceDevices: List<Device>,
-    selectedSourceDeviceId: DeviceId?,
-    eligibleTargetDevices: List<Device>,
-    selectedTargetDeviceId: DeviceId?,
-    onSourceSelected: (sourceDeviceId: DeviceId) -> Unit,
-    onTargetSelected: (targetDeviceId: DeviceId) -> Unit,
-    initiateBinding: (sourceDeviceId: DeviceId, targetDeviceId: DeviceId) -> Unit,
+    uiState: BindingUiState,
+    onSourceSelected: (DeviceId) -> Unit,
+    onTargetSelected: (DeviceId) -> Unit,
+    onInitiateBinding: (DeviceId, DeviceId) -> Unit,
 ) {
     var isSourceDropdownExpanded by rememberSaveable { mutableStateOf(false) }
     var isTargetDropdownExpanded by rememberSaveable { mutableStateOf(false) }
 
-    val sourceText = sourceDevices
-        .firstOrNull { it.deviceId == selectedSourceDeviceId }
+    val sourceText = uiState.sourceDevices
+        .firstOrNull { it.deviceId == uiState.selectedSourceDeviceId }
         ?.let { it.productName ?: "Node ${it.deviceId.longValue}" }
         ?: "Select Light Switch"
 
-    val targetText = eligibleTargetDevices
-        .firstOrNull { it.deviceId == selectedTargetDeviceId }
+    val targetText = uiState.eligibleTargetDevices
+        .firstOrNull { it.deviceId == uiState.selectedTargetDeviceId }
         ?.let { it.productName ?: "Node ${it.deviceId.longValue}" }
         ?: "Select Light Bulb"
 
@@ -97,7 +93,7 @@ internal fun UnicastBindingTable(
                         expanded = isSourceDropdownExpanded,
                         onDismissRequest = { isSourceDropdownExpanded = false }
                     ) {
-                        sourceDevices.forEach { device ->
+                        uiState.sourceDevices.forEach { device ->
                             DropdownMenuItem(
                                 text = {
                                     Text("${device.productName} (Node ID: ${device.deviceId.longValue})")
@@ -112,7 +108,7 @@ internal fun UnicastBindingTable(
                 }
             }
 
-            if (selectedSourceDeviceId == null) {
+            if (uiState.selectedSourceDeviceId == null) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -125,7 +121,7 @@ internal fun UnicastBindingTable(
                     )
                 }
                 return@Column
-            } else if (eligibleTargetDevices.isEmpty()) {
+            } else if (uiState.eligibleTargetDevices.isEmpty()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -169,7 +165,7 @@ internal fun UnicastBindingTable(
                             expanded = isTargetDropdownExpanded,
                             onDismissRequest = { isTargetDropdownExpanded = false }
                         ) {
-                            eligibleTargetDevices.forEach { device ->
+                            uiState.eligibleTargetDevices.forEach { device ->
                                 DropdownMenuItem(
                                     text = {
                                         Text("${device.productName} (Node ID: ${device.deviceId.longValue})")
@@ -209,12 +205,14 @@ internal fun UnicastBindingTable(
             }
 
             // Execute Button
-            val canSubmit = selectedTargetDeviceId != null
+            val canSubmit = uiState.selectedTargetDeviceId != null
 
             Button(
                 onClick = {
-                    if (selectedTargetDeviceId != null) {
-                        initiateBinding(selectedSourceDeviceId, selectedTargetDeviceId)
+                    val source = uiState.selectedSourceDeviceId
+                    val target = uiState.selectedTargetDeviceId
+                    if (target != null) {
+                        onInitiateBinding(source, target)
                     }
                 },
                 enabled = canSubmit,
