@@ -9,9 +9,12 @@ import no.nordicsemi.nrf.matter.adapters.MatterDecommissionerImpl
 import no.nordicsemi.nrf.matter.adapters.MatterDoorLockControllerImpl
 import no.nordicsemi.nrf.matter.adapters.MatterLightControllerImpl
 import no.nordicsemi.nrf.matter.adapters.MatterManufacturerSpecificControllerImpl
+import no.nordicsemi.nrf.matter.binding.BindGroupDevicesUseCase
 import no.nordicsemi.nrf.matter.binding.BindingLogsProviderImpl
 import no.nordicsemi.nrf.matter.binding.BindingViewModel
 import no.nordicsemi.nrf.matter.binding.DataStoreProvider
+import no.nordicsemi.nrf.matter.binding.GroupBindingViewModel
+import no.nordicsemi.nrf.matter.binding.IosBindGroupDevicesUseCase
 import no.nordicsemi.nrf.matter.commission.CommissioningViewModelIos
 import no.nordicsemi.nrf.matter.controller.BindingController
 import no.nordicsemi.nrf.matter.controller.BindingLogsProvider
@@ -26,6 +29,7 @@ import no.nordicsemi.nrf.matter.logger.LoggerViewModel
 import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
+import no.nordicsemi.nrf.matter.repository.GroupBindingRepository
 import no.nordicsemi.nrf.matter.repository.IosDevicesDataSource
 import no.nordicsemi.nrf.matter.repository.IosDevicesStateDataSource
 import no.nordicsemi.nrf.matter.ui.light.LightCommandHandler
@@ -89,6 +93,12 @@ val iosModule = module {
     single<BindingRepository> {
         BindingRepository(get())
     }
+    single<GroupBindingRepository> {
+        GroupBindingRepository(get())
+    }
+    single<BindGroupDevicesUseCase> {
+        IosBindGroupDevicesUseCase(get())
+    }
 
     // View models.
     viewModelOf(::HomeViewModel)
@@ -97,6 +107,7 @@ val iosModule = module {
 
     viewModel { LoggerViewModel() }
     viewModel { BindingViewModel(get(), get(), get()) }
+    viewModel { GroupBindingViewModel(get(), get(), get(), get()) }
     factory { LightCommandHandler(get()) }
     factory { LockCommandHandler(get()) }
     factory { ManufacturerSpecCommandHandler(get(), get(), get()) }
