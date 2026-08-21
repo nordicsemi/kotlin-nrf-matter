@@ -191,18 +191,21 @@ class GroupBindingViewModel(
     }
 
     fun updateEligibleTargetDevices(sourceDeviceId: DeviceId) = viewModelScope.launch {
-        // Group binding doesn't necessarily have the same restrictions as unicast binding in terms of "already bound" 
-        // because we might want to add multiple lights to the same group.
-        // However, for simplicity and consistency with the current implementation:
-        val lightDevicesInRepository =
-            devicesRepository.getAllDevices().devicesList.filter {
-                it.deviceType == DeviceType.LIGHT_ON_OFF ||
-                        it.deviceType == DeviceType.DIMMABLE_LIGHT
+        groupBindingRepository.getTargetsForDevice(sourceDeviceId)
+            .collect { bindings ->
+                val lightDevicesInRepository =
+                    devicesRepository.getAllDevices().devicesList.filter {
+                        it.deviceType == DeviceType.LIGHT_ON_OFF ||
+                                it.deviceType == DeviceType.DIMMABLE_LIGHT
+                    }
+                val boundTargetIds = bindings.map { it.targetNodeId }.toSet()
+
+                val result = lightDevicesInRepository.filterNot { it.deviceId in boundTargetIds }
+
+                _uiState.update {
+                    it.copy(eligibleTargetDevices = result)
+                }
             }
-        
-        _uiState.update {
-            it.copy(eligibleTargetDevices = lightDevicesInRepository)
-        }
     }
 
     fun getActiveGroupBindings() = viewModelScope.launch {
