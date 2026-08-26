@@ -97,7 +97,7 @@ val iosModule = module {
     viewModel { CommissioningViewModelIos(get(), get()) }
 
     viewModel { LoggerViewModel() }
-    viewModel { BindingViewModel(get(), get(), get(), get()) }
+    viewModel { BindingViewModel(get(), get(), get()) }
     viewModel { GroupBindingViewModel(get(), get(), get(), get()) }
     single<MatterClient> { IosMatterClient() }
 
