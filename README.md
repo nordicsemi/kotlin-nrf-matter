@@ -21,8 +21,9 @@ The app lets you:
 - **View logs** for diagnosing commissioning and cluster interactions.
 
 ## Application
-[![Get it on Google Play](https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png)](https://play.google.com/store/apps/details?id=no.nordicsemi.nrf.matter&pcampaignid=web_share)
-[![Download on the App Store](https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg)](https://apps.apple.com/app/nrf-matter/id1668571234)
+<a href="https://play.google.com/store/apps/details?id=no.nordicsemi.nrf.matter&pcampaignid=web_share"><img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" height="49%" width="49%"></a>
+<a href="https://apps.apple.com/app/nrf-matter/id1668571234"><img src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" height="49%" width="49%"></a>
+
 
 
 
