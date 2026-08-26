@@ -2,7 +2,8 @@
 
 A [Matter](https://nrfconnectdocs.nordicsemi.com/ncs/latest/nrf/protocols/matter/index.html)
 commissioning and control companion app by
-[Nordic Semiconductor](https://www.nordicsemi.com/), built with Kotlin Multiplatform and Compose Multiplatform, with the iOS-specific implementation written in Swift.
+[Nordic Semiconductor](https://www.nordicsemi.com/), built with Kotlin Multiplatform and Compose
+Multiplatform, with the iOS-specific implementation written in Swift.
 
 The app lets you:
 
@@ -19,11 +20,20 @@ The app lets you:
 - **Manage bindings** between devices, e.g. a switch controlling a light.
 - **View logs** for diagnosing commissioning and cluster interactions.
 
+## Application
+[![Get it on Google Play](https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png)](https://play.google.com/store/apps/details?id=no.nordicsemi.nrf.matter&pcampaignid=web_share)
+[![Download on the App Store](https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg)](https://apps.apple.com/app/nrf-matter/id1668571234)
+
+
+
+
 ## Preparing the work setup
 
 The apps for working need a Matter-enabled device. There are 2 common ways of getting such a device.
+
 1. Using a Matter Virtual Device. It works over a local network, and it's easier to set up.
-2. Using one of Nordic's DKs. It will require a working Thread Border Router accessible in a local network.
+2. Using one of Nordic's DKs. It will require a working Thread Border Router accessible in a local
+   network.
 
 Those 2 approaches are explained in detail in below section.
 
@@ -33,7 +43,9 @@ If you don't have a Thread Border Router or physical accessory handy, Google's
 [Matter Virtual Device](https://developers.home.google.com/matter/tools/virtual-device) (MVD) tool
 lets you
 commission a simulated Matter accessory from a Mac or Linux devices instead.
-The nRF Matter implementation currently supports only a subset of the device types available in the Matter Virtual Device application:
+The nRF Matter implementation currently supports only a subset of the device types available in the
+Matter Virtual Device application:
+
 1. **Dimmable Light**
 2. **Door Lock**
 
@@ -41,17 +53,18 @@ To explore and test additional device types, a compatible Nordic development kit
 
 #### Testing without a hub: Matter Virtual Device (MVD)
 
-
-1. Download the MVD `.dmg` for your Mac (Apple Silicon or Intel) and drag it into `Applications`. The Matter Virtual Device (MVD) can be downloaded from the official Google Home developer resources [here](https://developers.home.google.com/matter/tools/virtual-device#install_mvd).
+1. Download the MVD `.dmg` for your Mac (Apple Silicon or Intel) and drag it into `Applications`.
+   The Matter Virtual Device (MVD) can be downloaded from the official Google Home developer
+   resources [here](https://developers.home.google.com/matter/tools/virtual-device#install_mvd).
 2. Launch MVD and configure the simulated accessory (device type, name, discriminator, Matter port,
    test VID/PID). After launching the application, the initial screen will look like this:
-<img  width="500" alt="Screenshot 2026-07-22 at 13 04 52" src="https://github.com/user-attachments/assets/aac2b545-1e16-4ef1-81bc-68d74bbc186b" />
+   <img  width="500" alt="Screenshot 2026-07-22 at 13 04 52" src="https://github.com/user-attachments/assets/aac2b545-1e16-4ef1-81bc-68d74bbc186b" />
 
 3. Commission it from this app like a real device — it shows a QR code and joins over the macOS
    existing Wi-Fi connection.
 4. The Mac running MVD and the phone **must be on the same Wi-Fi network**.
 5. Once commissioned, you can control the simulated device from this app.
-   
+
 <div align="center">
   <img src="https://github.com/user-attachments/assets/dfc2d152-9898-459e-a768-b8b793201a94" width="49%" />
   <img src="https://github.com/user-attachments/assets/89b3650e-246e-4217-a727-308c960e9604" width="49%" />
@@ -59,19 +72,30 @@ To explore and test additional device types, a compatible Nordic development kit
 
 ### Nordic Semiconductor DKs
 
-Another option is to configure a Nordic Semiconductor development kit (DK) to act as a Matter device using one of the available Matter samples.
-The samples can be installed using the [Matter Quick Start app](https://docs.nordicsemi.com/r/bundle/nrf-connect-for-desktop/page/matter-quick-start-app) 
-which is a part of [nRF Connect For Desktop](https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-Desktop/Download).
+Another option is to configure a Nordic Semiconductor development kit (DK) to act as a Matter device
+using one of the available Matter samples.
+The samples can be installed using
+the [Matter Quick Start app](https://docs.nordicsemi.com/r/bundle/nrf-connect-for-desktop/page/matter-quick-start-app)
+which is a part
+of [nRF Connect For Desktop](https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-Desktop/Download).
 
 1. **Door Lock** — available directly in the Matter Quick Start App.
 2. **Light** — available directly in the Matter Quick Start App.
-3. **Switch** - build this [sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/light_switch) in Visual Studio.
-4. **Manufacturer specific cluster + cluster extension** - build this [sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/manufacturer_specific) in Visual Studio.
+3. **Switch** - build
+   this [sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/light_switch) in
+   Visual Studio.
+4. **Manufacturer specific cluster + cluster extension** - build
+   this [sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/manufacturer_specific)
+   in Visual Studio.
 
 > [!TIP]
-> All examples display a link with a QR code required for commissioning in the logs. The logs from a DK can be viewed using the [Serial Terminal app](https://docs.nordicsemi.com/r/bundle/nrf-connect-for-desktop/page/serial-terminal-app).
-> To view the logs, open the Serial Terminal app and connect the DK using the appropriate serial terminal port. If the device has not yet been commissioned, press the reset button on the DK. The device will then print the logs, including the QR code link, in the logs panel.
-> 
+> All examples display a link with a QR code required for commissioning in the logs. The logs from a
+> DK can be viewed using
+> the [Serial Terminal app](https://docs.nordicsemi.com/r/bundle/nrf-connect-for-desktop/page/serial-terminal-app).
+> To view the logs, open the Serial Terminal app and connect the DK using the appropriate serial
+> terminal port. If the device has not yet been commissioned, press the reset button on the DK. The
+> device will then print the logs, including the QR code link, in the logs panel.
+>
 > <img width="914" height="21" alt="Screenshot 2026-07-22 at 15 35 56" src="https://github.com/user-attachments/assets/844905d9-5701-4426-b049-5d686369b455" />
 
 ## Initial setup: hosting Thread network credentials
@@ -84,7 +108,8 @@ network before the app is used.
 
 ### Installing Thread Network Credentials on iOS
 
-Matter examples installed on DKs require a **Thread Border Router** connected to the same local network as the app. In
+Matter examples installed on DKs require a **Thread Border Router** connected to the same local
+network as the app. In
 addition, the iPhone must already have the corresponding **Thread Network Credentials** installed.
 The credentials are installed via the system API and are available to all apps on the phone.
 
@@ -125,7 +150,8 @@ way.
 - The phone and the hub **must be on the same Wi-Fi network** — credential/device discovery relies
   on
   local-network multicast (mDNS), which doesn't cross subnets or routers.
-- The hub needs a **user account signed in** (a Google account added via the Google Home app) before it will share any credentials — a freshly unboxed,
+- The hub needs a **user account signed in** (a Google account added via the Google Home app) before
+  it will share any credentials — a freshly unboxed,
   no-account hub won't work.
 - Make sure the router on the network has **IPv6 enabled** — without it, Thread commissioning can
   appear to succeed, but device control might fail afterward.
@@ -149,7 +175,8 @@ This is a Kotlin Multiplatform project targeting Android and iOS.
       each platform.
 * [`/shared`](./shared) — a thin KMP module that `api`/`export`s `:composeApp` and produces the iOS
   framework the Xcode project consumes. It carries no source of its own; it exists so Swift has a
-  single `import shared` to reach the Kotlin surface. Both Xcode targets build it through a run-script
+  single `import shared` to reach the Kotlin surface. Both Xcode targets build it through a
+  run-script
   phase calling `./gradlew :shared:embedAndSignAppleFrameworkForXcode`.
 * [`/androidDeps`](./androidDeps) — Android library wrapping the native Matter (CHIP) SDK and the
   Google Home API, exposing helpers such as `ChipClient`, `ClustersHelper`, and `BindingManager`.
@@ -189,7 +216,8 @@ fork of Project CHIP,
 downstream of
 [project-chip/connectedhomeip](https://github.com/project-chip/connectedhomeip)) — specifically its
 Android
-`chip-tool` build target for arm64. To rebuild them from source, follow the instructions provided in the
+`chip-tool` build target for arm64. To rebuild them from source, follow the instructions provided in
+the
 [nrfconnect/sdk-connectedhomeip](https://github.com/nrfconnect/sdk-connectedhomeip/blob/9895b2bdb4c43b48426930f03e3c05502babd2f0/docs/platforms/android/android_building.md).
 
 > **Note:** if you build  `.jars`/`.so` files yourself against a newer Matter version, this project
@@ -250,7 +278,8 @@ Therefore, getting started requires a few non-standard integration steps.
    account.
 2. Access the Home APIs early-access program and download the ZIP archive containing the SDK
    artifacts.
-3. Extract the SDK into your system's local Maven repository, the `.m2/repository` directory. This is
+3. Extract the SDK into your system's local Maven repository, the `.m2/repository` directory. This
+   is
    the standard path used for local Maven repositories.
     - **Linux:** `~/.m2/repository/`
     - **macOS:** `~/.m2/repository/`
@@ -276,11 +305,11 @@ git, the Apple-side counterpart to the vendoring described above. It used to be 
 consumed through plain cinterop, so the Swift object code ends up *inside* the published artifact.
 Three Gradle tasks per iOS target do this, in [`build.gradle.kts`](./composeApp/build.gradle.kts):
 
-| Task | Does |
-| --- | --- |
-| `compileIosMatterSwift<Target>` | runs `xcodebuild` on `/ios-matter`, which also resolves and builds Pulse |
-| `iosMatterStaticLib<Target>` | `libtool`s the resulting objects into `libios-matter.a` and copies the Swift-generated ObjC header and module map beside it |
-| `cinteropIosMatter<Target>` | translates that module into the `iosMatter` Kotlin package and embeds the archive in the klib |
+| Task                            | Does                                                                                                                        |
+|---------------------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| `compileIosMatterSwift<Target>` | runs `xcodebuild` on `/ios-matter`, which also resolves and builds Pulse                                                    |
+| `iosMatterStaticLib<Target>`    | `libtool`s the resulting objects into `libios-matter.a` and copies the Swift-generated ObjC header and module map beside it |
+| `cinteropIosMatter<Target>`     | translates that module into the `iosMatter` Kotlin package and embeds the archive in the klib                               |
 
 `./gradlew :composeApp:iosMatterStaticLibs` builds the library for every target. All three tasks run
 automatically as part of any iOS compile — there is nothing to invoke by hand.
@@ -336,7 +365,8 @@ directory in Xcode and run it from there.
 - Android: minSdk 27+, a device with Google Play Services (Home API is used for commissioning). The
   vendored CHIP native libraries are `arm64-v8a` only, so a physical arm64 device is required — the
   app won't run on an emulator.
-- iOS: iOS 26.0 or newer — both [`/ios-matter`](./ios-matter/Package.swift) and the Xcode targets set
+- iOS: iOS 26.0 or newer — both [`/ios-matter`](./ios-matter/Package.swift) and the Xcode targets
+  set
   that as their minimum, because Apple's `Matter`/`MatterSupport` APIs the app relies on are only
   available there. Building needs an Xcode recent enough for `swift-tools-version: 6.3`
   (Xcode 26+). Open [`/iosApp`](./iosApp) in Xcode to build/run.
@@ -360,8 +390,8 @@ For the authoritative, up-to-date list of supported hardware, see Nordic's
 [Matter hardware and memory requirements](https://nrfconnectdocs.nordicsemi.com/ncs/latest/nrf/protocols/matter/getting_started/hw_requirements.html)
 page — new DKs and SoCs are added there as they gain Matter support.
 
-
 ## License
 
-Copyright © Nordic Semiconductor. Licensed under a BSD-3-Clause style license — see the [LICENSE](LICENSE) for full terms.
+Copyright © Nordic Semiconductor. Licensed under a BSD-3-Clause style license — see
+the [LICENSE](LICENSE) for full terms.
 
