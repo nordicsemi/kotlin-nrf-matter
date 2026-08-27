@@ -54,47 +54,60 @@ Thread Border Router entirely.
 The accessory is created first, on the computer. The result is a QR code that the phone will scan in
 the next section.
 
-### Step 1 · Open MVD
+<table>
+<tr>
+<td width="460" align="center"><img src="doc/assets/1.png" alt="The MVD app on first launch" width="440"></td>
+<td valign="top">
+
+**Step 1 · Open MVD**
 
 This is the initial screen displayed after opening the MVD app.
 
-<div align="center">
-  <img src="doc/assets/1.png" alt="The MVD app on first launch" width="720">
-</div>
+</td>
+</tr>
+<tr>
+<td width="460" align="center"><img src="doc/assets/2_highlight.png" alt="Selecting a device type in MVD" width="440"></td>
+<td valign="top">
 
-### Step 2 · Choose a device type
+**Step 2 · Choose a device type**
 
 Expand the list of available devices and select one of the supported types.
 
-<div align="center">
-  <img src="doc/assets/2_highlight.png" alt="Selecting a device type in MVD" width="720">
-</div>
+</td>
+</tr>
+<tr>
+<td width="460" align="center"><img src="doc/assets/3_highlight.png" alt="The Create device button in MVD" width="440"></td>
+<td valign="top">
 
-### Step 3 · Create the device
+**Step 3 · Create the device**
 
 Press the **Create device** button.
 
-<div align="center">
-  <img src="doc/assets/3_highlight.png" alt="The Create device button in MVD" width="720">
-</div>
+</td>
+</tr>
+<tr>
+<td width="460" align="center"><img src="doc/assets/4_highlight.png" alt="The QR code button in MVD" width="440"></td>
+<td valign="top">
 
-### Step 4 · Show the QR code
+**Step 4 · Show the QR code**
 
 The device is now created, but not yet commissioned. This screen can later be used to change the
 state of the device. Press **QR code** to display the code required for commissioning.
 
-<div align="center">
-  <img src="doc/assets/4_highlight.png" alt="The QR code button in MVD" width="720">
-</div>
+</td>
+</tr>
+<tr>
+<td width="460" align="center"><img src="doc/assets/5.png" alt="The commissioning QR code displayed by MVD" width="440"></td>
+<td valign="top">
 
-### Step 5 · Keep the code on screen
+**Step 5 · Keep the code on screen**
 
 The displayed QR code is what the phone scans. Once the device has been successfully commissioned,
 the **Device commissioned** label appears and this screen can be closed.
 
-<div align="center">
-  <img src="doc/assets/5.png" alt="The commissioning QR code displayed by MVD" width="720">
-</div>
+</td>
+</tr>
+</table>
 
 > [!TIP]
 > Leave MVD running for the rest of this guide. Closing it takes the accessory off the network, and
