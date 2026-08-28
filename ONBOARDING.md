@@ -272,8 +272,7 @@ Pressing **Matter Device information** opens a new section with details about th
 
 **The details**
 
-Endpoints, device types, and the clusters exposed by the accessory are listed here — useful for
-confirming that the accessory presents what the app expects.
+Data exposed by Basic Information Cluster is listed here.
 
 </td>
 </tr>
