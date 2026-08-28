@@ -34,10 +34,10 @@ Thread Border Router entirely.
 > local-network multicast (mDNS), which does not cross subnets or routers.
 
 > [!NOTE]
-> Only a subset of the MVD device types is fully supported — **Dimmable Light** and **Door Lock**.
+> Only a subset of the MVD device types is fully supported.
 > Other types may still be commissioned and offer partial functionality. For the full range of device
-> types, a Nordic development kit is required; see
-> [Nordic Semiconductor DKs](README.md#nordic-semiconductor-dks) in the README.
+> types, a Nordic development kit is required (see
+> [Nordic Semiconductor DKs](README.md#nordic-semiconductor-dks) in the README).
 
 ## Contents
 
@@ -281,36 +281,20 @@ confirming that the accessory presents what the app expects.
 
 ---
 
-## Troubleshooting
-
-| Symptom | What to check |
-| --- | --- |
-| The accessory is never found after scanning | Both the phone and the computer running MVD are on the **same Wi-Fi network**, and local network access has been granted to the app |
-| The scanner opens but nothing happens | The QR code screen is still open in MVD, and the accessory has not already been commissioned |
-| The device appears, but controls do nothing | MVD is still running, and the accessory has not been recreated since commissioning |
-| Only some controls are shown | The chosen MVD device type is only partially supported — see the note in [What is needed](#what-is-needed) |
-
-> [!TIP]
-> The in-app log view records commissioning and cluster interactions, and is the fastest place to
-> look when a step fails silently.
-
----
-
 ## Where to go next
 
 At this point the Matter Virtual Device has been created, commissioned, and is controllable from the
 nRF Matter app. Commissioning is persistent: the device stays available across app restarts and does
 not need to be added again unless it is removed from the app.
 
-The same flow applies to physical Matter accessories. The only practical difference is the source of
-the QR code and the fact that a Thread accessory additionally requires a Thread Border Router on the
-local network:
+The same flow applies to physical Matter accessories. The only practical difference is that a Thread 
+accessory additionally requires a Thread Border Router on the local network:
 
 - [Nordic Semiconductor DKs](README.md#nordic-semiconductor-dks) — flashing a development kit with a
   Matter sample
 - [Hosting Thread network credentials](README.md#initial-setup-hosting-thread-network-credentials) —
-  the one-time network setup a Thread accessory needs
+  the one-time network set up a Thread accessory needs
 - [Project structure](README.md#project-structure) — where the commissioning code lives, for anyone
   moving on from using the app to working on it
 
-Feedback and issue reports are welcome in the project's issue tracker.
+Feedback and issue reports are welcome.
