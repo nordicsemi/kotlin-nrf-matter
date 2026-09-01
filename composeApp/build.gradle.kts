@@ -1,9 +1,7 @@
 @file:OptIn(ExperimentalKotlinGradlePluginApi::class)
 
-import org.gradle.process.ExecOperations
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.konan.target.HostManager
-import javax.inject.Inject
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -235,6 +233,8 @@ kotlin {
     android {
         namespace = "no.nordicsemi.nrf.matter.lib"
 
+        minSdk = 27
+
         androidResources {
             enable = true
         }
@@ -247,7 +247,6 @@ kotlin {
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
-            export(project(":core"))
         }
 
         // iosArm64 -> IosArm64, matching the task-name suffixes above and the
@@ -282,7 +281,10 @@ kotlin {
 
     sourceSets {
         androidMain.dependencies {
-            implementation(project(":androidDeps"))
+            implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+            // Home API SDK, resolved from the flat `mavenLocal` directory in this repo.
+            implementation(libs.play.services.home)
+            implementation(libs.play.services.types)
 //            implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.androidx.core.splashscreen)
@@ -293,8 +295,7 @@ kotlin {
             implementation(libs.room.ktx)
         }
         commonMain.dependencies {
-            api(project(":core"))
-
+            implementation(libs.kotlinx.coroutines.core)
             implementation(libs.jetbrains.compose.runtime)
             implementation(libs.jetbrains.foundation)
             implementation(libs.jetbrains.icons.extended)
@@ -337,4 +338,11 @@ kotlin {
 dependencies {
     add("kspAndroid", libs.room.compiler)
     add("kspIosArm64", libs.room.compiler)
+}
+
+androidComponents {
+    onVariants { variant ->
+        val jniLibs = requireNotNull(variant.sources.jniLibs)
+        jniLibs.addStaticSourceDirectory("libs/jniLibs")
+    }
 }
