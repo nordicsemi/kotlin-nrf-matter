@@ -148,18 +148,17 @@ This is a Kotlin Multiplatform project targeting Android and iOS.
       commissioning, bindings, logs, and per-device-type controllers for locks, lights, and
       switches).
     - `androidMain` / `iosMain` — platform-specific code, e.g. wiring up Matter commissioning on
-      each platform.
+      each platform. `androidMain` also holds the wrappers around the native Matter (CHIP) SDK and
+      the Google Home API (`ChipClient`, `ClustersHelper`, `BindingControllerImpl`) along with the
+      prebuilt binaries they need — see
+      [Native Matter (CHIP) SDK binaries](#native-matter-chip-sdk-binaries).
+    - Shared domain models (`Device`, `DeviceMatterInfo`, `LockDeviceState`, …) and the
+      `NordicLogger` abstraction live in `commonMain`, backed by Room on Android and, on iOS, by
+      `ios-matter`'s Pulse-based `SwiftLogger`.
 * [`/shared`](./shared) — a thin KMP module that `api`/`export`s `:composeApp` and produces the iOS
   framework the Xcode project consumes. It carries no source of its own; it exists so Swift has a
   single `import shared` to reach the Kotlin surface. Both Xcode targets build it through a run-script
   phase calling `./gradlew :shared:embedAndSignAppleFrameworkForXcode`.
-* [`/androidDeps`](./androidDeps) — Android library wrapping the native Matter (CHIP) SDK and the
-  Google Home API, exposing helpers such as `ChipClient`, `ClustersHelper`, and `BindingManager`.
-  Google Home API, exposing helpers such as `ChipClient`, `ClustersHelper`, and
-  `BindingControllerImpl`.
-* [`/core`](./core) — shared domain models (`Device`, `DeviceMatterInfo`, `LockDeviceState`, …) and
-  the `NordicLogger` abstraction used across platforms — backed by Room on Android and, on iOS, by
-  `ios-matter`'s Pulse-based `SwiftLogger`.
 * [`/androidApp`](./androidApp) — the Android application entry point.
 * [`/iosApp`](./iosApp/iosApp) — the iOS application entry point (SwiftUI host for the shared
   Compose UI), plus the `nrfMatter` target — the `MatterSupport` app extension that provides the
@@ -173,14 +172,14 @@ This is a Kotlin Multiplatform project targeting Android and iOS.
   with the Matter extension lives. See
   [`/ios-matter` — vendored Matter Swift package](#ios-matter--vendored-matter-swift-package).
 
-### `androidDeps` native Matter (CHIP) SDK binaries
+### Native Matter (CHIP) SDK binaries
 
-[`/androidDeps/libs`](./androidDeps/libs) contains prebuilt binaries checked directly into git —
+[`/composeApp/libs`](./composeApp/libs) contains prebuilt binaries checked directly into git —
 they are not built by this Gradle project:
 
 - Jars: `AndroidPlatform.jar`, `CHIPClusterID.jar`, `CHIPClusters.jar`, `CHIPController.jar`,
   `CHIPInteractionModel.jar`, `OnboardingPayload.jar`, `libMatterJson.jar`, `libMatterTlv.jar`.
-- Native libraries: [`/androidDeps/libs/jniLibs/arm64-v8a`](./androidDeps/libs/jniLibs/arm64-v8a) —
+- Native libraries: [`/composeApp/libs/jniLibs/arm64-v8a`](./composeApp/libs/jniLibs/arm64-v8a) —
   `libCHIPController.so` and `libc++_shared.so` (`arm64-v8a` only — there's no `x86_64` build, so
   these
   libs won't load on an Android emulator, only on a physical arm64 device).
@@ -264,7 +263,7 @@ Therefore, getting started requires a few non-standard integration steps.
    repository.
 
 > **Warning:** the Home API is still evolving, so a newer version may introduce breaking changes —
-> check `androidDeps` and anywhere else the Home API is used (search for `play.services.home` in the
+> check `composeApp` and anywhere else the Home API is used (search for `play.services.home` in the
 > source), and adjust as needed.
 >
 
@@ -345,8 +344,8 @@ directory in Xcode and run it from there.
 
 ## Firmware supported
 
-The vendored CHIP binaries (see [
-`androidDeps` native Matter (CHIP) SDK binaries](#androiddeps-native-matter-chip-sdk-binaries))
+The vendored CHIP binaries (see
+[Native Matter (CHIP) SDK binaries](#native-matter-chip-sdk-binaries))
 are built against **Matter 1.5.0**, first introduced in **nRF Connect SDK v3.2.0**, so below listed
 Nordic DK running Matter firmware built with NCS v3.2.0 or
 newer should be compatible for testing commissioning/control with this app.

@@ -1,9 +1,15 @@
 package no.nordicsemi.nrf.matter.platform
 
-import no.nordicsemi.nrf.matter.android.BuildConfig
+import android.content.Context
+import org.koin.mp.KoinPlatform
 
 actual val currentType: PlatformType = PlatformType.ANDROID
 
 actual fun getAppVersion(): String {
-    return BuildConfig.VERSION_NAME
+    val version = runCatching {
+        val context = KoinPlatform.getKoin().get<Context>()
+        context.packageManager.getPackageInfo(context.packageName, 0).versionName
+    }.getOrNull()
+
+    return version ?: "Unknown"
 }
