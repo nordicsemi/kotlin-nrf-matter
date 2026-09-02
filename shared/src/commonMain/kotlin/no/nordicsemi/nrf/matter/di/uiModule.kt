@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter.di
 
 import no.nordicsemi.nrf.matter.HomeViewModel
+import no.nordicsemi.nrf.matter.api.NordicMatters
 import no.nordicsemi.nrf.matter.binding.BindingViewModel
 import no.nordicsemi.nrf.matter.logger.LoggerViewModel
 import no.nordicsemi.nrf.matter.ui.MatterControllerCache
@@ -40,6 +41,11 @@ import org.koin.dsl.module
  */
 
 val uiModule = module {
+
+    // The library builds its own graph, so the app only borrows its entry points. Both require
+    // NordicMatters.initialize(...) to have run.
+    single { NordicMatters.defaultFabric }
+    single { NordicMatters.matterClient }
 
     single { MatterControllerCache() }
 

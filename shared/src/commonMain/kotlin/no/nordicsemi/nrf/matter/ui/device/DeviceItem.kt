@@ -39,6 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.skydoves.cloudy.cloudy
+import no.nordicsemi.nrf.matter.binding.isBindingCapable
 import no.nordicsemi.nrf.matter.commission.DecommissionDevice
 import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.model.DeviceId

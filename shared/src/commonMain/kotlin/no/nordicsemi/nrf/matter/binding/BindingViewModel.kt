@@ -16,15 +16,12 @@ import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import no.nordicsemi.nrf.matter.api.Fabric
 import no.nordicsemi.nrf.matter.domain.BindingState
 import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId
-import no.nordicsemi.nrf.matter.model.DeviceType
-import no.nordicsemi.nrf.matter.repository.BindingRepository
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.ui.device.isBindingCapable
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -68,9 +65,7 @@ data class BindingUiState(
 )
 
 class BindingViewModel(
-    private val bindingRepository: BindingRepository,
-    private val devicesRepository: DevicesRepository,
-    private val bindDevicesUseCase: BindDevicesUseCase,
+    private val fabric: Fabric,
 ) : ViewModel() {
 
     private val _bindingUiState = MutableStateFlow(BindingUiState())
@@ -90,17 +85,14 @@ class BindingViewModel(
         }
 
     fun loadSourceDevices() = viewModelScope.launch {
-        val bindingSourceDevices = devicesRepository.getAllDevices().devicesList.filter {
-            it.deviceType == DeviceType.LIGHT_SWITCH ||
-                    it.deviceType == DeviceType.OUTLET
-        }
+        val bindingSourceDevices = fabric.getBindingSourceDevices()
         _bindingUiState.update {
             it.copy(sourceDevices = bindingSourceDevices)
         }
     }
 
     fun getActiveBindings() = viewModelScope.launch {
-        bindingRepository.getAllBinding()
+        fabric.bindings
             .collect {
                 _bindingUiState.update { state ->
                     state.copy(activeBindings = it)
@@ -125,15 +117,15 @@ class BindingViewModel(
 
 
     fun initiateBinding(sourceDeviceId: DeviceId, targetDeviceId: DeviceId) {
-        val collectLogsJob = bindDevicesUseCase.bindingLogs
+        val collectLogsJob = fabric.bindingLogs
             .onStart { _bindingLogs.update { it.cleared() } }
             .onEach { log ->
                 _bindingLogs.update { it.adding(log) }
             }.launchIn(viewModelScope)
 
-        bindDevicesUseCase.invoke(
-            switchNodeId = sourceDeviceId,
-            lightNodeId = targetDeviceId
+        fabric.bindDevices(
+            sourceDeviceId = sourceDeviceId,
+            targetDeviceId = targetDeviceId,
         )
             .onStart { updateBindingState(UiState.Loading()) }
             .onCompletion { collectLogsJob.cancel() }
@@ -162,17 +154,10 @@ class BindingViewModel(
     }
 
     fun updateEligibleTargetDevices(sourceDeviceId: DeviceId) = viewModelScope.launch {
-        bindingRepository.getTargetsForDevice(sourceDeviceId)
-            .collect { bindings ->
-                // Filter out devices that are lights and are not already bound to the selected source device.
-                val lightDevicesInRepository =
-                    devicesRepository.getAllDevices().devicesList.filter { it.isBindingCapable() }
-                val targetIds = bindings.map { it.targetNodeId }.toSet()
-
-                val result = lightDevicesInRepository.filterNot { it.deviceId in targetIds }
-
+        fabric.getEligibleTargetDevices(sourceDeviceId)
+            .collect { devices ->
                 _bindingUiState.update {
-                    it.copy(eligibleTargetDevices = result)
+                    it.copy(eligibleTargetDevices = devices)
                 }
             }
     }

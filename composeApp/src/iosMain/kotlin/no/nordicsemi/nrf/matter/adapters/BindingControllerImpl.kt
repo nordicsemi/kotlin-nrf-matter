@@ -8,7 +8,7 @@ import no.nordicsemi.nrf.matter.controller.BindingController
 import no.nordicsemi.nrf.matter.model.DeviceId
 import iosMatter.LocalMatterBinder
 
-class BindingControllerImpl : BindingController {
+internal class BindingControllerImpl : BindingController {
     private val binder = LocalMatterBinder()
 
     override suspend fun bind(

@@ -1,10 +1,7 @@
 package no.nordicsemi.nrf.matter
 
 import android.app.Application
-import no.nordicsemi.nrf.matter.di.androidModule
-import no.nordicsemi.nrf.matter.di.commonModule
 import no.nordicsemi.nrf.matter.di.uiModule
-import no.nordicsemi.nrf.matter.logger.db.LogDatabase
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext.startKoin
 
@@ -42,10 +39,10 @@ class KoinApplication: Application() {
     override fun onCreate() {
         super.onCreate()
 
-        LogDatabase.initialize(this)
+        // The library initializes itself through App Startup, before this runs.
         startKoin {
             androidContext(this@KoinApplication)
-            modules(commonModule, androidModule, uiModule)
+            modules(uiModule)
         }
     }
 }

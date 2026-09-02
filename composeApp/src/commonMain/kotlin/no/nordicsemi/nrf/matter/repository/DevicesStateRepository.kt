@@ -38,7 +38,7 @@ import kotlin.time.Clock
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class DevicesStateRepository(
+internal class DevicesStateRepository(
     private val dataSource: DeviceStateDataSource,
 ) {
 

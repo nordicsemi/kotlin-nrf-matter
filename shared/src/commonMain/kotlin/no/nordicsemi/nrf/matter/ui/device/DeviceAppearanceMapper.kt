@@ -43,7 +43,3 @@ fun Device.toSubtitle(): String = when (deviceType) {
 private fun Device.manufacturerSpecificName(): String? = deviceMatterInfo
     .firstNotNullOfOrNull { it.manufacturerSpecificData?.name }
     ?.takeIf { it.isNotBlank() }
-
-fun Device.isBindingCapable(): Boolean {
-    return deviceMatterInfo.any { it.serverClusters.contains(6) }
-}

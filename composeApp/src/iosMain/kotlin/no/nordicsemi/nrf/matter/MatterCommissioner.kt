@@ -1,10 +1,17 @@
 package no.nordicsemi.nrf.matter
 
-import no.nordicsemi.nrf.matter.domain.OperationResult
-import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
 
-interface MatterCommissioner {
+internal interface MatterCommissioner {
 
-    suspend fun startIosCommissioning(deviceId: DeviceId): OperationResult<Device>
+    /**
+     * Runs the system add-device flow and pairs the device it finds as [deviceId].
+     *
+     * Reading the device back is a separate step - see
+     * [no.nordicsemi.nrf.matter.commission.DeviceInfoProvider].
+     *
+     * @throws no.nordicsemi.nrf.matter.commission.CommissioningException if the flow fails or the
+     * user cancels it.
+     */
+    suspend fun commission(deviceId: DeviceId)
 }

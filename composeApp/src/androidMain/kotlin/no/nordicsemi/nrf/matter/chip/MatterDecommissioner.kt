@@ -3,7 +3,7 @@ package no.nordicsemi.nrf.matter.chip
 import no.nordicsemi.nrf.matter.controller.MatterDecommissioner
 import no.nordicsemi.nrf.matter.model.DeviceId
 
-class MatterDecommissionerImpl(
+internal class MatterDecommissionerImpl(
     private val chipClient: ChipClient,
 ) : MatterDecommissioner {
 

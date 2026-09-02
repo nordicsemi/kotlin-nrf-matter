@@ -1,7 +1,5 @@
 package no.nordicsemi.nrf.matter
 
-import no.nordicsemi.nrf.matter.di.commonModule
-import no.nordicsemi.nrf.matter.di.iosModule
 import no.nordicsemi.nrf.matter.di.uiModule
 import org.koin.core.context.startKoin
 
@@ -38,6 +36,6 @@ import org.koin.core.context.startKoin
 
 fun initKoin() {
     startKoin {
-        modules(commonModule, iosModule, uiModule)
+        modules(uiModule)
     }
 }

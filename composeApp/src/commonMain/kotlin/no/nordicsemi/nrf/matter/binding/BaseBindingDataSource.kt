@@ -42,7 +42,7 @@ import no.nordicsemi.nrf.matter.model.DeviceId
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class BaseBindingDataSource(
+internal class BaseBindingDataSource(
     private val dataStore: DataStore<Preferences>,
 ) : BindingDataSource {
 

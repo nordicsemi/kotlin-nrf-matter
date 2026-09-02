@@ -17,16 +17,33 @@ abstract class LogDatabase : RoomDatabase() {
         @Volatile
         private var instance: LogDatabase? = null
 
+        /**
+         * Opens the log database, unless it is already open.
+         *
+         * `NordicMatterInitializer` calls this before any app component runs, so an app normally
+         * has no reason to. Calling it again is a no-op: a second `databaseBuilder` over the same
+         * file would leave two Room instances writing to it.
+         */
         fun initialize(context: Context) {
-            instance = Room.databaseBuilder(
-                context.applicationContext,
-                LogDatabase::class.java,
-                "log_database"
-            ).build()
+            if (instance != null) return
+
+            synchronized(this) {
+                if (instance != null) return
+
+                instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    LogDatabase::class.java,
+                    "log_database"
+                ).build()
+            }
         }
 
         fun getDatabase(): LogDatabase {
-            return instance!!
+            return instance ?: error(
+                "The log database is not open. It is opened by the library's App Startup " +
+                        "initializer; if you removed that provider from your manifest, call " +
+                        "LogDatabase.initialize(context) before using the library."
+            )
         }
     }
 }

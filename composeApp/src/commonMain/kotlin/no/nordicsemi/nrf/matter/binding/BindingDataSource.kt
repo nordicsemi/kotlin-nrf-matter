@@ -35,7 +35,7 @@ import no.nordicsemi.nrf.matter.model.DeviceId
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface BindingDataSource {
+internal interface BindingDataSource {
     suspend fun save(binding: DeviceBinding)
 
     fun getBindingsForDevice(deviceId: DeviceId): Flow<List<DeviceBinding>>

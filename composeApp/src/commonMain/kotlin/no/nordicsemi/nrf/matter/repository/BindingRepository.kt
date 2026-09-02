@@ -37,7 +37,7 @@ import no.nordicsemi.nrf.matter.model.DeviceId
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class BindingRepository(
+internal class BindingRepository(
     private val localDataSource: BindingDataSource
 ) {
 

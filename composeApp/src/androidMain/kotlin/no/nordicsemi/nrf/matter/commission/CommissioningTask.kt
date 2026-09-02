@@ -8,95 +8,135 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
 import com.google.android.gms.common.api.ApiException
 import com.google.android.gms.home.matter.Matter
 import com.google.android.gms.home.matter.commissioning.CommissioningRequest
 import com.google.android.gms.home.matter.commissioning.CommissioningResult
 import com.google.android.gms.home.matter.commissioning.MatterCommissioningApiException
-import kotlinx.coroutines.channels.consumeEach
-import kotlinx.coroutines.flow.first
-import no.nordicsemi.nrf.matter.domain.OperationResult
-import no.nordicsemi.nrf.matter.home.CommissioningViewModelAndroid
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import no.nordicsemi.nrf.matter.api.Fabric
+import no.nordicsemi.nrf.matter.api.androidMatterPlatform
 import no.nordicsemi.nrf.matter.logger.NordicLogger
-import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
+import no.nordicsemi.nrf.matter.model.toDeviceId
 import no.nordicsemi.nrf.matter.service.AppCommissioningService
-import org.koin.compose.viewmodel.koinViewModel
+import kotlin.coroutines.cancellation.CancellationException
 
 private const val TAG = "Commissioning"
+
 @Composable
-actual fun CommissioningTask(
-    onSuccess: (Device) -> Unit,
-    onError: (CommissioningException) -> Unit
-) {
-    val commissioningModelAndroid: CommissioningViewModelAndroid = koinViewModel()
+actual fun rememberCommissioningTask(
+    fabric: Fabric,
+    onSuccess: suspend (DeviceId) -> Unit,
+    onError: (CommissioningException) -> Unit,
+): CommissioningTask {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val deviceInfoProvider = remember { androidMatterPlatform.deviceInfoProvider }
+    val currentOnSuccess by rememberUpdatedState(onSuccess)
+    val currentOnError by rememberUpdatedState(onError)
+
+    // The node id is reserved before the flow starts, so it is the only thing known about the
+    // device while the Google Home flow is running - and the only thing a failure can be reported
+    // against.
+    val reservedDeviceId = remember { mutableStateOf<DeviceId?>(null) }
+    val isRunning = remember { mutableStateOf(false) }
 
     val commissionDeviceLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.StartIntentSenderForResult()
         ) { result ->
-            try {
-                val commissioningResult =
-                    CommissioningResult.fromIntentSenderResult(result.resultCode, result.data)
-                commissioningModelAndroid.gpsCommissioningDeviceSucceeded(commissioningResult)
-            } catch (t: Throwable) {
-                NordicLogger.error("Commissioning failed", t, tag = TAG)
-                onError(t.toCommissioningException(commissioningModelAndroid.nextNodeId.value!!))
+            scope.launch {
+                isRunning.value = false
+                try {
+                    val commissioningResult =
+                        CommissioningResult.fromIntentSenderResult(result.resultCode, result.data)
+                    val deviceId = commissioningResult.token?.toDeviceId()
+                        ?: error("Token is missing.")
+
+                    deviceInfoProvider.rememberName(deviceId, commissioningResult.deviceName)
+                    currentOnSuccess(deviceId)
+                } catch (c: CancellationException) {
+                    throw c
+                } catch (t: Throwable) {
+                    NordicLogger.error("Commissioning failed", t, tag = TAG)
+                    currentOnError(t.toCommissioningException(reservedDeviceId.value))
+                }
             }
         }
 
-    LaunchedEffect(Unit) {
-        commissioningModelAndroid.deviceEvent.consumeEach {
-            when (it) {
-                is OperationResult.Error -> onError(
-                    it.t.toCommissioningException(
-                        commissioningModelAndroid.nextNodeId.value!!
-                    )
-                )
-
-                is OperationResult.Success -> onSuccess(it.data)
-            }
-        }
-    }
-
-    val context = LocalContext.current
-
-    LaunchedEffect(Unit) {
-        val deviceId =
-            commissioningModelAndroid.nextNodeId.first { it != null }!! // Wait until device id is loaded.
-        commissionDevice(context, deviceId, commissionDeviceLauncher, onError)
+    return remember(fabric) {
+        AndroidCommissioningTask(
+            context = context,
+            fabric = fabric,
+            scope = scope,
+            launcher = commissionDeviceLauncher,
+            reservedDeviceId = reservedDeviceId,
+            isRunning = isRunning,
+            onError = { currentOnError(it) },
+        )
     }
 }
 
-/**
- * Commission a device.
- */
-private fun commissionDevice(
-    context: Context,
-    deviceId: DeviceId,
-    commissionDeviceLauncher: ManagedActivityResultLauncher<IntentSenderRequest, ActivityResult>,
-    onError: (CommissioningException) -> Unit
-) {
-    val commissionDeviceRequest =
-        CommissioningRequest.builder()
+private class AndroidCommissioningTask(
+    private val context: Context,
+    private val fabric: Fabric,
+    private val scope: CoroutineScope,
+    private val launcher: ManagedActivityResultLauncher<IntentSenderRequest, ActivityResult>,
+    private val reservedDeviceId: MutableState<DeviceId?>,
+    private val isRunning: MutableState<Boolean>,
+    private val onError: (CommissioningException) -> Unit,
+) : CommissioningTask {
+
+    override fun startCommissioning() {
+        if (isRunning.value) return
+        isRunning.value = true
+
+        scope.launch {
+            // AppCommissioningService pairs the device under the id reserved here, so it has to be
+            // reserved before the Google Home flow is asked for an intent sender.
+            val deviceId = fabric.nextDeviceId()
+            reservedDeviceId.value = deviceId
+
+            commissionDevice(deviceId)
+        }
+    }
+
+    /**
+     * Asks the Google Home commissioning client for the intent sender of the add-device flow and
+     * launches it.
+     */
+    private fun commissionDevice(deviceId: DeviceId) {
+        val commissionDeviceRequest =
+            CommissioningRequest.builder()
 //            .setOnboardingPayload(payload) // Add device payload directly to commission a specific device, such as payload = "MT:6FCJ142C00KA0648G00"
-            .setCommissioningService(ComponentName(context, AppCommissioningService::class.java))
-            .build()
+                .setCommissioningService(
+                    ComponentName(context, AppCommissioningService::class.java)
+                )
+                .build()
 
-    Matter.getCommissioningClient(context)
-        .commissionDevice(commissionDeviceRequest)
-        .addOnSuccessListener { result ->
-            commissionDeviceLauncher.launch(IntentSenderRequest.Builder(result).build())
-        }
-        .addOnFailureListener { error ->
-            NordicLogger.error("Commissioning failed", error, tag = TAG)
-            onError(error.toCommissioningException(deviceId))
-        }
+        Matter.getCommissioningClient(context)
+            .commissionDevice(commissionDeviceRequest)
+            .addOnSuccessListener { result ->
+                launcher.launch(IntentSenderRequest.Builder(result).build())
+            }
+            .addOnFailureListener { error ->
+                isRunning.value = false
+                NordicLogger.error("Commissioning failed", error, tag = TAG)
+                onError(error.toCommissioningException(deviceId))
+            }
+    }
 }
 
-fun Throwable.toCommissioningException(deviceId: DeviceId): CommissioningException {
+fun Throwable.toCommissioningException(deviceId: DeviceId?): CommissioningException {
     return when (this) {
         is CommissioningException -> this
         is MatterCommissioningApiException -> CommissioningException(

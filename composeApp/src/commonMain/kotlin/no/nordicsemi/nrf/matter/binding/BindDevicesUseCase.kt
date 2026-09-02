@@ -44,7 +44,7 @@ import no.nordicsemi.nrf.matter.repository.BindingRepository
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-class BindDevicesUseCase(
+internal class BindDevicesUseCase(
     private val deviceController: BindingController,
     private val bindingLogsProvider: BindingLogsProvider,
     private val bindingRepository: BindingRepository,
@@ -60,7 +60,7 @@ class BindDevicesUseCase(
                 sourceEndpoint = 1,
                 targetNodeId = lightNodeId,
                 targetEndpoint = 1,
-                clusterId = 0x006L,
+                clusterId = ON_OFF_CLUSTER_ID,
             )
             val bindingDevice = DeviceBinding(
                 id = "${switchNodeId.longValue}_${lightNodeId.longValue}",
@@ -68,7 +68,7 @@ class BindDevicesUseCase(
                 targetNodeId = lightNodeId,
                 sourceEndpoint = 1,
                 targetEndpoint = 1,
-                clusterId = 0x006L
+                clusterId = ON_OFF_CLUSTER_ID
             )
             bindingRepository.save(bindingDevice)
             emit(UiState.Success(bindingDevice))

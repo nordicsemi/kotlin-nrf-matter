@@ -39,7 +39,7 @@ import no.nordicsemi.nrf.matter.model.toDeviceId
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class DevicesRepository(
+internal class DevicesRepository(
     private val dataSource: DevicesDataSource
 ) {
 

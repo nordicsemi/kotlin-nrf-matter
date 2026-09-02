@@ -10,7 +10,7 @@ import java.util.Optional
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-class BindingControllerImpl(
+internal class BindingControllerImpl(
     private val chipClient: ChipClient,
 ) : BindingController {
 

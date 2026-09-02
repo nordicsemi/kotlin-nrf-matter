@@ -8,7 +8,7 @@ import no.nordicsemi.nrf.matter.controller.MatterDecommissioner
 import no.nordicsemi.nrf.matter.model.DeviceId
 import iosMatter.LocalMatterDecommissioner
 
-class MatterDecommissionerImpl : MatterDecommissioner {
+internal class MatterDecommissionerImpl : MatterDecommissioner {
     private val controller = LocalMatterDecommissioner()
 
     override suspend fun decommission(deviceId: DeviceId) {

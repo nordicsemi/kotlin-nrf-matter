@@ -9,19 +9,21 @@ import Matter
 
 /// Reads metadata for a Matter device: basic information from the root endpoint (0), and
 /// device type plus client/server clusters from each supported endpoint (1..n).
-class LocalMatterClusterDiscovery {
+///
+/// Exposed to Kotlin, which reads a device back after the add-device flow has paired it — see
+/// `IosDeviceInfoProvider`. The local controller is obtained in ``discoverClusters()`` rather than
+/// in `init`, so that the initialiser stays non-failable and the bridged API is a plain
+/// constructor plus one asynchronous call.
+@objc public final class LocalMatterClusterDiscovery: NSObject {
 
     private let nodeId: NSNumber
-    private let baseDevice: MTRBaseDevice
 
     /// Creates a discovery helper for the device with the given node ID.
     ///
     /// - Parameter nodeId: The Matter node ID of the target device.
-    /// - Throws: An error if the local controller cannot be obtained.
-    init(nodeId: NSNumber) throws {
+    @objc public init(nodeId: NSNumber) {
         self.nodeId = nodeId
-        let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
-        baseDevice = MTRBaseDevice(nodeID: nodeId, controller: controller)
+        super.init()
     }
 
     /// Reads everything the app records about a freshly commissioned device.
@@ -34,10 +36,14 @@ class LocalMatterClusterDiscovery {
     ///   discovery ran rather than when the fabric actually accepted the device.
     /// - Throws: An `NSError` carrying the ``withMoreUserInfo(deviceId:stage:displayMessage:)``
     ///   payload if reading basic information or the descriptor cluster fails, or
-    ///   `OperationError.unknown` if a Descriptor cluster cannot be created for an endpoint.
-    func discoverClusters() async throws -> Device {
+    ///   `OperationError.unknown` if the local controller cannot be obtained or a Descriptor
+    ///   cluster cannot be created for an endpoint.
+    @objc public func discoverClusters() async throws -> Device {
+        let controller = try LocalControllerProvider(logTag: "LocalControllerProvider").getController()
+        let baseDevice = MTRBaseDevice(nodeID: nodeId, controller: controller)
+
         let basicInfo = try await readBasicInformation(baseDevice: baseDevice)
-        
+
         guard let mainDescriptor = MTRBaseClusterDescriptor(device: baseDevice, endpointID: 0, queue: .global()) else {
             throw OperationError.unknown
         }

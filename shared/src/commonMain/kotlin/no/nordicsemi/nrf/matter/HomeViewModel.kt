@@ -8,20 +8,18 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import no.nordicsemi.nrf.matter.api.Fabric
 import no.nordicsemi.nrf.matter.commission.DecommissionState
-import no.nordicsemi.nrf.matter.commission.DecommissionUseCases
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
+import no.nordicsemi.nrf.matter.model.DeviceState
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
-import no.nordicsemi.nrf.matter.model.Devices
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
-import no.nordicsemi.nrf.matter.model.DevicesState
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.ui.MatterController
 import no.nordicsemi.nrf.matter.ui.MatterControllerCache
 import org.koin.core.component.KoinComponent
@@ -58,18 +56,16 @@ import org.koin.core.component.KoinComponent
  */
 
 class HomeViewModel(
-    private val devicesRepository: DevicesRepository,
-    private val devicesStateRepository: DevicesStateRepository,
+    private val fabric: Fabric,
     private val matterControllerCache: MatterControllerCache,
-    private val decommissionUseCases: DecommissionUseCases,
 ) : ViewModel(), KoinComponent {
     private val _decommissionState = MutableStateFlow<DecommissionState>(DecommissionState.Idle)
     val decommissionState = _decommissionState.asStateFlow()
 
     private val devicesListUiModelFlow: Flow<DevicesListUiModel> =
         combine(
-            devicesRepository.devicesFlow,
-            devicesStateRepository.devicesStateFlow,
+            fabric.devices,
+            fabric.deviceStates,
         ) { devices, states ->
             DevicesListUiModel(
                 devices = processDevices(devices, states),
@@ -78,13 +74,8 @@ class HomeViewModel(
         }
 
     val devices: StateFlow<List<MatterController>> =
-        combine(
-            devicesRepository.devicesFlow,
-            devicesStateRepository.devicesStateFlow,
-        ) { devices, states ->
-            DevicesListUiModel(
-                devices = processDevices(devices, states),
-            ).devices.map { device ->
+        devicesListUiModelFlow.map { uiModel ->
+            uiModel.devices.map { device ->
                 (matterControllerCache[device.device.deviceId] ?: matterControllerCache.create(
                     device
                 )).also {
@@ -101,12 +92,12 @@ class HomeViewModel(
         )
 
     private fun processDevices(
-        devices: Devices,
-        devicesStates: DevicesState
+        devices: List<Device>,
+        devicesStates: List<DeviceState>
     ): List<DeviceUiModel> {
         val list = mutableListOf<DeviceUiModel>()
-        devices.devicesList.forEach { device ->
-            val state = devicesStates.devicesStateList.find { it.deviceId == device.deviceId }
+        devices.forEach { device ->
+            val state = devicesStates.find { it.deviceId == device.deviceId }
             if (state == null) {
                 list.add(DeviceUiModel(device, isOnline = false, isOn = false))
             } else {
@@ -114,29 +105,6 @@ class HomeViewModel(
             }
         }
         return list
-    }
-
-    fun addCommissionedDevice(
-        device: Device,
-        isOnline: Boolean,
-        isOn: Boolean,
-    ) {
-        viewModelScope.launch {
-            devicesRepository.addDevice(device)
-            devicesStateRepository.addDeviceState(
-                device.deviceId,
-                isOnline = isOnline,
-                isOn = isOn
-            )
-        }
-    }
-
-    fun commissioningFailed(resultCode: Int) {
-        // TODO: Handle commissioning failure with proper UI states.
-        if (resultCode == 0) {
-            // User simply wilfully exited from commissioning.
-            return
-        }
     }
 
     /**
@@ -148,7 +116,7 @@ class HomeViewModel(
      */
     fun decommissionDevice(deviceId: DeviceId) {
         viewModelScope.launch {
-            decommissionUseCases.decommissionDevice(deviceId).collect {
+            fabric.decommissionDevice(deviceId).collect {
                 updateDecommissionState(it)
             }
         }
@@ -163,7 +131,7 @@ class HomeViewModel(
      */
     fun forceRemove(deviceId: DeviceId) {
         viewModelScope.launch {
-            decommissionUseCases.forceRemoveDevice(deviceId).collect {
+            fabric.forceRemoveDevice(deviceId).collect {
                 updateDecommissionState(it)
             }
         }

@@ -39,16 +39,15 @@ import MatterSupport
     /// for scanning the QR code and choosing among available Thread networks. The local fabric
     /// is shared between the main app and the app extension via App Groups.
     ///
-    /// After successful commissioning, the descriptor clusters for all available endpoints are
-    /// read and the resulting device metadata is returned.
+    /// Pairing is all this does: reading the commissioned device back is a separate step, done by
+    /// ``LocalMatterClusterDiscovery``, so that the caller decides when - and whether - to pay for
+    /// those reads.
     ///
     /// - Parameter deviceId: The Matter node ID to assign to the newly commissioned device.
-    /// - Returns: The ``Device`` metadata discovered after commissioning.
     /// - Throws: An `NSError` carrying the ``withMoreUserInfo(deviceId:stage:displayMessage:)``
     ///   payload if the system add-device flow fails or the extension did not report success (the
-    ///   user cancelled), or an error from cluster discovery if the local controller cannot be
-    ///   obtained or the device's metadata cannot be read.
-    @objc public func startIosCommissioning(deviceId: NSNumber) async throws -> Device {
+    ///   user cancelled).
+    @objc public func startIosCommissioning(deviceId: NSNumber) async throws {
         let homes = [MatterAddDeviceRequest.Home(displayName: "Nordic Home")]
         let topology = MatterAddDeviceRequest.Topology(ecosystemName: "Nordic Ecosystem", homes: homes)
         
@@ -78,11 +77,6 @@ import MatterSupport
                 displayMessage: "Cancelled.",
             )
         }
-        
-        let descriptorCluster = try LocalMatterClusterDiscovery(nodeId: deviceId)
-        
-        let device = try await descriptorCluster.discoverClusters()
-        return device
     }
 }
 

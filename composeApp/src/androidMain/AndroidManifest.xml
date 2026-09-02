@@ -29,6 +29,22 @@
 
     <application>
 
+        <!--
+            Supplies the library with the application context before any app component runs - see
+            NordicMatterInitializer. `node="merge"` adds this meta-data to the InitializationProvider
+            that androidx.startup already declares, next to whatever other libraries registered
+            there; ${applicationId} resolves to the consuming app's id when the manifests are merged.
+        -->
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <meta-data
+                android:name="no.nordicsemi.nrf.matter.api.NordicMatterInitializer"
+                android:value="androidx.startup" />
+        </provider>
+
         <service
             android:name="no.nordicsemi.nrf.matter.service.AppCommissioningService"
             android:exported="true"

@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import no.nordicsemi.nrf.matter.controller.BindingLogsProvider
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 
-class BindingLogsProviderImpl: BindingLogsProvider {
+internal class BindingLogsProviderImpl: BindingLogsProvider {
 
     override val bindingLogs: Flow<String> = NordicLogger.logsChannel.receiveAsFlow()
 }

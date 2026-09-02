@@ -286,23 +286,20 @@ kotlin {
             implementation(libs.play.services.home)
             implementation(libs.play.services.types)
             implementation(libs.androidx.activity.compose)
-            implementation(libs.jetbrains.compose.viewmodel)
             implementation(libs.jetbrains.compose.runtime)
             implementation(libs.room.runtime)
             implementation(libs.room.ktx)
+            // Carries the InitializationProvider that NordicMatterInitializer registers with.
+            implementation(libs.androidx.startup)
         }
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutines.core)
 
             implementation(libs.jetbrains.compose.runtime)
             implementation(libs.jetbrains.compose.ui)
-            implementation(libs.jetbrains.compose.viewmodel)
 
             // Data time
             implementation(libs.kotlinx.datetime)
-            // Koin
-            implementation(libs.koin.core)
-            implementation(libs.koin.compose.viewmodel)
             // serialization
             implementation(libs.kotlinx.serialization.json)
             // data store

@@ -12,12 +12,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import no.nordicsemi.nrf.matter.chip.ChipClient
+import no.nordicsemi.nrf.matter.api.NordicMatters
+import no.nordicsemi.nrf.matter.api.androidMatterPlatform
 import no.nordicsemi.nrf.matter.logger.NordicLogger
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import org.koin.android.ext.android.inject
-import org.koin.core.component.KoinComponent
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -50,13 +47,17 @@ import org.koin.core.component.KoinComponent
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class AppCommissioningService : Service(), CommissioningService.Callback, KoinComponent {
+class AppCommissioningService : Service(), CommissioningService.Callback {
     private val serviceJob = Job()
     private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
-    private val devicesRepository: DevicesRepository by inject()
-    private val chipClient: ChipClient by inject()
 
-    private val devicesStateRepository: DevicesStateRepository by inject()
+    // The service runs in the app's process, so the library was initialized in
+    // Application.onCreate long before Google Home binds to it.
+    private val dependencies by lazy { NordicMatters.requireDependencies() }
+    private val devicesRepository by lazy { dependencies.devicesRepository }
+    private val devicesStateRepository by lazy { dependencies.devicesStateRepository }
+    private val chipClient by lazy { androidMatterPlatform.chipClient }
+
     private lateinit var commissioningServiceDelegate: CommissioningService
 
     override fun onCreate() {
