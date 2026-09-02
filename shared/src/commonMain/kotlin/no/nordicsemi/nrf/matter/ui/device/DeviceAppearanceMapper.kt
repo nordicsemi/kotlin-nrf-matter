@@ -2,12 +2,12 @@ package no.nordicsemi.nrf.matter.ui.device
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.painter.Painter
-import no.nordicsemi.nrf.matter.composeapp.generated.resources.Res
-import no.nordicsemi.nrf.matter.composeapp.generated.resources.door_lock
-import no.nordicsemi.nrf.matter.composeapp.generated.resources.door_lock_open_right
-import no.nordicsemi.nrf.matter.composeapp.generated.resources.light_bulb
-import no.nordicsemi.nrf.matter.composeapp.generated.resources.power_settings
-import no.nordicsemi.nrf.matter.composeapp.generated.resources.smart_outlet
+import no.nordicsemi.nrf.matter.shared.generated.resources.Res
+import no.nordicsemi.nrf.matter.shared.generated.resources.door_lock
+import no.nordicsemi.nrf.matter.shared.generated.resources.door_lock_open_right
+import no.nordicsemi.nrf.matter.shared.generated.resources.light_bulb
+import no.nordicsemi.nrf.matter.shared.generated.resources.power_settings
+import no.nordicsemi.nrf.matter.shared.generated.resources.smart_outlet
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
 import org.jetbrains.compose.resources.painterResource

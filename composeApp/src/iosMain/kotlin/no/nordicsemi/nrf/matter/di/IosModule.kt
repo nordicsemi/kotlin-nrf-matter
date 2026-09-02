@@ -1,12 +1,10 @@
 package no.nordicsemi.nrf.matter.di
 
-import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.MatterCommissioner
 import no.nordicsemi.nrf.matter.adapters.BindingControllerImpl
 import no.nordicsemi.nrf.matter.adapters.MatterCommissionerImpl
 import no.nordicsemi.nrf.matter.adapters.MatterDecommissionerImpl
 import no.nordicsemi.nrf.matter.binding.BindingLogsProviderImpl
-import no.nordicsemi.nrf.matter.binding.BindingViewModel
 import no.nordicsemi.nrf.matter.binding.DataStoreProvider
 import no.nordicsemi.nrf.matter.cluster.IosMatterClient
 import no.nordicsemi.nrf.matter.cluster.MatterClient
@@ -16,14 +14,12 @@ import no.nordicsemi.nrf.matter.controller.BindingLogsProvider
 import no.nordicsemi.nrf.matter.controller.MatterDecommissioner
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
-import no.nordicsemi.nrf.matter.logger.LoggerViewModel
 import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import no.nordicsemi.nrf.matter.repository.IosDevicesDataSource
 import no.nordicsemi.nrf.matter.repository.IosDevicesStateDataSource
 import org.koin.core.module.dsl.viewModel
-import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
 /*
@@ -82,12 +78,7 @@ val iosModule = module {
     }
 
     // View models.
-    viewModelOf(::HomeViewModel)
-
     viewModel { CommissioningViewModelIos(get(), get()) }
-
-    viewModel { LoggerViewModel() }
-    viewModel { BindingViewModel(get(), get(), get()) }
 
     single<MatterClient> { IosMatterClient() }
 

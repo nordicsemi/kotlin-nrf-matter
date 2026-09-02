@@ -140,25 +140,27 @@ way.
 
 This is a Kotlin Multiplatform project targeting Android and iOS.
 
-* [`/composeApp`](./composeApp/src) — shared Compose Multiplatform UI, screens,
-  navigation, and DI
-  (Koin). Contains the usual KMP source sets:
-    - [`commonMain`](./composeApp/src/commonMain/kotlin) — code shared across all targets (screens
-      for home,
-      commissioning, bindings, logs, and per-device-type controllers for locks, lights, and
-      switches).
+* [`/composeApp`](./composeApp/src) — the Matter layer, published as the `matter-support` library.
+  It owns commissioning, cluster access, bindings, persistence, and logging, and carries no UI
+  beyond the `CommissioningTask` composable that drives the platform commissioning flow. Contains
+  the usual KMP source sets:
+    - [`commonMain`](./composeApp/src/commonMain/kotlin) — the platform-agnostic half: domain
+      models (`Device`, `DeviceMatterInfo`, `LockDeviceState`, …), cluster definitions,
+      repositories/data sources, the decommission and binding use cases, and the `NordicLogger`
+      abstraction — backed by Room on Android and, on iOS, by `ios-matter`'s Pulse-based
+      `SwiftLogger`.
     - `androidMain` / `iosMain` — platform-specific code, e.g. wiring up Matter commissioning on
       each platform. `androidMain` also holds the wrappers around the native Matter (CHIP) SDK and
       the Google Home API (`ChipClient`, `ClustersHelper`, `BindingControllerImpl`) along with the
       prebuilt binaries they need — see
       [Native Matter (CHIP) SDK binaries](#native-matter-chip-sdk-binaries).
-    - Shared domain models (`Device`, `DeviceMatterInfo`, `LockDeviceState`, …) and the
-      `NordicLogger` abstraction live in `commonMain`, backed by Room on Android and, on iOS, by
-      `ios-matter`'s Pulse-based `SwiftLogger`.
-* [`/shared`](./shared) — a thin KMP module that `api`/`export`s `:composeApp` and produces the iOS
-  framework the Xcode project consumes. It carries no source of its own; it exists so Swift has a
-  single `import shared` to reach the Kotlin surface. Both Xcode targets build it through a run-script
-  phase calling `./gradlew :shared:embedAndSignAppleFrameworkForXcode`.
+* [`/shared`](./shared) — the Compose Multiplatform UI: screens for home, commissioning, bindings
+  and logs, per-device-type controllers for locks, lights and switches, the theme, navigation, and
+  the view models and Koin bindings (`uiModule`) behind them. It `api`/`export`s `:composeApp`, so
+  it is also the iOS framework the Xcode project consumes — Swift needs a single `import shared` to
+  reach the whole Kotlin surface. Both Xcode targets build it through a run-script phase calling
+  `./gradlew :shared:embedAndSignAppleFrameworkForXcode`.
+
 * [`/androidApp`](./androidApp) — the Android application entry point.
 * [`/iosApp`](./iosApp/iosApp) — the iOS application entry point (SwiftUI host for the shared
   Compose UI), plus the `nrfMatter` target — the `MatterSupport` app extension that provides the

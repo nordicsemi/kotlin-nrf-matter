@@ -1,12 +1,9 @@
 package no.nordicsemi.nrf.matter
 
-import android.app.Application
-import no.nordicsemi.nrf.matter.di.androidModule
 import no.nordicsemi.nrf.matter.di.commonModule
+import no.nordicsemi.nrf.matter.di.iosModule
 import no.nordicsemi.nrf.matter.di.uiModule
-import no.nordicsemi.nrf.matter.logger.db.LogDatabase
-import org.koin.android.ext.koin.androidContext
-import org.koin.core.context.GlobalContext.startKoin
+import org.koin.core.context.startKoin
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -38,14 +35,9 @@ import org.koin.core.context.GlobalContext.startKoin
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-class KoinApplication: Application() {
-    override fun onCreate() {
-        super.onCreate()
 
-        LogDatabase.initialize(this)
-        startKoin {
-            androidContext(this@KoinApplication)
-            modules(commonModule, androidModule, uiModule)
-        }
+fun initKoin() {
+    startKoin {
+        modules(commonModule, iosModule, uiModule)
     }
 }

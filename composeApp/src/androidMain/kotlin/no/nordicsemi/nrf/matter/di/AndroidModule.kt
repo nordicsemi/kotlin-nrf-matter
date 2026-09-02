@@ -1,7 +1,5 @@
 package no.nordicsemi.nrf.matter.di
 
-import no.nordicsemi.nrf.matter.HomeViewModel
-import no.nordicsemi.nrf.matter.binding.BindingViewModel
 import no.nordicsemi.nrf.matter.binding.DataStoreProvider
 import no.nordicsemi.nrf.matter.chip.BindingControllerImpl
 import no.nordicsemi.nrf.matter.chip.BindingLogsProviderImpl
@@ -17,14 +15,12 @@ import no.nordicsemi.nrf.matter.controller.MatterDecommissioner
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.home.CommissioningViewModelAndroid
-import no.nordicsemi.nrf.matter.logger.LoggerViewModel
 import no.nordicsemi.nrf.matter.repository.AndroidDeviceStateDataSource
 import no.nordicsemi.nrf.matter.repository.AndroidDevicesDataSource
 import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 import org.koin.android.ext.koin.androidContext
-import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
 
@@ -84,11 +80,5 @@ val androidModule = module {
     single<DevicesStateRepository> { DevicesStateRepository(dataSource = get()) }
     single<BindingRepository> { BindingRepository(get()) }
 
-
-
-    // Binding Viewmodel
-    viewModelOf(::HomeViewModel)
     viewModelOf(::CommissioningViewModelAndroid)
-    viewModelOf(::BindingViewModel)
-    viewModel { LoggerViewModel() }
 }
