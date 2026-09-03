@@ -1,7 +1,10 @@
 package no.nordicsemi.nrf.matter.ui.device
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelStore
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -21,6 +24,11 @@ import no.nordicsemi.nrf.matter.ui.lock.DoorLockViewModel
 import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecViewModel
 
 abstract class ClusterViewModel : ViewModel() {
+    
+    internal fun clear() {
+        viewModelScope.cancel()
+        onCleared()
+    }
 
     protected fun <T> execute(action: suspend () -> T): Flow<T> {
         return flow { emit(action()) }

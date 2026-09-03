@@ -3,7 +3,6 @@ package no.nordicsemi.nrf.matter.di
 import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.binding.BindingViewModel
 import no.nordicsemi.nrf.matter.logger.LoggerViewModel
-import no.nordicsemi.nrf.matter.ui.MatterControllerCache
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
@@ -40,8 +39,6 @@ import org.koin.dsl.module
  */
 
 val uiModule = module {
-
-    single { MatterControllerCache() }
 
     viewModelOf(::HomeViewModel)
     viewModelOf(::BindingViewModel)

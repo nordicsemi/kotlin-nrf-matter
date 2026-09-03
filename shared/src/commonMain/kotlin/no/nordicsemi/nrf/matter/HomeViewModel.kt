@@ -21,9 +21,8 @@ import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceState
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
-import no.nordicsemi.nrf.matter.ui.MatterController
-import no.nordicsemi.nrf.matter.ui.MatterControllerCache
-import org.koin.core.component.KoinComponent
+import no.nordicsemi.nrf.matter.ui.DeviceViewModelCache
+import no.nordicsemi.nrf.matter.ui.device.DeviceViewModel
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -56,11 +55,10 @@ import org.koin.core.component.KoinComponent
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-class HomeViewModel(
-    private val matterControllerCache: MatterControllerCache,
-) : ViewModel(), KoinComponent {
+class HomeViewModel : ViewModel() {
 
     private val fabric: Fabric = NordicMatters.defaultFabric
+    private val matterControllerCache = DeviceViewModelCache()
 
     private val _decommissionState = MutableStateFlow<DecommissionState>(DecommissionState.Idle)
     val decommissionState = _decommissionState.asStateFlow()
@@ -76,13 +74,15 @@ class HomeViewModel(
                 )
         }
 
-    val devices: StateFlow<List<MatterController>> =
+    val devices: StateFlow<List<DeviceViewModel>> =
         devicesListUiModelFlow.map { uiModel ->
+            matterControllerCache.retainOnly(uiModel.devices.map { it.device.deviceId }.toSet())
+
             uiModel.devices.map { device ->
                 (matterControllerCache[device.device.deviceId] ?: matterControllerCache.create(
                     device
                 )).also {
-                    NordicLogger.debug("Device $it", "MatterController")
+                    NordicLogger.debug("Device $it", "HomeViewModel")
                 }
             }
         }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
