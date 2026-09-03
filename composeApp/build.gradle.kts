@@ -285,10 +285,7 @@ kotlin {
             // Home API SDK, resolved from the flat `mavenLocal` directory in this repo.
             implementation(libs.play.services.home)
             implementation(libs.play.services.types)
-//            implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
-            implementation(libs.androidx.core.splashscreen)
-            implementation(libs.accompanist.permissions)
             implementation(libs.jetbrains.compose.viewmodel)
             implementation(libs.jetbrains.compose.runtime)
             implementation(libs.room.runtime)
@@ -296,38 +293,21 @@ kotlin {
         }
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutines.core)
-            implementation(libs.jetbrains.compose.runtime)
-            implementation(libs.jetbrains.foundation)
-            implementation(libs.jetbrains.icons.extended)
-            implementation(libs.jetbrains.compose.material3)
-            implementation(libs.jetbrains.compose.ui)
-            implementation(libs.jetbrains.compose.resources)
 
-            // Preview
-            implementation(libs.jetbrains.ui.tooling.preview)
+            implementation(libs.jetbrains.compose.runtime)
+            implementation(libs.jetbrains.compose.ui)
+            implementation(libs.jetbrains.compose.viewmodel)
+
             // Data time
             implementation(libs.kotlinx.datetime)
             // Koin
             implementation(libs.koin.core)
-            implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
-            // collections
-            implementation(libs.kotlinx.collections.immutable)
-            // Nav 3
-            implementation(libs.jetbrains.navigation)
-            implementation(libs.jetbrains.adaptive.navigation)
-            implementation(libs.jetbrains.lifecycle.navigation)
             // serialization
             implementation(libs.kotlinx.serialization.json)
             // data store
             implementation(libs.androidx.dataStore.preferences)
             implementation(libs.androidx.dataStore.core)
-
-            // Cloudy to have blur effect.
-            implementation(libs.skydoves.cloudy)
-            // CMPToast: Toasts for Compose Multiplatform
-            implementation(libs.cmptoast)
-            implementation(libs.compottie)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

@@ -23,8 +23,8 @@ import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import no.nordicsemi.nrf.matter.composeapp.generated.resources.Res
-import no.nordicsemi.nrf.matter.composeapp.generated.resources.binding_links_only
+import no.nordicsemi.nrf.matter.shared.generated.resources.Res
+import no.nordicsemi.nrf.matter.shared.generated.resources.binding_links_only
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.toDeviceId

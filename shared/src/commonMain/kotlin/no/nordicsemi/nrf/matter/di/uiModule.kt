@@ -1,9 +1,12 @@
-package no.nordicsemi.nrf.matter
+package no.nordicsemi.nrf.matter.di
 
-import no.nordicsemi.nrf.matter.di.commonModule
-import no.nordicsemi.nrf.matter.di.iosModule
-import org.koin.core.context.startKoin
-import org.koin.core.module.Module
+import no.nordicsemi.nrf.matter.HomeViewModel
+import no.nordicsemi.nrf.matter.binding.BindingViewModel
+import no.nordicsemi.nrf.matter.logger.LoggerViewModel
+import no.nordicsemi.nrf.matter.ui.MatterControllerCache
+import org.koin.core.module.dsl.viewModel
+import org.koin.core.module.dsl.viewModelOf
+import org.koin.dsl.module
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -36,8 +39,11 @@ import org.koin.core.module.Module
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-fun initKoin() {
-    startKoin {
-        modules(commonModule, iosModule)
-    }
+val uiModule = module {
+
+    single { MatterControllerCache() }
+
+    viewModelOf(::HomeViewModel)
+    viewModelOf(::BindingViewModel)
+    viewModel { LoggerViewModel() }
 }

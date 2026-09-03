@@ -10,7 +10,6 @@ import no.nordicsemi.nrf.matter.commission.DecommissionUseCases
 import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
-import no.nordicsemi.nrf.matter.ui.MatterControllerCache
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 
@@ -69,8 +68,6 @@ val commonModule = module {
             get(),
         )
     }
-
-    single { MatterControllerCache() }
 
     single<BindingDataSource> {
         BaseBindingDataSource(get())
