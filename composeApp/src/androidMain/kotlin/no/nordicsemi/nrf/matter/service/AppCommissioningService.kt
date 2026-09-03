@@ -13,7 +13,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.api.NordicMatters
-import no.nordicsemi.nrf.matter.api.androidMatterPlatform
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 
 /*
@@ -53,10 +52,10 @@ class AppCommissioningService : Service(), CommissioningService.Callback {
 
     // The service runs in the app's process, so the library was initialized in
     // Application.onCreate long before Google Home binds to it.
-    private val dependencies by lazy { NordicMatters.requireDependencies() }
+    private val dependencies by lazy { NordicMatters.matterDependencies }
     private val devicesRepository by lazy { dependencies.devicesRepository }
     private val devicesStateRepository by lazy { dependencies.devicesStateRepository }
-    private val chipClient by lazy { androidMatterPlatform.chipClient }
+    private val chipClient by lazy { dependencies.platformDependencies.chipClient }
 
     private lateinit var commissioningServiceDelegate: CommissioningService
 

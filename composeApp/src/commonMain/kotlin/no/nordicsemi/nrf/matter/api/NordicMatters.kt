@@ -3,7 +3,6 @@
 package no.nordicsemi.nrf.matter.api
 
 import no.nordicsemi.nrf.matter.cluster.MatterClient
-import no.nordicsemi.nrf.matter.logger.NordicLogger
 import kotlin.concurrent.atomics.AtomicReference
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.jvm.JvmInline
@@ -15,25 +14,19 @@ import kotlin.jvm.JvmInline
  * repositories and the platform controllers behind them stay an implementation detail.
  *
  * The library builds its own object graph and has no dependency injection framework of its own -
- * an app is free to bring any, or none. On Android nothing has to be initialized: the library's
- * App Startup initializer, merged into the app's manifest, has run before any app component does.
- * On iOS call `NordicMatters.initialize()` once, when the app's view controller is created.
+ * an app is free to bring any, or none. Nothing has to be initialized on either platform: the
+ * graph is built on first use, from an application context that the library's App Startup
+ * initializer - merged into the app's manifest - hands it before any app component runs.
  *
- * The graph and the fabrics are held in atomics rather than behind a lock, so this object is safe
- * to touch from any thread: the first `initialize` wins and later ones are no-ops, and two threads
- * racing for [defaultFabric] get the same fabric back.
+ * The fabrics are held in an atomic rather than behind a lock, so this object is safe to touch
+ * from any thread: two threads racing for [defaultFabric] get the same fabric back.
  */
 object NordicMatters {
 
-    private val dependencies = AtomicReference<MatterDependencies?>(null)
     private val _fabrics = AtomicReference<List<Fabric>>(emptyList())
 
     val fabrics: List<Fabric>
         get() = _fabrics.load()
-
-    /** Whether the platform `initialize` has already run. */
-    val isInitialized: Boolean
-        get() = dependencies.load() != null
 
     /**
      * The fabric the app commissions into, created on first access.
@@ -52,12 +45,16 @@ object NordicMatters {
             }
         }
 
+    internal val matterDependencies: MatterDependencies by lazy {
+        MatterDependenciesProvider.createMatterDependencies()
+    }
+
     /**
      * Reads and writes attributes and invokes commands on commissioned devices, for the cluster
      * level work the [Fabric] API does not cover.
      */
     val matterClient: MatterClient
-        get() = requireDependencies().matterClient
+        get() = matterDependencies.matterClient
 
     fun createNewFabric(): Fabric {
         while (true) {
@@ -75,26 +72,7 @@ object NordicMatters {
     private fun newFabric(existing: List<Fabric>): Fabric {
         val id = existing.maxOfOrNull { it.id }?.plus(1) ?: FabricId(1)
 
-        return Fabric(id, requireDependencies())
-    }
-
-    /**
-     * Installs the graph the platform `initialize` built, unless a graph is already installed.
-     *
-     * Initialising twice - a restarted activity, a test, two threads at once - leaves the first
-     * graph in place and drops the one passed here.
-     */
-    internal fun install(dependencies: MatterDependencies) {
-        if (this.dependencies.compareAndSet(null, dependencies)) return
-
-        NordicLogger.debug("Already initialized, keeping the installed graph.", tag = "NordicMatters")
-    }
-
-    internal fun requireDependencies(): MatterDependencies {
-        return dependencies.load() ?: error(
-            "NordicMatters has not been initialized. Call NordicMatters.initialize(context) on " +
-                    "Android or NordicMatters.initialize() on iOS before using the library."
-        )
+        return Fabric(id, matterDependencies)
     }
 }
 

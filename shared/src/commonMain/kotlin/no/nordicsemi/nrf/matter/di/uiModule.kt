@@ -42,8 +42,8 @@ import org.koin.dsl.module
 
 val uiModule = module {
 
-    // The library builds its own graph, so the app only borrows its entry points. Both require
-    // NordicMatters.initialize(...) to have run.
+    // The library builds its own graph, so the app only borrows its entry points. Both are
+    // resolved lazily, by which time the library's graph is installed.
     single { NordicMatters.defaultFabric }
     single { NordicMatters.matterClient }
 

@@ -230,6 +230,10 @@ tasks.register("iosMatterStaticLibs") {
 }
 
 kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+
     android {
         namespace = "no.nordicsemi.nrf.matter.lib"
 

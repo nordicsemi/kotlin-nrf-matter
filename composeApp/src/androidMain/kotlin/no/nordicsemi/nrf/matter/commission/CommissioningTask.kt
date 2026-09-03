@@ -23,7 +23,7 @@ import com.google.android.gms.home.matter.commissioning.MatterCommissioningApiEx
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.api.Fabric
-import no.nordicsemi.nrf.matter.api.androidMatterPlatform
+import no.nordicsemi.nrf.matter.api.NordicMatters
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.toDeviceId
@@ -40,7 +40,9 @@ actual fun rememberCommissioningTask(
 ): CommissioningTask {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val deviceInfoProvider = remember { androidMatterPlatform.deviceInfoProvider }
+    val deviceInfoProvider = remember {
+        NordicMatters.matterDependencies.platformDependencies.androidDeviceInfoProvider
+    }
     val currentOnSuccess by rememberUpdatedState(onSuccess)
     val currentOnError by rememberUpdatedState(onError)
 

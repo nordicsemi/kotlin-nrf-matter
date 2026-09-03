@@ -12,7 +12,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlin.coroutines.cancellation.CancellationException
 import no.nordicsemi.nrf.matter.MatterCommissioner
 import no.nordicsemi.nrf.matter.api.Fabric
-import no.nordicsemi.nrf.matter.api.iosMatterPlatform
+import no.nordicsemi.nrf.matter.api.NordicMatters
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
 
@@ -24,7 +24,9 @@ actual fun rememberCommissioningTask(
     onSuccess: suspend (DeviceId) -> Unit,
     onError: (CommissioningException) -> Unit,
 ): CommissioningTask {
-    val commissioner = remember { iosMatterPlatform.matterCommissioner }
+    val commissioner = remember {
+        NordicMatters.matterDependencies.platformDependencies.matterCommissioner
+    }
     val scope = rememberCoroutineScope()
     val currentOnSuccess by rememberUpdatedState(onSuccess)
     val currentOnError by rememberUpdatedState(onError)
