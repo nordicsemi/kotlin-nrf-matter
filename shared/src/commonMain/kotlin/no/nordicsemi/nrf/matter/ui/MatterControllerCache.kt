@@ -4,7 +4,6 @@ import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.ui.device.DeviceViewModel
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.get
 
 class MatterControllerCache : KoinComponent {
 
@@ -15,7 +14,7 @@ class MatterControllerCache : KoinComponent {
     }
 
     fun create(device: DeviceUiModel): MatterController {
-        return DeviceViewModel(device, get()).also {
+        return DeviceViewModel(device).also {
             controllerCache[device.device.deviceId] = it
         }
     }

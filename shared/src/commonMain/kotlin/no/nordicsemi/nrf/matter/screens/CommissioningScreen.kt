@@ -4,13 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import no.nordicsemi.nrf.matter.api.Fabric
+import no.nordicsemi.nrf.matter.api.NordicMatters
 import no.nordicsemi.nrf.matter.commission.CommissioningErrorScreen
 import no.nordicsemi.nrf.matter.commission.CommissioningException
 import no.nordicsemi.nrf.matter.commission.CommissioningInProgressScreen
 import no.nordicsemi.nrf.matter.commission.rememberCommissioningTask
 import no.nordicsemi.nrf.matter.logger.NordicLogger
-import org.koin.compose.koinInject
 
 sealed interface CommissioningScreenState {
     data object InProgress : CommissioningScreenState
@@ -19,7 +18,7 @@ sealed interface CommissioningScreenState {
 
 @Composable
 fun CommissioningScreen(onBack: () -> Unit, navigateToLogs: () -> Unit) {
-    val fabric: Fabric = koinInject()
+    val fabric = NordicMatters.defaultFabric
     val state =
         remember { mutableStateOf<CommissioningScreenState>(CommissioningScreenState.InProgress) }
 

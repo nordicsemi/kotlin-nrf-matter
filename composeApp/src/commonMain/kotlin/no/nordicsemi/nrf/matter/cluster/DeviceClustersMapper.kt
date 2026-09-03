@@ -1,10 +1,18 @@
 package no.nordicsemi.nrf.matter.cluster
 
+import no.nordicsemi.nrf.matter.api.NordicMatters
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
 
+/**
+ * The clusters of this device that the library has a [Cluster] for.
+ *
+ * The [MatterClient] each one reads and writes through comes from the library's own graph, so a
+ * caller never has to hold one.
+ */
+fun Device.toClusters(): List<Cluster> {
+    val client = NordicMatters.matterClient
 
-fun Device.toClusters(client: MatterClient): List<Cluster> {
     val supported = deviceMatterInfo.flatMap { info ->
         info.serverClusters.mapNotNull { clusterId ->
             when (clusterId) {

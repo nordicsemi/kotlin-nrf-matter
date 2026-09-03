@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.api.Fabric
+import no.nordicsemi.nrf.matter.api.NordicMatters
 import no.nordicsemi.nrf.matter.commission.DecommissionState
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
@@ -56,9 +57,11 @@ import org.koin.core.component.KoinComponent
  */
 
 class HomeViewModel(
-    private val fabric: Fabric,
     private val matterControllerCache: MatterControllerCache,
 ) : ViewModel(), KoinComponent {
+
+    private val fabric: Fabric = NordicMatters.defaultFabric
+
     private val _decommissionState = MutableStateFlow<DecommissionState>(DecommissionState.Idle)
     val decommissionState = _decommissionState.asStateFlow()
 

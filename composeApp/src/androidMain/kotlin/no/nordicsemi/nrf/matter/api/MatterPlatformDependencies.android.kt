@@ -47,12 +47,12 @@ fun NordicMatters.initialize(context: Context) {
  * Everything is created lazily, so an app that never commissions a device never starts the Matter
  * stack.
  */
-internal actual class MatterPlatformDependencies actual constructor() {
+internal actual class MatterPlatformDependencies {
 
     private val context = ContextHolder.getContext()
 
     val chipClient by lazy { ChipClient(context) }
-    
+
     val androidDeviceInfoProvider by lazy {
         AndroidDeviceInfoProvider(
             basicInfoProvider = MatterBasicInfoProvider(chipClient),

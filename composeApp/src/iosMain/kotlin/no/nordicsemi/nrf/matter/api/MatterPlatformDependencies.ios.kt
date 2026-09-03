@@ -32,7 +32,7 @@ import no.nordicsemi.nrf.matter.repository.IosDevicesStateDataSource
  * Everything is created lazily, so an app that never commissions a device never touches the local
  * Matter controller.
  */
-internal actual class MatterPlatformDependencies actual constructor() {
+internal actual class MatterPlatformDependencies {
 
     val matterCommissioner: MatterCommissioner by lazy { MatterCommissionerImpl() }
 

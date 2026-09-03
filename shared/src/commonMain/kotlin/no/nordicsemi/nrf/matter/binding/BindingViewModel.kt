@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.transform
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.api.Fabric
+import no.nordicsemi.nrf.matter.api.NordicMatters
 import no.nordicsemi.nrf.matter.domain.BindingState
 import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.model.Device
@@ -64,9 +65,9 @@ data class BindingUiState(
     val eligibleTargetDevices: List<Device> = emptyList(),
 )
 
-class BindingViewModel(
-    private val fabric: Fabric,
-) : ViewModel() {
+class BindingViewModel : ViewModel() {
+
+    private val fabric: Fabric = NordicMatters.defaultFabric
 
     private val _bindingUiState = MutableStateFlow(BindingUiState())
     val bindingUiState: StateFlow<BindingUiState> = _bindingUiState.asStateFlow()
