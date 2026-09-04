@@ -2,18 +2,11 @@ package no.nordicsemi.nrf.matter.cluster
 
 import no.nordicsemi.nrf.matter.model.DeviceId
 
-object BasicInfoClusterInfo {
-    const val ID: Long = 0x28
-
-    object Attribute {
-        const val RANDOM_NUMBER: Long = 0x17
-    }
-
-    object Command {
-        const val GENERATE_RANDOM_NUMBER: Long = 0x00
-    }
-}
-
+/**
+ * Nordic's extension to the Basic Information cluster: the same cluster as
+ * [BasicInformationCluster], with manufacturer specific attributes and commands beyond the ones
+ * the Matter specification defines.
+ */
 class BasicInfoExtCluster(
     override val deviceId: DeviceId,
     controller: MatterClient,

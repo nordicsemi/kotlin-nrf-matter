@@ -39,6 +39,10 @@ class ManufacturerSpecCluster(
 
     suspend fun readName(): String = readAttribute(ManufacturerSpecClusterInfo.Attribute.NAME)
 
+    suspend fun readLed(): Boolean = readAttribute(ManufacturerSpecClusterInfo.Attribute.LED)
+
+    suspend fun readButton(): Boolean = readAttribute(ManufacturerSpecClusterInfo.Attribute.BUTTON)
+
     companion object {
         private val ON_VALUE: UByte = 1u
         private val OFF_VALUE: UByte = 0u

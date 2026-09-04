@@ -3,50 +3,8 @@
 package no.nordicsemi.nrf.matter.adapters
 
 import kotlinx.cinterop.ExperimentalForeignApi
-import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
-import no.nordicsemi.nrf.matter.model.DeviceMatterInfo
-import no.nordicsemi.nrf.matter.model.DeviceType
-import no.nordicsemi.nrf.matter.model.ManufacturerSpecificData
 import platform.Foundation.NSNumber
-
-fun iosMatter.Device.toDomain(): Device {
-    return Device(
-        deviceId = this.deviceId.toDeviceId(),
-        dateCommissioned = this.dateCommissioned.longValue,
-        vendorId = this.vendorId,
-        productId = this.productId,
-        deviceType = DeviceType.parse(this.deviceType.longValue),
-        name = this.name,
-        productName = this.productName,
-        vendorName = this.vendorName,
-        uniqueId = this.uniqueId,
-        softwareVersion = this.softwareVersion,
-        specificationVersion = this.specificationVersion?.longValue,
-        serialNumer = this.serialNumber,
-        deviceMatterInfo = this.deviceMatterInfo
-            .filterIsInstance<iosMatter.DeviceMatterInfo>()
-            .map { it.toDomain() }
-    )
-}
-
-fun iosMatter.DeviceMatterInfo.toDomain(): DeviceMatterInfo {
-    return DeviceMatterInfo(
-        endpoint = this.endpoint.intValue,
-        types = this.types.filterIsInstance<NSNumber>().map { it.longValue },
-        serverClusters = this.serverClusters.filterIsInstance<NSNumber>().map { it.longValue },
-        clientClusters = this.clientClusters.filterIsInstance<NSNumber>().map { it.longValue },
-        manufacturerSpecificData = this.manufacturerSpecificData?.toDomain()
-    )
-}
-
-fun iosMatter.ManufacturerSpecificData.toDomain(): ManufacturerSpecificData {
-    return ManufacturerSpecificData(
-        name = this.name,
-        led = this.led,
-        button = this.button,
-    )
-}
 
 fun Long.toNSNumber() = NSNumber(long = this)
 

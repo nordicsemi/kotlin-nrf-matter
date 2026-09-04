@@ -17,8 +17,32 @@ import Matter
     case string
     case bytes
     case null
-    /// A type this bridge does not represent, such as a structure or a list.
+    /// A list, such as the Descriptor cluster's `ServerList`.
+    case array
+    /// A structure, such as an entry of the Descriptor cluster's `DeviceTypeList`.
+    case structure
+    /// A type this bridge does not represent.
     case unsupported
+}
+
+/// One field of a Matter structure, identified by its context tag.
+///
+/// Matter structures carry no field names on the wire: a field is addressed by the context tag its
+/// cluster's schema assigns to it - 0 for `DeviceType` and 1 for `Revision` in a `DeviceTypeStruct`,
+/// for instance.
+@objc public final class MatterStructureField: NSObject {
+
+    /// The field's context tag, as defined by the cluster's schema.
+    @objc public let contextTag: NSNumber
+
+    /// The field's value.
+    @objc public let value: MatterValue
+
+    @objc public init(contextTag: NSNumber, value: MatterValue) {
+        self.contextTag = contextTag
+        self.value = value
+        super.init()
+    }
 }
 
 /// A Matter attribute value or command field, tagged with its Matter data type.
@@ -45,6 +69,39 @@ import Matter
 
     /// The value as bytes, for ``MatterValueType/bytes``.
     @objc public var bytes: Data? { rawValue as? Data }
+
+    /// The elements, for ``MatterValueType/array``.
+    ///
+    /// Matter reports a list as an array of `[MTRDataKey: <value dictionary>]` entries; each entry
+    /// is decoded into a `MatterValue` of its own, so a list of lists nests the same way. An entry
+    /// that carries no decodable value is dropped rather than reported as `null`, because a Matter
+    /// list has no holes.
+    @objc public var array: [MatterValue]? {
+        guard type == .array, let entries = rawValue as? [[String: Any]] else { return nil }
+
+        return entries.compactMap { entry in
+            guard let data = entry[MTRDataKey] as? [String: Any] else { return nil }
+            return MatterValue.from(dictionary: data)
+        }
+    }
+
+    /// The fields, for ``MatterValueType/structure``.
+    ///
+    /// Matter reports a structure as an array of `[MTRContextTagKey: ..., MTRDataKey: ...]` entries.
+    /// Fields arrive in schema order but are identified by their context tag, so a reader should
+    /// look a field up by tag rather than by position.
+    @objc public var structure: [MatterStructureField]? {
+        guard type == .structure, let fields = rawValue as? [[String: Any]] else { return nil }
+
+        return fields.compactMap { field in
+            guard let contextTag = field[MTRContextTagKey] as? NSNumber,
+                  let data = field[MTRDataKey] as? [String: Any],
+                  let value = MatterValue.from(dictionary: data) else {
+                return nil
+            }
+            return MatterStructureField(contextTag: contextTag, value: value)
+        }
+    }
 
     init(type: MatterValueType, rawValue: Any?) {
         self.type = type
@@ -92,6 +149,31 @@ import Matter
         MatterValue(type: .null, rawValue: nil)
     }
 
+    /// Wraps a list, e.g. the Binding cluster's `Binding` attribute.
+    ///
+    /// Elements that cannot be encoded are dropped, so a list built from values this bridge does
+    /// not represent is written shorter than it was given rather than being rejected.
+    @objc public static func arrayValue(_ values: [MatterValue]) -> MatterValue {
+        let entries = values.compactMap { value -> [String: Any]? in
+            guard let data = value.mtrDictionaryOrNil() else { return nil }
+            return [MTRDataKey: data]
+        }
+
+        return MatterValue(type: .array, rawValue: entries)
+    }
+
+    /// Wraps a structure, e.g. an entry of the Binding cluster's `Binding` attribute.
+    ///
+    /// Fields that cannot be encoded are dropped, as in ``arrayValue(_:)``.
+    @objc public static func structureValue(_ fields: [MatterStructureField]) -> MatterValue {
+        let entries = fields.compactMap { field -> [String: Any]? in
+            guard let data = field.value.mtrDictionaryOrNil() else { return nil }
+            return [MTRContextTagKey: field.contextTag, MTRDataKey: data]
+        }
+
+        return MatterValue(type: .structure, rawValue: entries)
+    }
+
     /// Creates a value from a Matter framework value dictionary, such as the `data` entry of an
     /// attribute report.
     ///
@@ -118,6 +200,13 @@ import Matter
         }
         return [MTRTypeKey: mtrType, MTRValueKey: rawValue]
     }
+
+    /// ``mtrDictionary()``, or `nil` for a value this bridge cannot encode.
+    ///
+    /// Lets the container constructors skip an element without failing the whole list.
+    private func mtrDictionaryOrNil() -> [String: Any]? {
+        try? mtrDictionary()
+    }
 }
 
 extension MatterValueType {
@@ -134,6 +223,8 @@ extension MatterValueType {
         case MTRUTF8StringValueType: self = .string
         case MTROctetStringValueType: self = .bytes
         case MTRNullValueType: self = .null
+        case MTRArrayValueType: self = .array
+        case MTRStructureValueType: self = .structure
         default: self = .unsupported
         }
     }
@@ -151,6 +242,8 @@ extension MatterValueType {
         case .string: return MTRUTF8StringValueType
         case .bytes: return MTROctetStringValueType
         case .null: return MTRNullValueType
+        case .array: return MTRArrayValueType
+        case .structure: return MTRStructureValueType
         case .unsupported: throw OperationError.wrongType
         }
     }

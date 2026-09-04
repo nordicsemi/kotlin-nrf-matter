@@ -11,7 +11,7 @@ import no.nordicsemi.nrf.matter.binding.DataStoreProvider
 import no.nordicsemi.nrf.matter.cluster.IosMatterClient
 import no.nordicsemi.nrf.matter.cluster.MatterClient
 import no.nordicsemi.nrf.matter.commission.DeviceInfoProvider
-import no.nordicsemi.nrf.matter.commission.IosDeviceInfoProvider
+import no.nordicsemi.nrf.matter.commission.ClusterDeviceInfoProvider
 import no.nordicsemi.nrf.matter.controller.BindingController
 import no.nordicsemi.nrf.matter.controller.BindingLogsProvider
 import no.nordicsemi.nrf.matter.controller.MatterDecommissioner
@@ -39,7 +39,9 @@ internal actual class MatterPlatformDependencies {
     actual val devicesDataSource: DevicesDataSource by lazy { IosDevicesDataSource() }
     actual val deviceStateDataSource: DeviceStateDataSource by lazy { IosDevicesStateDataSource() }
     actual val matterClient: MatterClient by lazy { IosMatterClient() }
-    actual val deviceInfoProvider: DeviceInfoProvider by lazy { IosDeviceInfoProvider() }
+    actual val deviceInfoProvider: DeviceInfoProvider by lazy {
+        ClusterDeviceInfoProvider(matterClient)
+    }
     actual val matterDecommissioner: MatterDecommissioner by lazy { MatterDecommissionerImpl() }
     actual val bindingController: BindingController by lazy { BindingControllerImpl() }
     actual val bindingLogsProvider: BindingLogsProvider by lazy { BindingLogsProviderImpl() }

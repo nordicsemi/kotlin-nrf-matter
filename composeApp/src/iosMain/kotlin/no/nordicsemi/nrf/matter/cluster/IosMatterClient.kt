@@ -3,13 +3,16 @@
 package no.nordicsemi.nrf.matter.cluster
 
 import iosMatter.LocalMatterClient
+import iosMatter.MatterStructureField
 import iosMatter.MatterValue
+import iosMatter.MatterValueTypeArray
 import iosMatter.MatterValueTypeBoolean
 import iosMatter.MatterValueTypeBytes
 import iosMatter.MatterValueTypeDouble
 import iosMatter.MatterValueTypeFloat
 import iosMatter.MatterValueTypeSignedInteger
 import iosMatter.MatterValueTypeString
+import iosMatter.MatterValueTypeStructure
 import iosMatter.MatterValueTypeUnsignedInteger
 import kotlinx.cinterop.BetaInteropApi
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -161,8 +164,10 @@ private fun <T> CancellableContinuation<T>.resumeWithValue(value: MatterValue?, 
 /**
  * Converts a value reported by Matter into its Kotlin counterpart.
  *
- * Integers are widened to [Long] because the Matter type only tells signedness, not width, and
- * types that do not cross the bridge - structures and lists - are converted to `null`.
+ * Integers are widened to [Long] because the Matter type only tells signedness, not width. Lists
+ * become [List] and structures become [MatterStruct], each element converted the same way, so a
+ * list of structures - the shape every Descriptor attribute takes - arrives fully decoded. A type
+ * the bridge does not represent is converted to `null`.
  */
 private fun MatterValue.toKotlinValue(): Any? = when (type) {
     MatterValueTypeBoolean -> number?.boolValue
@@ -172,6 +177,12 @@ private fun MatterValue.toKotlinValue(): Any? = when (type) {
     MatterValueTypeDouble -> number?.doubleValue
     MatterValueTypeString -> string
     MatterValueTypeBytes -> bytes?.toByteArray()
+    MatterValueTypeArray -> array?.filterIsInstance<MatterValue>()?.map { it.toKotlinValue() }
+    MatterValueTypeStructure -> structure
+        ?.filterIsInstance<MatterStructureField>()
+        ?.associate { it.contextTag.longValue to it.value.toKotlinValue() }
+        ?.let { MatterStruct(it) }
+
     else -> null
 }
 
