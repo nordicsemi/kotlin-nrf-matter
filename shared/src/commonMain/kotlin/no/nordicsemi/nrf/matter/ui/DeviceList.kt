@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -15,6 +16,7 @@ import no.nordicsemi.nrf.matter.commission.DecommissionState
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.toDeviceId
+import no.nordicsemi.nrf.matter.ui.device.DeviceItem
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -62,10 +64,15 @@ internal fun DeviceList(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
 
-        devices.forEach {
-            item {
-                it.Item { deviceId -> homeViewModel.decommissionDevice(deviceId) }
-            }
+        items(
+            items = devices,
+            key = { it.device.device.deviceId.stringValue },
+        ) { controller ->
+            DeviceItem(
+                device = controller.device,
+                clusters = controller.clusters,
+                onDecommission = homeViewModel::decommissionDevice,
+            )
         }
     }
 }

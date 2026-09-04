@@ -1,6 +1,6 @@
 package no.nordicsemi.nrf.matter.ui.lock
 
-import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
@@ -12,11 +12,12 @@ import kotlinx.coroutines.flow.update
 import no.nordicsemi.nrf.matter.cluster.DoorLockCluster
 import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.model.LockDeviceState
-import no.nordicsemi.nrf.matter.ui.device.ClusterViewModel
+import no.nordicsemi.nrf.matter.ui.device.ClusterController
 
-class DoorLockViewModel(
+class DoorLockController(
     private val cluster: DoorLockCluster,
-) : ClusterViewModel() {
+    scope: CoroutineScope,
+) : ClusterController(scope) {
 
     private val _state = MutableStateFlow<UiState<LockDeviceState>>(UiState.Loading())
     val state = _state.asStateFlow()
@@ -25,13 +26,13 @@ class DoorLockViewModel(
         cluster.observeLockState()
             .mapNotNull { it.toLockDeviceState()?.toUiState() }
             .onEach { newValue -> _state.update { newValue } }
-            .launchIn(viewModelScope)
+            .launchIn(scope)
     }
 
     fun setLocked(isLocked: Boolean) {
         execute { cluster.setLocked(isLocked) }
             .onStart { _state.update { UiState.Loading() } }
             .catch { _state.update { UiState.Error("Could not change the lock state.") } }
-            .launchIn(viewModelScope)
+            .launchIn(scope)
     }
 }

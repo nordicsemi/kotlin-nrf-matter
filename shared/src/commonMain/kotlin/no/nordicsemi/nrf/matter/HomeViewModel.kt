@@ -21,8 +21,7 @@ import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceState
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
-import no.nordicsemi.nrf.matter.ui.DeviceViewModelCache
-import no.nordicsemi.nrf.matter.ui.device.DeviceViewModel
+import no.nordicsemi.nrf.matter.ui.device.DevicePresenter
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -58,7 +57,8 @@ import no.nordicsemi.nrf.matter.ui.device.DeviceViewModel
 class HomeViewModel : ViewModel() {
 
     private val fabric: Fabric = NordicMatters.defaultFabric
-    private val matterControllerCache = DeviceViewModelCache()
+
+    private val devicePresenters = mutableMapOf<DeviceId, DevicePresenter>()
 
     private val _decommissionState = MutableStateFlow<DecommissionState>(DecommissionState.Idle)
     val decommissionState = _decommissionState.asStateFlow()
@@ -74,14 +74,14 @@ class HomeViewModel : ViewModel() {
                 )
         }
 
-    val devices: StateFlow<List<DeviceViewModel>> =
+    val devices: StateFlow<List<DevicePresenter>> =
         devicesListUiModelFlow.map { uiModel ->
-            matterControllerCache.retainOnly(uiModel.devices.map { it.device.deviceId }.toSet())
+            retainDeviceControllers(uiModel.devices.map { it.device.deviceId }.toSet())
 
             uiModel.devices.map { device ->
-                (matterControllerCache[device.device.deviceId] ?: matterControllerCache.create(
-                    device
-                )).also {
+                devicePresenters.getOrPut(device.device.deviceId) {
+                    DevicePresenter(device, viewModelScope)
+                }.also {
                     NordicLogger.debug("Device $it", "HomeViewModel")
                 }
             }
@@ -93,6 +93,12 @@ class HomeViewModel : ViewModel() {
             SharingStarted.Eagerly,
             DevicesListUiModel(emptyList())
         )
+
+    private fun retainDeviceControllers(ids: Set<DeviceId>) {
+        val stale = devicePresenters.keys - ids
+
+        stale.forEach { devicePresenters.remove(it)?.cancel() }
+    }
 
     private fun processDevices(
         devices: List<Device>,
