@@ -28,7 +28,6 @@ internal class IosDeviceInfoProvider : DeviceInfoProvider {
                 when {
                     failure != null -> continuation.resumeWithException(failure)
                     device != null -> continuation.resume(device)
-                    // Neither reported: iOS answered nothing to go on.
                     else -> continuation.resumeWithException(
                         CommissioningException.unknown(Stage.READ_BASIC_INFORMATION)
                     )

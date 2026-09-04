@@ -39,7 +39,6 @@ class KoinApplication: Application() {
     override fun onCreate() {
         super.onCreate()
 
-        // The library initializes itself through App Startup, before this runs.
         startKoin {
             androidContext(this@KoinApplication)
             modules(uiModule)

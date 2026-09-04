@@ -293,7 +293,6 @@ kotlin {
             implementation(libs.jetbrains.compose.runtime)
             implementation(libs.room.runtime)
             implementation(libs.room.ktx)
-            // Carries the InitializationProvider that NordicMatterInitializer registers with.
             implementation(libs.androidx.startup)
         }
         commonMain.dependencies {
