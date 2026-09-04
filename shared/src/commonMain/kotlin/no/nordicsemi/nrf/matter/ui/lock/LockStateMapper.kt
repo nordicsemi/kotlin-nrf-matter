@@ -1,7 +1,7 @@
 package no.nordicsemi.nrf.matter.ui.lock
 
-import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.model.LockDeviceState
+import no.nordicsemi.nrf.matter.ui.UiState
 
 fun Number.toLockDeviceState(): LockDeviceState? =
     LockDeviceState.entries.firstOrNull { it.value == toInt() }

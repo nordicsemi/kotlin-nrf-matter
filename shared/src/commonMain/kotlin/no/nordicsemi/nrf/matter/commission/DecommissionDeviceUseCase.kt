@@ -1,15 +1,10 @@
 package no.nordicsemi.nrf.matter.commission
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import no.nordicsemi.nrf.matter.controller.MatterDecommissioner
+import no.nordicsemi.nrf.matter.api.Fabric
 import no.nordicsemi.nrf.matter.model.DeviceId
-import no.nordicsemi.nrf.matter.repository.BindingRepository
-import no.nordicsemi.nrf.matter.repository.DevicesRepository
-import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
+import kotlin.coroutines.cancellation.CancellationException
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -41,46 +36,29 @@ import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-internal class DecommissionUseCases(
-    private val deviceController: MatterDecommissioner,
-    private val devicesStateRepository: DevicesStateRepository,
-    private val devicesRepository: DevicesRepository,
-    private val bindingRepository: BindingRepository,
-) {
+
+class DecommissionDeviceUseCase(private val fabric: Fabric) {
+
+    /** Unlinks the fabric at the device, then forgets it. */
+    fun decommissionDevice(deviceId: DeviceId): Flow<DecommissionState> =
+        decommissionFlow(deviceId) { fabric.decommissionDevice(deviceId) }
+
+    /** Forgets the device without unlinking the fabric at the device itself. */
+    fun forceRemoveDevice(deviceId: DeviceId): Flow<DecommissionState> =
+        decommissionFlow(deviceId) { fabric.forceRemoveDevice(deviceId) }
+
     private fun decommissionFlow(
         deviceId: DeviceId,
-        action: suspend () -> Unit
+        action: suspend () -> Unit,
     ): Flow<DecommissionState> = flow {
         emit(DecommissionState.InProgress)
-
         try {
             action()
             emit(DecommissionState.Success(deviceId))
+        } catch (c: CancellationException) {
+            throw c
         } catch (e: Exception) {
-            emit(
-                DecommissionState.Error(
-                    deviceId = deviceId,
-                    message = e.message
-                )
-            )
+            emit(DecommissionState.Error(deviceId = deviceId, message = e.message))
         }
-    }.flowOn(Dispatchers.IO)
-
-    fun decommissionDevice(deviceId: DeviceId): Flow<DecommissionState> =
-        decommissionFlow(deviceId) {
-            deviceController.decommission(deviceId)
-            devicesStateRepository.removeDevice(deviceId)
-            devicesRepository.removeDevice(deviceId)
-            // Let's also remove all bindings for this device, as it is decommissioned and won't be able to communicate with other devices.
-            bindingRepository.delete(deviceId)
-        }
-
-
-    fun forceRemoveDevice(deviceId: DeviceId): Flow<DecommissionState> =
-        decommissionFlow(deviceId) {
-            devicesStateRepository.removeDevice(deviceId)
-            devicesRepository.removeDevice(deviceId)
-            bindingRepository.delete(deviceId)
-
-        }
+    }
 }

@@ -1,6 +1,6 @@
-package no.nordicsemi.nrf.matter.domain
+package no.nordicsemi.nrf.matter.commission
 
-import no.nordicsemi.nrf.matter.model.DeviceBinding
+import no.nordicsemi.nrf.matter.model.DeviceId
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -32,17 +32,19 @@ import no.nordicsemi.nrf.matter.model.DeviceBinding
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-sealed interface UiState<out T> {
 
-    class Idle<T> : UiState<T>
-    class Loading<T> : UiState<T>
+sealed interface DecommissionState {
 
-    data class Success<T>(val data: T) : UiState<T>
+    data object Idle : DecommissionState
+
+    data object InProgress : DecommissionState
+
+    data class Success(
+        val deviceId: DeviceId,
+    ) : DecommissionState
 
     data class Error(
-        val message: String,
-        val cause: Throwable? = null
-    ) : UiState<Nothing>
+        val deviceId: DeviceId,
+        val message: String?,
+    ) : DecommissionState
 }
-
-typealias BindingState = UiState<DeviceBinding>

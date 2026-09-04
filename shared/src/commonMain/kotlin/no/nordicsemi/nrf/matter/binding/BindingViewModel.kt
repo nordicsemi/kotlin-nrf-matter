@@ -18,11 +18,11 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.api.Fabric
 import no.nordicsemi.nrf.matter.api.NordicMatters
-import no.nordicsemi.nrf.matter.domain.BindingState
-import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId
+import no.nordicsemi.nrf.matter.ui.BindingState
+import no.nordicsemi.nrf.matter.ui.UiState
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
@@ -68,6 +68,7 @@ data class BindingUiState(
 class BindingViewModel : ViewModel() {
 
     private val fabric: Fabric = NordicMatters.defaultFabric
+    private val bindDevicesUseCase = BindDevicesUseCase(fabric)
 
     private val _bindingUiState = MutableStateFlow(BindingUiState())
     val bindingUiState: StateFlow<BindingUiState> = _bindingUiState.asStateFlow()
@@ -118,13 +119,13 @@ class BindingViewModel : ViewModel() {
 
 
     fun initiateBinding(sourceDeviceId: DeviceId, targetDeviceId: DeviceId) {
-        val collectLogsJob = fabric.bindingLogs
+        val collectLogsJob = bindDevicesUseCase.bindingLogs
             .onStart { _bindingLogs.update { it.cleared() } }
             .onEach { log ->
                 _bindingLogs.update { it.adding(log) }
             }.launchIn(viewModelScope)
 
-        fabric.bindDevices(
+        bindDevicesUseCase(
             sourceDeviceId = sourceDeviceId,
             targetDeviceId = targetDeviceId,
         )

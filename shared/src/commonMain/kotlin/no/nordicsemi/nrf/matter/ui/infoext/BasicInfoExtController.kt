@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import no.nordicsemi.nrf.matter.cluster.BasicInfoExtCluster
-import no.nordicsemi.nrf.matter.domain.UiState
+import no.nordicsemi.nrf.matter.ui.UiState
 import no.nordicsemi.nrf.matter.ui.device.ClusterController
 
 class BasicInfoExtController(

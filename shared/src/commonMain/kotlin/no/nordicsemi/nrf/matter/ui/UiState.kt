@@ -1,6 +1,6 @@
-package no.nordicsemi.nrf.matter.commission
+package no.nordicsemi.nrf.matter.ui
 
-import no.nordicsemi.nrf.matter.model.DeviceId
+import no.nordicsemi.nrf.matter.model.DeviceBinding
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -32,23 +32,27 @@ import no.nordicsemi.nrf.matter.model.DeviceId
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-sealed interface DecommissionState {
 
-    data object Idle : DecommissionState
+/**
+ * What a screen shows while some piece of work is in flight.
+ *
+ * A presentation type: it lives in `:shared` because `Idle` and `Loading` are states of the UI,
+ * not of the Matter fabric. The library either suspends and returns - as
+ * [no.nordicsemi.nrf.matter.api.Fabric.bindDevices] does - or reports progress with a type of its
+ * own, like [no.nordicsemi.nrf.matter.commission.DecommissionState]; turning either into these
+ * states is the app's job.
+ */
+sealed interface UiState<out T> {
 
-    data object InProgress : DecommissionState
+    class Idle<T> : UiState<T>
+    class Loading<T> : UiState<T>
 
-    data class Success(
-        val deviceId: DeviceId,
-    ) : DecommissionState
-
-    data class ForceRemove(
-        val deviceId: DeviceId,
-    ) : DecommissionState
+    data class Success<T>(val data: T) : UiState<T>
 
     data class Error(
-        val deviceId: DeviceId,
-        val message: String?,
-    ) : DecommissionState
+        val message: String,
+        val cause: Throwable? = null
+    ) : UiState<Nothing>
 }
 
+typealias BindingState = UiState<DeviceBinding>

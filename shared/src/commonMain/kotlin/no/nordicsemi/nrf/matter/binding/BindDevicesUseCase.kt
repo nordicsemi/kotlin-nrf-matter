@@ -1,18 +1,12 @@
 package no.nordicsemi.nrf.matter.binding
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
-import no.nordicsemi.nrf.matter.controller.BindingController
-import no.nordicsemi.nrf.matter.controller.BindingLogsProvider
-import no.nordicsemi.nrf.matter.domain.BindingState
-import no.nordicsemi.nrf.matter.domain.UiState
-import no.nordicsemi.nrf.matter.logger.NordicLogger
-import no.nordicsemi.nrf.matter.model.DeviceBinding
+import no.nordicsemi.nrf.matter.api.Fabric
 import no.nordicsemi.nrf.matter.model.DeviceId
-import no.nordicsemi.nrf.matter.repository.BindingRepository
+import no.nordicsemi.nrf.matter.ui.BindingState
+import no.nordicsemi.nrf.matter.ui.UiState
+import kotlin.coroutines.cancellation.CancellationException
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -44,40 +38,27 @@ import no.nordicsemi.nrf.matter.repository.BindingRepository
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-internal class BindDevicesUseCase(
-    private val deviceController: BindingController,
-    private val bindingLogsProvider: BindingLogsProvider,
-    private val bindingRepository: BindingRepository,
-) {
+
+class BindDevicesUseCase(private val fabric: Fabric) {
+
     operator fun invoke(
-        switchNodeId: DeviceId,
-        lightNodeId: DeviceId,
+        sourceDeviceId: DeviceId,
+        targetDeviceId: DeviceId,
     ): Flow<BindingState> = flow {
         emit(UiState.Loading())
         try {
-            deviceController.bind(
-                sourceNodeId = switchNodeId,
-                sourceEndpoint = 1,
-                targetNodeId = lightNodeId,
-                targetEndpoint = 1,
-                clusterId = ON_OFF_CLUSTER_ID,
+            val binding = fabric.bindDevices(
+                sourceDeviceId = sourceDeviceId,
+                targetDeviceId = targetDeviceId,
             )
-            val bindingDevice = DeviceBinding(
-                id = "${switchNodeId.longValue}_${lightNodeId.longValue}",
-                sourceNodeId = switchNodeId,
-                targetNodeId = lightNodeId,
-                sourceEndpoint = 1,
-                targetEndpoint = 1,
-                clusterId = ON_OFF_CLUSTER_ID
-            )
-            bindingRepository.save(bindingDevice)
-            emit(UiState.Success(bindingDevice))
+            emit(UiState.Success(binding))
+        } catch (c: CancellationException) {
+            throw c
         } catch (e: Exception) {
-            NordicLogger.error("Binding failed: ${e.message}", e)
-            emit(UiState.Error(e.message ?: "Unknown error"))
+            emit(UiState.Error(e.message ?: "Unknown error", e))
         }
-    }.flowOn(Dispatchers.IO)
+    }
 
     val bindingLogs: Flow<String>
-        get() = bindingLogsProvider.bindingLogs
+        get() = fabric.bindingLogs
 }

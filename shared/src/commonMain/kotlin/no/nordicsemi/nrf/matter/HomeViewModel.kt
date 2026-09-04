@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.api.Fabric
 import no.nordicsemi.nrf.matter.api.NordicMatters
+import no.nordicsemi.nrf.matter.commission.DecommissionDeviceUseCase
 import no.nordicsemi.nrf.matter.commission.DecommissionState
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
@@ -57,6 +58,7 @@ import no.nordicsemi.nrf.matter.ui.device.DevicePresenter
 class HomeViewModel : ViewModel() {
 
     private val fabric: Fabric = NordicMatters.defaultFabric
+    private val decommissionDeviceUseCase = DecommissionDeviceUseCase(fabric)
 
     private val devicePresenters = mutableMapOf<DeviceId, DevicePresenter>()
 
@@ -116,16 +118,17 @@ class HomeViewModel : ViewModel() {
         return list
     }
 
-    /**
-     * Removes the device. First we remove the fabric from the device, and then we remove the device from the app's devices repository.
-     * Note that unlinking the device may take a while if the device is offline.
-     * If removing the fabric from the device fails (e.g. device is offline),
-     * then a dialog is shown so the user has the option to force remove the device without unlinking
-     * the fabric at the device.
-     */
     fun decommissionDevice(deviceId: DeviceId) {
         viewModelScope.launch {
-            fabric.decommissionDevice(deviceId).collect {
+            decommissionDeviceUseCase.decommissionDevice(deviceId).collect {
+                updateDecommissionState(it)
+            }
+        }
+    }
+
+    fun forceRemove(deviceId: DeviceId) {
+        viewModelScope.launch {
+            decommissionDeviceUseCase.forceRemoveDevice(deviceId).collect {
                 updateDecommissionState(it)
             }
         }
@@ -133,16 +136,5 @@ class HomeViewModel : ViewModel() {
 
     fun updateDecommissionState(state: DecommissionState) {
         _decommissionState.update { state }
-    }
-
-    /**
-     * Force removes the device from the app's devices repository without unlinking the fabric at the device.
-     */
-    fun forceRemove(deviceId: DeviceId) {
-        viewModelScope.launch {
-            fabric.forceRemoveDevice(deviceId).collect {
-                updateDecommissionState(it)
-            }
-        }
     }
 }

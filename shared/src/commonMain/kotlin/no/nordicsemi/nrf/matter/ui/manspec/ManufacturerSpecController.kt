@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import no.nordicsemi.nrf.matter.cluster.ManufacturerSpecCluster
-import no.nordicsemi.nrf.matter.domain.UiState
+import no.nordicsemi.nrf.matter.ui.UiState
 import no.nordicsemi.nrf.matter.ui.device.ClusterController
 
 data class ManufacturerSpecState(

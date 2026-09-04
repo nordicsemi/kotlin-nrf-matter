@@ -99,12 +99,6 @@ internal fun DecommissionStateHandler(
             )
         }
 
-        is DecommissionState.ForceRemove -> {
-            LaunchedEffect(state) {
-                onForceRemove(state.deviceId)
-            }
-        }
-
         is DecommissionState.Success -> {
             LaunchedEffect(state) {
                 showToast(

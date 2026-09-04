@@ -21,8 +21,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
-import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.theme.NordicRed
+import no.nordicsemi.nrf.matter.ui.UiState
 
 @Composable
 fun BasicInfoExtControlItem(

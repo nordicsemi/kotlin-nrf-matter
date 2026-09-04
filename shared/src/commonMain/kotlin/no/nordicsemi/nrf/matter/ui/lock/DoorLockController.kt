@@ -10,8 +10,8 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import no.nordicsemi.nrf.matter.cluster.DoorLockCluster
-import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.model.LockDeviceState
+import no.nordicsemi.nrf.matter.ui.UiState
 import no.nordicsemi.nrf.matter.ui.device.ClusterController
 
 class DoorLockController(

@@ -6,7 +6,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
-import no.nordicsemi.nrf.matter.domain.UiState
+import no.nordicsemi.nrf.matter.ui.UiState
 
 abstract class ClusterController(protected val scope: CoroutineScope) {
 

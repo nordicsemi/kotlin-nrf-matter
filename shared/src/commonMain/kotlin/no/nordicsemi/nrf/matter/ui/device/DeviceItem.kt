@@ -39,14 +39,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.skydoves.cloudy.cloudy
-import no.nordicsemi.nrf.matter.binding.isBindingCapable
+import no.nordicsemi.nrf.matter.binding.isBindingSource
 import no.nordicsemi.nrf.matter.commission.DecommissionDevice
-import no.nordicsemi.nrf.matter.domain.UiState
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceUiModel
 import no.nordicsemi.nrf.matter.model.LockDeviceState
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
+import no.nordicsemi.nrf.matter.ui.UiState
 import no.nordicsemi.nrf.matter.ui.infoext.BasicInfoExtControlItem
 import no.nordicsemi.nrf.matter.ui.infoext.BasicInfoExtController
 import no.nordicsemi.nrf.matter.ui.level.LevelControlItem
@@ -104,7 +104,7 @@ internal fun DeviceItem(
             icon = device.device.toIcon(isActive),
             title = device.device.toTitle(),
             subtitle = device.device.toSubtitle(),
-            bindingCapable = device.device.isBindingCapable(),
+            bindingCapable = device.device.isBindingSource() != null,
         ) {
             when {
                 doorLock != null && lockState != null -> LockActionItem(
