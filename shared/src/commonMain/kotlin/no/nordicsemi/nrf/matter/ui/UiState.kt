@@ -33,15 +33,6 @@ import no.nordicsemi.nrf.matter.model.DeviceBinding
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * What a screen shows while some piece of work is in flight.
- *
- * A presentation type: it lives in `:shared` because `Idle` and `Loading` are states of the UI,
- * not of the Matter fabric. The library either suspends and returns - as
- * [no.nordicsemi.nrf.matter.api.Fabric.bindDevices] does - or reports progress with a type of its
- * own, like [no.nordicsemi.nrf.matter.commission.DecommissionState]; turning either into these
- * states is the app's job.
- */
 sealed interface UiState<out T> {
 
     class Idle<T> : UiState<T>

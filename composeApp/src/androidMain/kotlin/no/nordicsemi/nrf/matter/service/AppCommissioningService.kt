@@ -50,8 +50,6 @@ class AppCommissioningService : Service(), CommissioningService.Callback {
     private val serviceJob = Job()
     private val serviceScope = CoroutineScope(Dispatchers.Main + serviceJob)
 
-    // The service runs in the app's process, so the library was initialized in
-    // Application.onCreate long before Google Home binds to it.
     private val dependencies by lazy { NordicMatters.matterDependencies }
     private val devicesRepository by lazy { dependencies.devicesRepository }
     private val devicesStateRepository by lazy { dependencies.devicesStateRepository }

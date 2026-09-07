@@ -33,8 +33,6 @@ fun CommissioningScreen(onBack: () -> Unit, navigateToLogs: () -> Unit) {
         },
     )
 
-    // The screen is opened to commission a device, so the flow starts with it rather than on a
-    // press.
     LaunchedEffect(commissioningTask) {
         commissioningTask.startCommissioning()
     }

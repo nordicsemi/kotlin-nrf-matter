@@ -50,8 +50,6 @@ private class IosCommissioningTask(
     private val onError: (CommissioningException) -> Unit,
 ) : CommissioningTask {
 
-    // Only one add-device flow can run at a time: the node id is reserved before the flow starts,
-    // and a second flow would pair its device under the same id.
     private val mutex = Mutex()
 
     override fun startCommissioning() {

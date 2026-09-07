@@ -39,11 +39,9 @@ import kotlin.coroutines.cancellation.CancellationException
 
 class DecommissionDeviceUseCase(private val fabric: Fabric) {
 
-    /** Unlinks the fabric at the device, then forgets it. */
     fun decommissionDevice(deviceId: DeviceId): Flow<DecommissionState> =
         decommissionFlow(deviceId) { fabric.decommissionDevice(deviceId) }
 
-    /** Forgets the device without unlinking the fabric at the device itself. */
     fun forceRemoveDevice(deviceId: DeviceId): Flow<DecommissionState> =
         decommissionFlow(deviceId) { fabric.forceRemoveDevice(deviceId) }
 

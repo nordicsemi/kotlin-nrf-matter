@@ -67,15 +67,6 @@ class AndroidMatterClient(
     }
 }
 
-/**
- * Normalizes what the CHIP controller decoded into the shapes [MatterClient] promises: a Matter
- * list as a [List] and a Matter structure as a [MatterStruct], applied recursively.
- *
- * CHIP hands back the TLV decoded Java value, so a list arrives as a `List` and a structure as a
- * `Map` keyed by context tag - as a number, or as its decimal string in some SDK versions, hence
- * both being accepted. This is the one place that assumption lives: if a future CHIP release
- * decodes structures differently, this is what needs adjusting rather than every cluster.
- */
 private fun Any?.toCommonValue(): Any? = when (this) {
     is List<*> -> map { it.toCommonValue() }
 

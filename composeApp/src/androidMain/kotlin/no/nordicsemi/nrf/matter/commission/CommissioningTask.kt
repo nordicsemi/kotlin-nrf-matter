@@ -46,9 +46,6 @@ actual fun rememberCommissioningTask(
     val currentOnSuccess by rememberUpdatedState(onSuccess)
     val currentOnError by rememberUpdatedState(onError)
 
-    // The node id is reserved before the flow starts, so it is the only thing known about the
-    // device while the Google Home flow is running - and the only thing a failure can be reported
-    // against.
     val reservedDeviceId = remember { mutableStateOf<DeviceId?>(null) }
     val isRunning = remember { mutableStateOf(false) }
 
@@ -103,8 +100,6 @@ private class AndroidCommissioningTask(
         isRunning.value = true
 
         scope.launch {
-            // AppCommissioningService pairs the device under the id reserved here, so it has to be
-            // reserved before the Google Home flow is asked for an intent sender.
             val deviceId = fabric.nextDeviceId()
             reservedDeviceId.value = deviceId
 
@@ -112,10 +107,6 @@ private class AndroidCommissioningTask(
         }
     }
 
-    /**
-     * Asks the Google Home commissioning client for the intent sender of the add-device flow and
-     * launches it.
-     */
     private fun commissionDevice(deviceId: DeviceId) {
         val commissionDeviceRequest =
             CommissioningRequest.builder()
