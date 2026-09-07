@@ -2,7 +2,9 @@
 
 package no.nordicsemi.nrf.matter.api
 
+import no.nordicsemi.nrf.matter.cluster.Cluster
 import no.nordicsemi.nrf.matter.cluster.MatterClient
+import no.nordicsemi.nrf.matter.model.DeviceId
 import kotlin.concurrent.atomics.AtomicReference
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.jvm.JvmInline
@@ -74,6 +76,15 @@ object NordicMatters {
 
         return Fabric(id, matterDependencies)
     }
+
+    private var customClusters = mutableMapOf<Long, (DeviceId, Int, MatterClient) -> Cluster>()
+    private var clusterExtension = mutableMapOf<Long, (DeviceId, Int, MatterClient) -> Cluster>()
+
+    fun registerCustomCluster(clusterId: Long, factory: (DeviceId, Int, MatterClient) -> Cluster) {
+        customClusters[clusterId] = factory
+    }
+
+    internal fun getCustomClusters() = customClusters.toMap()
 }
 
 @JvmInline
