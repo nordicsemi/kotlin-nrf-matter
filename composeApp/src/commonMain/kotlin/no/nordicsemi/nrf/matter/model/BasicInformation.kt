@@ -33,12 +33,6 @@ import kotlinx.serialization.Serializable
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * What a device says about itself: who made it, what it is, and which version it runs.
- *
- * Read from the Basic Information cluster on the root node. Every field is optional in the
- * specification or may be refused by a device, so any of them can be `null`.
- */
 @Serializable
 data class BasicInformation(
     val vendorId: Int? = null,

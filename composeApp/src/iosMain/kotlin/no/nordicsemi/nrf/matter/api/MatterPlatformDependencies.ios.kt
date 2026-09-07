@@ -19,18 +19,6 @@ import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.repository.IosDevicesDataSource
 import no.nordicsemi.nrf.matter.repository.IosDevicesStateDataSource
 
-/**
- * The iOS side of the library: the `ios-matter` adapters and the file-backed stores.
- *
- * Needs nothing from the app, which is why iOS has no `initialize`.
- *
- * Every property carries the type the `expect` declares rather than its implementation's, because
- * an `actual` has to match the expected signature exactly. The commissioner is iOS-only and free
- * of that, and is what `platformDependencies` is reached for on this platform.
- *
- * Everything is created lazily, so an app that never commissions a device never touches the local
- * Matter controller.
- */
 internal actual class MatterPlatformDependencies {
 
     val matterCommissioner: MatterCommissioner by lazy { MatterCommissionerImpl() }

@@ -55,21 +55,12 @@ fun Long.toDeviceId(): DeviceId {
     return DeviceId(this.toString())
 }
 
-/**
- * A commissioned device.
- *
- * What the device says about itself lives in [basicInformation], and what it implements in
- * [endpoints] - the root node included, so [no.nordicsemi.nrf.matter.model.root] always has
- * something to return.
- */
 @Serializable
 data class Device(
     val deviceId: DeviceId,
     val dateCommissioned: Long? = null,
-    val deviceType: DeviceType = DeviceType.UNSUPPORTED, // TODO: device type is no longer provided by the DeviceDescriptor.
-    /** The name the user gave the device while commissioning it, not a device attribute. */
+    val deviceType: DeviceType,
     val name: String? = null,
-//    val room: String? = null, todo: Removed since it is deprecated in the Matter API.
     val basicInformation: BasicInformation = BasicInformation(),
     val endpoints: List<Endpoint> = emptyList(),
 )
@@ -123,13 +114,3 @@ data class Devices(
     val lastDeviceId: DeviceId = DeviceId.Zero,
     val devicesList: List<Device> = emptyList()
 )
-
-/**
- * Group devices by category (Lights, Security, etc.)
- */
-enum class DeviceSection {
-    LIGHTS,
-    SECURITY,
-    OUTLETS,
-    OTHER
-}

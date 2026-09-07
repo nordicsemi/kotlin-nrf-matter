@@ -161,14 +161,6 @@ private fun <T> CancellableContinuation<T>.resumeWithValue(value: MatterValue?, 
     }
 }
 
-/**
- * Converts a value reported by Matter into its Kotlin counterpart.
- *
- * Integers are widened to [Long] because the Matter type only tells signedness, not width. Lists
- * become [List] and structures become [MatterStruct], each element converted the same way, so a
- * list of structures - the shape every Descriptor attribute takes - arrives fully decoded. A type
- * the bridge does not represent is converted to `null`.
- */
 private fun MatterValue.toKotlinValue(): Any? = when (type) {
     MatterValueTypeBoolean -> number?.boolValue
     MatterValueTypeSignedInteger -> number?.longLongValue

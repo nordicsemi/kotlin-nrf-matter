@@ -33,17 +33,8 @@ import kotlinx.serialization.Serializable
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/** The endpoint every device answers on, the root node. */
 const val ROOT_ENDPOINT: Int = 0
 
-/**
- * One endpoint of a device: what it is, and what it implements.
- *
- * Exactly what the Descriptor cluster reports for an endpoint - its device types, the clusters it
- * serves, and the clusters it can drive as a client - and nothing else. What a vendor's own cluster
- * would say about the endpoint is not here, because reading it would mean the library knowing that
- * cluster; an app reads that through its own [no.nordicsemi.nrf.matter.cluster.Cluster] instead.
- */
 @Serializable
 data class Endpoint(
     val id: Int,
@@ -51,33 +42,19 @@ data class Endpoint(
     val serverClusters: List<Long> = emptyList(),
     val clientClusters: List<Long> = emptyList(),
 ) {
-    /** Whether this is the root node, which describes the node rather than what the device does. */
     val isRoot: Boolean
         get() = id == ROOT_ENDPOINT
 }
 
-/**
- * The root node of the device, or `null` for a device that was never read.
- *
- * Endpoint 0 is present on every device and is always the first endpoint walked, so this is
- * non-`null` for anything the app has actually read.
- */
 val List<Endpoint>.root: Endpoint?
     get() = endpoint(ROOT_ENDPOINT)
 
-/** The endpoint with this id, or `null` if the device does not have one. */
 fun List<Endpoint>.endpoint(id: Int): Endpoint? = firstOrNull { it.id == id }
 
-/** The device types named by this device's endpoints, the root node aside. */
 fun List<Endpoint>.deviceTypes(): List<DeviceType> =
     filterNot { it.isRoot }
         .flatMap { it.types }
         .map { DeviceType.parse(it) }
 
-/**
- * What the device is, taken from the first endpoint that names a type the library knows.
- *
- * The root node is skipped: its device type describes the node, not what the device does.
- */
 fun List<Endpoint>.deviceType(): DeviceType =
     deviceTypes().firstOrNull { it != DeviceType.UNSUPPORTED } ?: DeviceType.UNSUPPORTED
