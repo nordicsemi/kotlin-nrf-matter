@@ -293,12 +293,12 @@ private fun BindingTableDetails(
     // Derive displayed text from current UiState
     val sourceText = bindingScreenState.sourceDevices
         .firstOrNull { it.deviceId == bindingScreenState.selectedSourceDeviceId }
-        ?.let { it.productName ?: "Node ${it.deviceId.longValue}" }
+        ?.let { it.basicInformation.productName ?: "Node ${it.deviceId.longValue}" }
         ?: "Select Light Switch"
 
     val targetText = bindingScreenState.eligibleTargetDevices
         .firstOrNull { it.deviceId == bindingScreenState.selectedTargetDeviceId }
-        ?.let { it.productName ?: "Node ${it.deviceId.longValue}" }
+        ?.let { it.basicInformation.productName ?: "Node ${it.deviceId.longValue}" }
         ?: "Select Light Bulb"
 
     OutlinedCard(
@@ -342,7 +342,7 @@ private fun BindingTableDetails(
                         bindingScreenState.sourceDevices.forEach { device ->
                             DropdownMenuItem(
                                 text = {
-                                    Text("${device.productName} (Node ID: ${device.deviceId.longValue})")
+                                    Text("${device.basicInformation.productName} (Node ID: ${device.deviceId.longValue})")
                                 },
                                 onClick = {
                                     isSourceDropdownExpanded = false
@@ -414,7 +414,7 @@ private fun BindingTableDetails(
                             bindingScreenState.eligibleTargetDevices.forEach { device ->
                                 DropdownMenuItem(
                                     text = {
-                                        Text("${device.productName} (Node ID: ${device.deviceId.longValue})")
+                                        Text("${device.basicInformation.productName} (Node ID: ${device.deviceId.longValue})")
                                     },
                                     onClick = {
                                         isTargetDropdownExpanded = false

@@ -3,6 +3,7 @@ package no.nordicsemi.nrf.matter.cluster
 import no.nordicsemi.nrf.matter.api.NordicMatters
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
+import no.nordicsemi.nrf.matter.model.deviceTypes
 
 /**
  * The clusters of this device that the library has a [Cluster] for.
@@ -13,15 +14,15 @@ import no.nordicsemi.nrf.matter.model.DeviceType
 fun Device.toClusters(): List<Cluster> {
     val client = NordicMatters.matterClient
 
-    val supported = deviceMatterInfo.flatMap { info ->
-        info.serverClusters.mapNotNull { clusterId ->
+    val supported = endpoints.flatMap { endpoint ->
+        endpoint.serverClusters.mapNotNull { clusterId ->
             when (clusterId) {
-                OnOffClusterInfo.ID -> OnOffCluster(deviceId, info.endpoint, client)
-                LevelControlClusterInfo.ID -> LevelControlCluster(deviceId, info.endpoint, client)
-                DoorLockClusterInfo.ID -> DoorLockCluster(deviceId, info.endpoint, client)
+                OnOffClusterInfo.ID -> OnOffCluster(deviceId, endpoint.id, client)
+                LevelControlClusterInfo.ID -> LevelControlCluster(deviceId, endpoint.id, client)
+                DoorLockClusterInfo.ID -> DoorLockCluster(deviceId, endpoint.id, client)
                 ManufacturerSpecClusterInfo.ID -> ManufacturerSpecCluster(
                     deviceId,
-                    info.endpoint,
+                    endpoint.id,
                     client
                 )
 
@@ -34,11 +35,9 @@ fun Device.toClusters(): List<Cluster> {
 }
 
 private fun Device.basicInfoExtensions(client: MatterClient): List<Cluster> {
-    val isManufacturerSpecificDevice = deviceMatterInfo.any {
-        it.types
-            .map { DeviceType.parse(it) }
-            .any { it == DeviceType.MANUFACTURER_SPECIFIC_DEVICE }
-    }
+    val isManufacturerSpecificDevice = endpoints
+        .deviceTypes()
+        .any { it == DeviceType.MANUFACTURER_SPECIFIC_DEVICE }
 
     if (!isManufacturerSpecificDevice) return emptyList()
 

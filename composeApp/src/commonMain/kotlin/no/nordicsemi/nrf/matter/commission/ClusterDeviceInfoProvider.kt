@@ -8,9 +8,10 @@ import no.nordicsemi.nrf.matter.cluster.MatterClient
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
-import no.nordicsemi.nrf.matter.model.DeviceMatterInfo
-import no.nordicsemi.nrf.matter.model.DeviceType
+import no.nordicsemi.nrf.matter.model.Endpoint
 import no.nordicsemi.nrf.matter.model.ManufacturerSpecificData
+import no.nordicsemi.nrf.matter.model.ROOT_ENDPOINT
+import no.nordicsemi.nrf.matter.model.deviceType
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Clock
 
@@ -50,75 +51,31 @@ internal class ClusterDeviceInfoProvider(
         return Device(
             deviceId = deviceId,
             dateCommissioned = Clock.System.now().toEpochMilliseconds(),
-            vendorId = basicInfo.vendorId?.toString(),
-            vendorName = basicInfo.vendorName,
-            productId = basicInfo.productId?.toString(),
-            productName = basicInfo.productName,
             deviceType = endpoints.deviceType(),
             name = namesFromCommissioning.remove(deviceId),
-            uniqueId = basicInfo.uniqueId,
-            softwareVersion = basicInfo.softwareVersion,
-            serialNumer = basicInfo.serialNumber,
-            specificationVersion = basicInfo.specificationVersion,
-            deviceMatterInfo = endpoints,
+            basicInformation = basicInfo,
+            endpoints = endpoints,
         )
     }
 
     /**
-     * Walks the device from the root node down, one [DeviceMatterInfo] per endpoint.
+     * Walks the device from the root node down, one [Endpoint] each.
      *
-     * Endpoint 0 is the root node and is included, because the app reads Basic Information there;
-     * [deviceType] is what skips it when deciding what the device *is*.
+     * The Descriptor cluster describes an endpoint, so anything that is not part of it - the
+     * manufacturer specific data - is read here and folded in afterwards.
      */
-    private suspend fun readEndpoints(deviceId: DeviceId): List<DeviceMatterInfo> {
-        val collected = mutableListOf<DeviceMatterInfo>()
-        readEndpoint(deviceId, endpoint = ROOT_ENDPOINT, into = collected)
-
-        return collected
-    }
-
-    private suspend fun readEndpoint(
-        deviceId: DeviceId,
-        endpoint: Int,
-        into: MutableList<DeviceMatterInfo>,
-    ) {
-        if (into.any { it.endpoint == endpoint }) return
-
-        val descriptor = DescriptorCluster(deviceId, endpoint, client)
-
-        val serverClusters = descriptor.serverClusters()
-        val clientClusters = descriptor.clientClusters()
-        val deviceTypes = descriptor.deviceTypes()
-        val parts = descriptor.parts()
-
-        into += DeviceMatterInfo(
-            endpoint = endpoint,
-            types = deviceTypes,
-            serverClusters = serverClusters,
-            clientClusters = clientClusters,
-            manufacturerSpecificData = readManufacturerSpecificData(
-                deviceId = deviceId,
-                endpoint = endpoint,
-                serverClusters = serverClusters,
-            ),
-        )
-
-        parts.forEach { child ->
-            // An endpoint listed in PartsList may not answer the Descriptor cluster itself, and one
-            // unreadable endpoint should not cost us the rest of the device.
-            try {
-                readEndpoint(deviceId, child, into)
-            } catch (c: CancellationException) {
-                throw c
-            } catch (t: Throwable) {
-                NordicLogger.error(
-                    "Endpoint $child of device $deviceId could not be read, skipping...",
-                    t,
-                    tag = TAG,
+    private suspend fun readEndpoints(deviceId: DeviceId): List<Endpoint> =
+        DescriptorCluster(deviceId, ROOT_ENDPOINT, client)
+            .endpoints()
+            .map { endpoint ->
+                endpoint.copy(
+                    manufacturerSpecificData = readManufacturerSpecificData(
+                        deviceId = deviceId,
+                        endpoint = endpoint.id,
+                        serverClusters = endpoint.serverClusters,
+                    )
                 )
             }
-        }
-    }
 
     /**
      * The manufacturer specific data of an endpoint that carries Nordic's cluster, or `null`.
@@ -154,18 +111,6 @@ internal class ClusterDeviceInfoProvider(
     }
 
     /**
-     * What the device is, taken from the first endpoint that names a type the library knows.
-     *
-     * The root node is skipped: its device type describes the node, not what the device does.
-     */
-    private fun List<DeviceMatterInfo>.deviceType(): DeviceType =
-        filter { it.endpoint != ROOT_ENDPOINT }
-            .flatMap { it.types }
-            .map { DeviceType.parse(it) }
-            .firstOrNull { it != DeviceType.UNSUPPORTED }
-            ?: DeviceType.UNSUPPORTED
-
-    /**
      * Reports a failed read as a [CommissioningException] naming the stage it failed at, which is
      * what the commissioning screens show.
      */
@@ -188,8 +133,5 @@ internal class ClusterDeviceInfoProvider(
 
     companion object {
         private const val TAG = "DeviceInfo"
-
-        /** The root node, present on every device. */
-        private const val ROOT_ENDPOINT = 0
     }
 }

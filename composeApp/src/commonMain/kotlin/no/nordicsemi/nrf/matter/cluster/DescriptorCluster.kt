@@ -1,6 +1,9 @@
 package no.nordicsemi.nrf.matter.cluster
 
+import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
+import no.nordicsemi.nrf.matter.model.Endpoint
+import kotlin.coroutines.cancellation.CancellationException
 
 object DescriptorClusterInfo {
     const val ID: Long = 0x001D
@@ -32,6 +35,54 @@ class DescriptorCluster(
 ) : Cluster(controller) {
 
     override val id: Long = DescriptorClusterInfo.ID
+
+    /**
+     * This endpoint and every endpoint beneath it, one [Endpoint] each.
+     *
+     * Walking from a [DescriptorCluster] on the root node - the endpoint present on every device -
+     * therefore describes the whole device, root node included, which is what
+     * [no.nordicsemi.nrf.matter.model.root] returns.
+     *
+     * An endpoint listed in `PartsList` may not answer this cluster itself, and one unreadable
+     * endpoint should not cost the caller the rest of the device, so a child that cannot be read is
+     * logged and left out.
+     */
+    suspend fun endpoints(): List<Endpoint> {
+        val collected = mutableListOf<Endpoint>()
+        collectInto(collected)
+
+        return collected
+    }
+
+    private suspend fun collectInto(into: MutableList<Endpoint>) {
+        if (into.any { it.id == endpoint }) return
+
+        val serverClusters = serverClusters()
+        val clientClusters = clientClusters()
+        val deviceTypes = deviceTypes()
+        val parts = parts()
+
+        into += Endpoint(
+            id = endpoint,
+            types = deviceTypes,
+            serverClusters = serverClusters,
+            clientClusters = clientClusters,
+        )
+
+        parts.forEach { child ->
+            try {
+                DescriptorCluster(deviceId, child, controller).collectInto(into)
+            } catch (c: CancellationException) {
+                throw c
+            } catch (t: Throwable) {
+                NordicLogger.error(
+                    "Endpoint $child of device $deviceId could not be read, skipping...",
+                    t,
+                    tag = TAG,
+                )
+            }
+        }
+    }
 
     /**
      * The Matter device type ids of this endpoint.
@@ -74,4 +125,8 @@ class DescriptorCluster(
      */
     private suspend fun readList(attributeId: Long): List<Any?> =
         readAttribute<List<Any?>?>(attributeId) ?: emptyList()
+
+    private companion object {
+        private const val TAG = "Descriptor"
+    }
 }

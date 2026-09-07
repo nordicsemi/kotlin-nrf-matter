@@ -84,7 +84,7 @@ internal fun TargetLightSettingsDialog(
                                         style = MaterialTheme.typography.bodyLarge,
                                     )
                                     Text(
-                                        text = "${device.productName}",
+                                        text = "${device.basicInformation.productName}",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant
                                     )

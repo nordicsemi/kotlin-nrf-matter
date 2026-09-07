@@ -32,15 +32,21 @@ import kotlinx.serialization.Serializable
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 /**
- * Encapsulates the information of interest when querying a Matter device just after it has been
- * commissioned.
+ * What a device says about itself: who made it, what it is, and which version it runs.
+ *
+ * Read from the Basic Information cluster on the root node. Every field is optional in the
+ * specification or may be refused by a device, so any of them can be `null`.
  */
 @Serializable
-data class DeviceMatterInfo(
-    val endpoint: Int,
-    val types: List<Long>,
-    val serverClusters: List<Long>,
-    val clientClusters: List<Long>,
-    val manufacturerSpecificData: ManufacturerSpecificData? = null, // TODO: probably it's not the best place
+data class BasicInformation(
+    val vendorId: Int? = null,
+    val vendorName: String? = null,
+    val productId: Int? = null,
+    val productName: String? = null,
+    val softwareVersion: String? = null,
+    val serialNumber: String? = null,
+    val specificationVersion: Long? = null,
+    val uniqueId: String? = null,
 )

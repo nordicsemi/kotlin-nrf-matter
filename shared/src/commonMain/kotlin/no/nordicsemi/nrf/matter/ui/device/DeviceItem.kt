@@ -232,12 +232,12 @@ private fun SharedSection(
         ) {
             InfoItem(
                 label = "Vendor",
-                value = deviceUiModel.device.vendorName ?: "UNKNOWN",
+                value = deviceUiModel.device.basicInformation.vendorName ?: "UNKNOWN",
                 modifier = Modifier.weight(1f)
             )
             InfoItem(
                 label = "Firmware",
-                value = deviceUiModel.device.softwareVersion ?: "UNKNOWN",
+                value = deviceUiModel.device.basicInformation.softwareVersion ?: "UNKNOWN",
                 modifier = Modifier.weight(1f)
             )
         }

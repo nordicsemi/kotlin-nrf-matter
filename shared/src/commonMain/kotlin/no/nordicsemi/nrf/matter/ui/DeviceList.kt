@@ -13,6 +13,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.skydoves.cloudy.cloudy
 import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.commission.DecommissionState
+import no.nordicsemi.nrf.matter.model.BasicInformation
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.toDeviceId
@@ -79,13 +80,15 @@ internal fun DeviceList(
 
 internal val DeviceTest_LIGHT =
     Device(
-        dateCommissioned = 123456789L,
-        vendorId = "1234",
-        productId = "5678",
-        deviceType = DeviceType.LIGHT_ON_OFF,
         deviceId = 1L.toDeviceId(),
+        dateCommissioned = 123456789L,
+        deviceType = DeviceType.LIGHT_ON_OFF,
         name = "Living Room Light",
-        productName = "My Light",
-        vendorName = "MyVendor",
-        deviceMatterInfo = emptyList()
+        basicInformation = BasicInformation(
+            vendorId = 1234,
+            productId = 5678,
+            productName = "My Light",
+            vendorName = "MyVendor",
+        ),
+        endpoints = emptyList(),
     )

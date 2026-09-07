@@ -145,7 +145,7 @@ This is a Kotlin Multiplatform project targeting Android and iOS.
   beyond the `CommissioningTask` composable that drives the platform commissioning flow. Contains
   the usual KMP source sets:
     - [`commonMain`](./composeApp/src/commonMain/kotlin) — the platform-agnostic half: domain
-      models (`Device`, `DeviceMatterInfo`, `LockDeviceState`, …), cluster definitions,
+      models (`Device`, `BasicInformation`, `Endpoint`, `LockDeviceState`, …), cluster definitions,
       repositories/data sources, the decommission and binding use cases, and the `NordicLogger`
       abstraction — backed by Room on Android and, on iOS, by `ios-matter`'s Pulse-based
       `SwiftLogger`.

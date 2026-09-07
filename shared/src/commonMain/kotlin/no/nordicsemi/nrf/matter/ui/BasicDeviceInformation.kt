@@ -103,60 +103,62 @@ internal fun BasicDeviceInformation(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            device.device.productName?.let {
+            val basicInformation = device.device.basicInformation
+
+            basicInformation.productName?.let {
                 InfoRow(
                     label = "Product Name",
                     value = it,
                     attrId = "0x0003"
                 )
             }
-            device.device.vendorId?.let {
+            basicInformation.vendorId?.let {
                 InfoRow(
                     label = "Vendor ID",
-                    value = it.uppercase(),
+                    value = it.toString(),
                     attrId = "0x0002"
                 )
             }
-            device.device.productId?.let {
+            basicInformation.productId?.let {
                 InfoRow(
                     label = "Product ID",
-                    value = it.uppercase(),
+                    value = it.toString(),
                     attrId = "0x0004"
                 )
             }
-            device.device.vendorName?.let {
+            basicInformation.vendorName?.let {
                 InfoRow(
                     label = "Vendor Name",
                     value = it,
                     attrId = "0x0001"
                 )
             }
-            device.device.softwareVersion?.let {
+            basicInformation.softwareVersion?.let {
                 InfoRow(
                     label = "Software Version",
                     value = it,
-                    attrId = "0x0009"
+                    attrId = "0x000A"
                 )
             }
-            device.device.serialNumer?.let {
+            basicInformation.serialNumber?.let {
                 InfoRow(
                     label = "Serial Number",
                     value = it,
                     attrId = "0x000F"
                 )
             }
-            device.device.uniqueId?.let {
+            basicInformation.uniqueId?.let {
                 InfoRow(
                     label = "Unique ID",
                     value = it,
                     attrId = "0x0012"
                 )
             }
-            device.device.specificationVersion?.let {
+            basicInformation.specificationVersion?.let {
                 InfoRow(
                     label = "Specification Version",
                     value = it.toString(),
-                    attrId = "0x0013"
+                    attrId = "0x0015"
                 )
             }
         }

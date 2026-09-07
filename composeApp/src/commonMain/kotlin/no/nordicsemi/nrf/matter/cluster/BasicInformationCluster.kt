@@ -1,7 +1,9 @@
 package no.nordicsemi.nrf.matter.cluster
 
 import no.nordicsemi.nrf.matter.logger.NordicLogger
+import no.nordicsemi.nrf.matter.model.BasicInformation
 import no.nordicsemi.nrf.matter.model.DeviceId
+import no.nordicsemi.nrf.matter.model.ROOT_ENDPOINT
 import kotlin.coroutines.cancellation.CancellationException
 
 object BasicInfoClusterInfo {
@@ -27,18 +29,6 @@ object BasicInfoClusterInfo {
     }
 }
 
-/** What a device says about itself: who made it, what it is, and which version it runs. */
-data class BasicInformation(
-    val vendorId: Int? = null,
-    val vendorName: String? = null,
-    val productId: Int? = null,
-    val productName: String? = null,
-    val softwareVersion: String? = null,
-    val serialNumber: String? = null,
-    val specificationVersion: Long? = null,
-    val uniqueId: String? = null,
-)
-
 /**
  * The Basic Information cluster, always on endpoint 0.
  *
@@ -50,7 +40,7 @@ class BasicInformationCluster(
 ) : Cluster(controller) {
 
     override val id: Long = BasicInfoClusterInfo.ID
-    override val endpoint = 0
+    override val endpoint = ROOT_ENDPOINT
 
     /**
      * Everything the app records about the device, read one attribute at a time.

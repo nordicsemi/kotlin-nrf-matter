@@ -23,7 +23,8 @@ fun Device.toIcon(isActive: Boolean): Painter = when (deviceType) {
     else -> painterResource(Res.drawable.light_bulb)
 }
 
-fun Device.toTitle(): String = manufacturerSpecificName() ?: productName ?: deviceType.toString()
+fun Device.toTitle(): String =
+    manufacturerSpecificName() ?: basicInformation.productName ?: deviceType.toString()
 
 fun Device.toSubtitle(): String = when (deviceType) {
     DeviceType.DOOR_LOCK -> "Smart Lock"
@@ -40,6 +41,6 @@ fun Device.toSubtitle(): String = when (deviceType) {
     DeviceType.UNSUPPORTED -> "Unknown device type."
 }
 
-private fun Device.manufacturerSpecificName(): String? = deviceMatterInfo
+private fun Device.manufacturerSpecificName(): String? = endpoints
     .firstNotNullOfOrNull { it.manufacturerSpecificData?.name }
     ?.takeIf { it.isNotBlank() }
