@@ -9,7 +9,7 @@ import chip.devicecontroller.ChipDeviceControllerException
  * [IllegalStateException], so the controller's own exception is looked for down the cause chain
  * rather than only at the top.
  */
-internal actual fun Throwable.matterErrorCode(): Int? {
+internal actual fun Throwable.toMatterErrorCode(): Int? {
     var cause: Throwable? = this
 
     while (cause != null) {

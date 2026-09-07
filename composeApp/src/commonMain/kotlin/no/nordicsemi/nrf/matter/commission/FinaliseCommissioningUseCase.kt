@@ -69,7 +69,7 @@ internal class FinaliseCommissioningUseCase(
         throw CommissioningException(
             deviceId = deviceId,
             stage = stage,
-            errorCode = t.matterErrorCode(),
+            errorCode = t.toMatterErrorCode(),
             displayMessage = t.message ?: "",
         )
     }

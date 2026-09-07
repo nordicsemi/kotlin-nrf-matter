@@ -8,7 +8,7 @@ import no.nordicsemi.nrf.matter.adapters.IOSException
  * A read failure crosses the bridge as an [IOSException] wrapping the `NSError` the Matter
  * framework reported, whose code is the Matter status.
  */
-internal actual fun Throwable.matterErrorCode(): Int? {
+internal actual fun Throwable.toMatterErrorCode(): Int? {
     var cause: Throwable? = this
 
     while (cause != null) {

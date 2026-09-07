@@ -7,4 +7,4 @@ package no.nordicsemi.nrf.matter.commission
  * Reported in [CommissioningException.errorCode], which the commissioning screens show so that a
  * failure can be looked up in the specification.
  */
-internal expect fun Throwable.matterErrorCode(): Int?
+internal expect fun Throwable.toMatterErrorCode(): Int?
