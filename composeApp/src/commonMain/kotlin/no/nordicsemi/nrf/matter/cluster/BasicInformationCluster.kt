@@ -48,33 +48,56 @@ class BasicInformationCluster(
      * Sequentially rather than concurrently: reads are dispatched into the platform Matter stack,
      * and issuing them in parallel has deadlocked the CHIP JNI event loop on Android.
      *
-     * Every attribute here is optional in the specification or may be rejected by a device, so a
-     * failed read leaves its field `null` instead of failing the whole commissioning. A device
-     * that cannot be reached at all fails on the first read.
+     * [readVendorName] goes first because it is the one read allowed to fail, so a device that
+     * cannot be reached at all fails here rather than yielding an empty [BasicInformation].
      */
-    suspend fun read(): BasicInformation {
-        val vendorName = readAttribute<String>(BasicInfoClusterInfo.Attribute.VENDOR_NAME)
-        val vendorId = readNumberOrNull(BasicInfoClusterInfo.Attribute.VENDOR_ID)
-        val productName = readOrNull<String>(BasicInfoClusterInfo.Attribute.PRODUCT_NAME)
-        val productId = readNumberOrNull(BasicInfoClusterInfo.Attribute.PRODUCT_ID)
-        val softwareVersion =
-            readOrNull<String>(BasicInfoClusterInfo.Attribute.SOFTWARE_VERSION_STRING)
-        val serialNumber = readOrNull<String>(BasicInfoClusterInfo.Attribute.SERIAL_NUMBER)
-        val specificationVersion =
-            readNumberOrNull(BasicInfoClusterInfo.Attribute.SPECIFICATION_VERSION)
-        val uniqueId = readOrNull<String>(BasicInfoClusterInfo.Attribute.UNIQUE_ID)
+    suspend fun read(): BasicInformation = BasicInformation(
+        vendorName = readVendorName(),
+        vendorId = readVendorId(),
+        productName = readProductName(),
+        productId = readProductId(),
+        softwareVersion = readSoftwareVersion(),
+        serialNumber = readSerialNumber(),
+        specificationVersion = readSpecificationVersion(),
+        uniqueId = readUniqueId(),
+    )
 
-        return BasicInformation(
-            vendorId = vendorId?.toInt(),
-            vendorName = vendorName,
-            productId = productId?.toInt(),
-            productName = productName,
-            softwareVersion = softwareVersion,
-            serialNumber = serialNumber,
-            specificationVersion = specificationVersion,
-            uniqueId = uniqueId,
-        )
-    }
+    /**
+     * The name of the vendor that made the device.
+     *
+     * Mandatory in the specification, and the only read here that is not softened to `null` on
+     * failure - it doubles as the check that the device answers at all.
+     */
+    suspend fun readVendorName(): String =
+        readAttribute<String>(BasicInfoClusterInfo.Attribute.VENDOR_NAME)
+
+    /** The vendor's Matter-assigned id, or `null` if the device would not give it. */
+    suspend fun readVendorId(): Int? =
+        readNumberOrNull(BasicInfoClusterInfo.Attribute.VENDOR_ID)?.toInt()
+
+    /** The vendor's name for the product, or `null` if the device would not give it. */
+    suspend fun readProductName(): String? =
+        readOrNull<String>(BasicInfoClusterInfo.Attribute.PRODUCT_NAME)
+
+    /** The vendor's id for the product, or `null` if the device would not give it. */
+    suspend fun readProductId(): Int? =
+        readNumberOrNull(BasicInfoClusterInfo.Attribute.PRODUCT_ID)?.toInt()
+
+    /** The firmware version as the vendor writes it, or `null` if the device would not give it. */
+    suspend fun readSoftwareVersion(): String? =
+        readOrNull<String>(BasicInfoClusterInfo.Attribute.SOFTWARE_VERSION_STRING)
+
+    /** The serial number of this unit, or `null` if the device would not give it. */
+    suspend fun readSerialNumber(): String? =
+        readOrNull<String>(BasicInfoClusterInfo.Attribute.SERIAL_NUMBER)
+
+    /** The version of the Matter specification the device implements, or `null`. */
+    suspend fun readSpecificationVersion(): Long? =
+        readNumberOrNull(BasicInfoClusterInfo.Attribute.SPECIFICATION_VERSION)
+
+    /** The device's unique id, or `null` if the device would not give it. */
+    suspend fun readUniqueId(): String? =
+        readOrNull<String>(BasicInfoClusterInfo.Attribute.UNIQUE_ID)
 
     private suspend fun readNumberOrNull(attributeId: Long): Long? =
         readOrNull<Number>(attributeId)?.toLong()
