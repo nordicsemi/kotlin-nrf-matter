@@ -88,18 +88,16 @@ class DescriptorCluster(
      * The Matter device type ids of this endpoint.
      *
      * `DeviceTypeList` is a list of structures; only the `DeviceType` field is read, the revision
-     * being of no use to the app.
+     * being of no use to the app. A device that reports the list as bare ids rather than as
+     * structures is read that way instead, from the same single read.
      */
-    suspend fun deviceTypes(): List<Long> =
-        readList(DescriptorClusterInfo.Attribute.DEVICE_TYPE_LIST).mapNotNull { entry ->
-            when (entry) {
-                is MatterStruct ->
-                    entry.longOrNull(DescriptorClusterInfo.DeviceTypeStruct.DEVICE_TYPE)
-                // A device that reports the list as bare ids rather than as structures.
-                is Number -> entry.toLong()
-                else -> null
-            }
-        }
+    suspend fun deviceTypes(): List<Long> {
+        val entries = readRawList(DescriptorClusterInfo.Attribute.DEVICE_TYPE_LIST)
+
+        return entries.filterIsInstance<MatterStruct>()
+            .mapNotNull { it.longOrNull(DescriptorClusterInfo.DeviceTypeStruct.DEVICE_TYPE) }
+            .ifEmpty { entries.filterIsInstance<Number>().map { it.toLong() } }
+    }
 
     /** The clusters this endpoint implements as a server, and so can be asked to act on. */
     suspend fun serverClusters(): List<Long> =
@@ -111,20 +109,30 @@ class DescriptorCluster(
 
     /** The endpoints beneath this one, empty for a leaf endpoint. */
     suspend fun parts(): List<Int> =
-        readList(DescriptorClusterInfo.Attribute.PARTS_LIST)
-            .mapNotNull { (it as? Number)?.toInt() }
+        readList<Number>(DescriptorClusterInfo.Attribute.PARTS_LIST).map { it.toInt() }
 
     private suspend fun readClusterIds(attributeId: Long): List<Long> =
-        readList(attributeId).mapNotNull { (it as? Number)?.toLong() }
+        readList<Number>(attributeId).map { it.toLong() }
 
     /**
-     * Reads a list attribute, treating a device that reports nothing as reporting an empty list.
+     * Reads a list attribute, keeping the entries of the type the caller expects.
+     *
+     * Entries cross the platform boundary untyped, so this is where they are narrowed: an entry a
+     * device reports at an unexpected type is dropped rather than trusted, which costs the caller
+     * that entry rather than the whole read.
+     */
+    private suspend inline fun <reified T : Any> readList(attributeId: Long): List<T> =
+        readRawList(attributeId).filterIsInstance<T>()
+
+    /**
+     * A list attribute as the platform Matter stack decoded it, entries not yet narrowed.
      *
      * Every attribute of this cluster is a list, and an empty one is normal - a leaf endpoint's
-     * `PartsList`, or the `ClientList` of anything that drives nothing.
+     * `PartsList`, or the `ClientList` of anything that drives nothing - as is a device that
+     * reports no value at all.
      */
-    private suspend fun readList(attributeId: Long): List<Any?> =
-        readAttribute<List<Any?>?>(attributeId) ?: emptyList()
+    private suspend fun readRawList(attributeId: Long): List<*> =
+        readAttribute<List<*>?>(attributeId) ?: emptyList<Nothing>()
 
     private companion object {
         private const val TAG = "Descriptor"
