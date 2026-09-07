@@ -7,14 +7,18 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
-import no.nordicsemi.nrf.matter.cluster.ManufacturerSpecCluster
+import no.nordicsemi.nrf.matter.nordic.ManufacturerSpecCluster
 import no.nordicsemi.nrf.matter.ui.UiState
 import no.nordicsemi.nrf.matter.ui.device.ClusterController
 
 data class ManufacturerSpecState(
+    val name: UiState<String> = UiState.Idle(),
     val isLedOn: UiState<Boolean> = UiState.Idle(),
     val isButtonPressed: UiState<Boolean> = UiState.Idle(),
-)
+) {
+    val displayName: String?
+        get() = (name as? UiState.Success)?.data?.takeIf { it.isNotBlank() }
+}
 
 class ManufacturerSpecController(
     private val cluster: ManufacturerSpecCluster,
@@ -25,6 +29,11 @@ class ManufacturerSpecController(
     val state = _state.asStateFlow()
 
     init {
+        execute { cluster.readName() }
+            .withUiState()
+            .onEach { value -> _state.update { it.copy(name = value) } }
+            .launchIn(scope)
+
         cluster.observeLed()
             .withUiState()
             .onEach { value -> _state.update { it.copy(isLedOn = value) } }

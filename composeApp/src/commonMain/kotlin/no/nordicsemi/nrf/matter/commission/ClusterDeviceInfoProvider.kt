@@ -2,14 +2,9 @@ package no.nordicsemi.nrf.matter.commission
 
 import no.nordicsemi.nrf.matter.cluster.BasicInformationCluster
 import no.nordicsemi.nrf.matter.cluster.DescriptorCluster
-import no.nordicsemi.nrf.matter.cluster.ManufacturerSpecCluster
-import no.nordicsemi.nrf.matter.cluster.ManufacturerSpecClusterInfo
 import no.nordicsemi.nrf.matter.cluster.MatterClient
-import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
-import no.nordicsemi.nrf.matter.model.Endpoint
-import no.nordicsemi.nrf.matter.model.ManufacturerSpecificData
 import no.nordicsemi.nrf.matter.model.ROOT_ENDPOINT
 import no.nordicsemi.nrf.matter.model.deviceType
 import kotlin.coroutines.cancellation.CancellationException
@@ -45,7 +40,7 @@ internal class ClusterDeviceInfoProvider(
         }
 
         val endpoints = catchAndThrow(deviceId, Stage.READ_DESCRIPTOR_CLUSTER) {
-            readEndpoints(deviceId)
+            DescriptorCluster(deviceId, ROOT_ENDPOINT, client).endpoints()
         }
 
         return Device(
@@ -56,58 +51,6 @@ internal class ClusterDeviceInfoProvider(
             basicInformation = basicInfo,
             endpoints = endpoints,
         )
-    }
-
-    /**
-     * Walks the device from the root node down, one [Endpoint] each.
-     *
-     * The Descriptor cluster describes an endpoint, so anything that is not part of it - the
-     * manufacturer specific data - is read here and folded in afterwards.
-     */
-    private suspend fun readEndpoints(deviceId: DeviceId): List<Endpoint> =
-        DescriptorCluster(deviceId, ROOT_ENDPOINT, client)
-            .endpoints()
-            .map { endpoint ->
-                endpoint.copy(
-                    manufacturerSpecificData = readManufacturerSpecificData(
-                        deviceId = deviceId,
-                        endpoint = endpoint.id,
-                        serverClusters = endpoint.serverClusters,
-                    )
-                )
-            }
-
-    /**
-     * The manufacturer specific data of an endpoint that carries Nordic's cluster, or `null`.
-     *
-     * Optional by nature, so a failed read is logged and dropped rather than failing the read of
-     * the device.
-     */
-    private suspend fun readManufacturerSpecificData(
-        deviceId: DeviceId,
-        endpoint: Int,
-        serverClusters: List<Long>,
-    ): ManufacturerSpecificData? {
-        if (ManufacturerSpecClusterInfo.ID !in serverClusters) return null
-
-        val cluster = ManufacturerSpecCluster(deviceId, endpoint, client)
-
-        return try {
-            ManufacturerSpecificData(
-                name = cluster.readName(),
-                led = cluster.readLed(),
-                button = cluster.readButton(),
-            )
-        } catch (c: CancellationException) {
-            throw c
-        } catch (t: Throwable) {
-            NordicLogger.error(
-                "Manufacturer specific data of device $deviceId could not be read",
-                t,
-                tag = TAG,
-            )
-            null
-        }
     }
 
     /**
@@ -129,9 +72,5 @@ internal class ClusterDeviceInfoProvider(
             errorCode = t.matterErrorCode(),
             displayMessage = t.message ?: "",
         )
-    }
-
-    companion object {
-        private const val TAG = "DeviceInfo"
     }
 }

@@ -16,7 +16,7 @@ class DevicePresenter(
         CoroutineScope(parent.coroutineContext + SupervisorJob(parent.coroutineContext.job))
 
     val clusters: List<ClusterController> =
-        device.device.toClusters().map { it.toController(scope) }
+        device.device.toClusters().mapNotNull { it.toController(scope) }
 
     fun cancel() {
         scope.cancel()

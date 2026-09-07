@@ -77,14 +77,20 @@ object NordicMatters {
         return Fabric(id, matterDependencies)
     }
 
-    private var customClusters = mutableMapOf<Long, (DeviceId, Int, MatterClient) -> Cluster>()
-    private var clusterExtension = mutableMapOf<Long, (DeviceId, Int, MatterClient) -> Cluster>()
+    private val _customClusters =
+        AtomicReference<Map<Long, (DeviceId, Int, MatterClient) -> Cluster>>(emptyMap())
 
     fun registerCustomCluster(clusterId: Long, factory: (DeviceId, Int, MatterClient) -> Cluster) {
-        customClusters[clusterId] = factory
+        while (true) {
+            val current = _customClusters.load()
+            val updated = current + (clusterId to factory)
+
+            if (_customClusters.compareAndSet(current, updated)) return
+        }
     }
 
-    internal fun getCustomClusters() = customClusters.toMap()
+    internal fun getCustomClusters(): Map<Long, (DeviceId, Int, MatterClient) -> Cluster> =
+        _customClusters.load()
 }
 
 @JvmInline

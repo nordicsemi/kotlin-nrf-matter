@@ -18,14 +18,6 @@ object BasicInfoClusterInfo {
         const val SERIAL_NUMBER: Long = 0x000F
         const val UNIQUE_ID: Long = 0x0012
         const val SPECIFICATION_VERSION: Long = 0x0015
-
-        /** Nordic's extension to this cluster, not part of the Matter specification. */
-        const val RANDOM_NUMBER: Long = 0x17
-    }
-
-    object Command {
-        /** Nordic's extension to this cluster, not part of the Matter specification. */
-        const val GENERATE_RANDOM_NUMBER: Long = 0x00
     }
 }
 

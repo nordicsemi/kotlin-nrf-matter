@@ -1,6 +1,8 @@
-package no.nordicsemi.nrf.matter.cluster
+package no.nordicsemi.nrf.matter.nordic
 
 import kotlinx.coroutines.flow.Flow
+import no.nordicsemi.nrf.matter.cluster.Cluster
+import no.nordicsemi.nrf.matter.cluster.MatterClient
 import no.nordicsemi.nrf.matter.model.DeviceId
 
 object ManufacturerSpecClusterInfo {

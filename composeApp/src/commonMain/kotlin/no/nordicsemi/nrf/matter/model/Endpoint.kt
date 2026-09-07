@@ -39,8 +39,10 @@ const val ROOT_ENDPOINT: Int = 0
 /**
  * One endpoint of a device: what it is, and what it implements.
  *
- * This is what the Descriptor cluster reports for an endpoint - its device types, the clusters it
- * serves, and the clusters it can drive as a client.
+ * Exactly what the Descriptor cluster reports for an endpoint - its device types, the clusters it
+ * serves, and the clusters it can drive as a client - and nothing else. What a vendor's own cluster
+ * would say about the endpoint is not here, because reading it would mean the library knowing that
+ * cluster; an app reads that through its own [no.nordicsemi.nrf.matter.cluster.Cluster] instead.
  */
 @Serializable
 data class Endpoint(
@@ -48,7 +50,6 @@ data class Endpoint(
     val types: List<Long> = emptyList(),
     val serverClusters: List<Long> = emptyList(),
     val clientClusters: List<Long> = emptyList(),
-    val manufacturerSpecificData: ManufacturerSpecificData? = null, // TODO: probably it's not the best place
 ) {
     /** Whether this is the root node, which describes the node rather than what the device does. */
     val isRoot: Boolean

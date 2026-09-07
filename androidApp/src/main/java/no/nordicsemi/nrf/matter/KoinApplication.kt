@@ -2,6 +2,7 @@ package no.nordicsemi.nrf.matter
 
 import android.app.Application
 import no.nordicsemi.nrf.matter.di.uiModule
+import no.nordicsemi.nrf.matter.nordic.registerNordicClusters
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext.startKoin
 
@@ -38,6 +39,8 @@ import org.koin.core.context.GlobalContext.startKoin
 class KoinApplication: Application() {
     override fun onCreate() {
         super.onCreate()
+
+        registerNordicClusters()
 
         startKoin {
             androidContext(this@KoinApplication)

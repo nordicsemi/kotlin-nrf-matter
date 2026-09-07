@@ -10,6 +10,7 @@ import no.nordicsemi.nrf.matter.shared.generated.resources.power_settings
 import no.nordicsemi.nrf.matter.shared.generated.resources.smart_outlet
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
+import no.nordicsemi.nrf.matter.nordic.isNordicManufacturerSpecific
 import org.jetbrains.compose.resources.painterResource
 
 @Composable
@@ -23,10 +24,14 @@ fun Device.toIcon(isActive: Boolean): Painter = when (deviceType) {
     else -> painterResource(Res.drawable.light_bulb)
 }
 
-fun Device.toTitle(): String =
-    manufacturerSpecificName() ?: basicInformation.productName ?: deviceType.toString()
+fun Device.toTitle(): String = basicInformation.productName ?: deviceType.toString()
 
-fun Device.toSubtitle(): String = when (deviceType) {
+fun Device.toSubtitle(): String = when {
+    isNordicManufacturerSpecific() -> "Turn light ON or OFF"
+    else -> deviceType.toSubtitle()
+}
+
+private fun DeviceType.toSubtitle(): String = when (this) {
     DeviceType.DOOR_LOCK -> "Smart Lock"
 
     DeviceType.OUTLET,
@@ -35,12 +40,7 @@ fun Device.toSubtitle(): String = when (deviceType) {
     DeviceType.LIGHT_ON_OFF,
     DeviceType.DIMMABLE_LIGHT,
     DeviceType.COLOR_TEMPERATURE_LIGHT,
-    DeviceType.EXTENDED_COLOR_LIGHT,
-    DeviceType.MANUFACTURER_SPECIFIC_DEVICE -> "Turn light ON or OFF"
+    DeviceType.EXTENDED_COLOR_LIGHT -> "Turn light ON or OFF"
 
     DeviceType.UNSUPPORTED -> "Unknown device type."
 }
-
-private fun Device.manufacturerSpecificName(): String? = endpoints
-    .firstNotNullOfOrNull { it.manufacturerSpecificData?.name }
-    ?.takeIf { it.isNotBlank() }

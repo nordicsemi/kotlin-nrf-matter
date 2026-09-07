@@ -84,7 +84,6 @@ enum class DeviceType {
     DOOR_LOCK,
     COLOR_TEMPERATURE_LIGHT,
     EXTENDED_COLOR_LIGHT,
-    MANUFACTURER_SPECIFIC_DEVICE,
     ;
 
     override fun toString(): String {
@@ -97,7 +96,6 @@ enum class DeviceType {
             COLOR_TEMPERATURE_LIGHT -> "Color Temperature Light"
             EXTENDED_COLOR_LIGHT -> "Extended Color Light"
             DOOR_LOCK -> "Door Lock"
-            MANUFACTURER_SPECIFIC_DEVICE -> "Manufacturer Specific Device"
         }
     }
 
@@ -114,7 +112,6 @@ enum class DeviceType {
                 269L -> DeviceType.EXTENDED_COLOR_LIGHT // 0x010D Extended Color Light
                 10L -> DeviceType.DOOR_LOCK // 0x000A door lock // todo need to review the hex value
 //            11L ->   Door Lock Controller // (0x000B)
-                0xFFF10001 -> DeviceType.MANUFACTURER_SPECIFIC_DEVICE
                 else -> DeviceType.UNSUPPORTED
             }
         }

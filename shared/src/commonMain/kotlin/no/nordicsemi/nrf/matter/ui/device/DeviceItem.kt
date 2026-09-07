@@ -72,6 +72,7 @@ internal fun DeviceItem(
 
     val onOffState = onOff?.state?.collectAsStateWithLifecycle()?.value
     val lockState = doorLock?.state?.collectAsStateWithLifecycle()?.value
+    val manufacturerSpecState = manufacturerSpec?.state?.collectAsStateWithLifecycle()?.value
 
     // The lock keeps its last known state while it is moving, so that the label does not flicker.
     var isLocked by remember { mutableStateOf(false) }
@@ -102,7 +103,7 @@ internal fun DeviceItem(
         DeviceHeader(
             isOn = isActive,
             icon = device.device.toIcon(isActive),
-            title = device.device.toTitle(),
+            title = manufacturerSpecState?.displayName ?: device.device.toTitle(),
             subtitle = device.device.toSubtitle(),
             bindingCapable = device.device.isBindingSource() != null,
         ) {

@@ -3,7 +3,7 @@ package no.nordicsemi.nrf.matter.cluster
 import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.nrf.matter.model.DeviceId
 
-sealed class Cluster(protected val controller: MatterClient) {
+abstract class Cluster(protected val controller: MatterClient) {
 
     abstract val deviceId: DeviceId
     abstract val endpoint: Int

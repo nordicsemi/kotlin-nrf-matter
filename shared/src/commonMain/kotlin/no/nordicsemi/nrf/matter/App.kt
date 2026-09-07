@@ -19,7 +19,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -37,11 +36,6 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
-import no.nordicsemi.nrf.matter.api.NordicMatters
-import no.nordicsemi.nrf.matter.cluster.BasicInfoClusterInfo
-import no.nordicsemi.nrf.matter.cluster.BasicInfoExtCluster
-import no.nordicsemi.nrf.matter.cluster.ManufacturerSpecCluster
-import no.nordicsemi.nrf.matter.cluster.ManufacturerSpecClusterInfo
 import no.nordicsemi.nrf.matter.screens.BindingsScreen
 import no.nordicsemi.nrf.matter.screens.CommissioningScreen
 import no.nordicsemi.nrf.matter.screens.LoggerScreen
@@ -91,14 +85,6 @@ import no.nordicsemi.nrf.matter.theme.NordicTheme
 @Composable
 fun App(homeViewModel: HomeViewModel) {
 
-    LaunchedEffect(Unit) {
-        NordicMatters.registerCustomCluster(ManufacturerSpecClusterInfo.ID) { deviceId, endpoint, matterClient ->
-            ManufacturerSpecCluster(deviceId, endpoint, matterClient)
-        }
-        NordicMatters.registerCustomCluster(BasicInfoClusterInfo.ID) { deviceId, endpoint, matterClient ->
-            BasicInfoExtCluster(deviceId, endpoint, matterClient)
-        }
-    }
     val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
     val backStack: NavBackStack<NavKey> = rememberNavBackStack(config, HomeRoute)
 
