@@ -41,7 +41,7 @@ actual fun rememberCommissioningTask(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val deviceInfoProvider = remember {
-        NordicMatters.matterDependencies.platformDependencies.clusterDeviceInfoProvider
+        NordicMatters.matterDependencies.platformDependencies.finaliseCommissioningUseCase
     }
     val currentOnSuccess by rememberUpdatedState(onSuccess)
     val currentOnError by rememberUpdatedState(onError)

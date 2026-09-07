@@ -29,7 +29,7 @@ class Fabric internal constructor(
 
     private val devicesRepository get() = dependencies.devicesRepository
     private val devicesStateRepository get() = dependencies.devicesStateRepository
-    private val deviceInfoProvider get() = dependencies.deviceInfoProvider
+    private val deviceInfoProvider get() = dependencies.finaliseCommissioningUseCase
     private val matterDecommissioner get() = dependencies.matterDecommissioner
     private val bindingRepository get() = dependencies.bindingRepository
     private val bindingController get() = dependencies.bindingController

@@ -3,7 +3,7 @@ package no.nordicsemi.nrf.matter.api
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import no.nordicsemi.nrf.matter.cluster.MatterClient
-import no.nordicsemi.nrf.matter.commission.DeviceInfoProvider
+import no.nordicsemi.nrf.matter.commission.FinaliseCommissioningUseCase
 import no.nordicsemi.nrf.matter.controller.BindingController
 import no.nordicsemi.nrf.matter.controller.BindingLogsProvider
 import no.nordicsemi.nrf.matter.controller.MatterDecommissioner
@@ -28,7 +28,7 @@ internal expect class MatterPlatformDependencies() {
     val deviceStateDataSource: DeviceStateDataSource
     val bindingDataStore: DataStore<Preferences>
     val matterClient: MatterClient
-    val deviceInfoProvider: DeviceInfoProvider
+    val finaliseCommissioningUseCase: FinaliseCommissioningUseCase
     val matterDecommissioner: MatterDecommissioner
     val bindingController: BindingController
     val bindingLogsProvider: BindingLogsProvider

@@ -17,9 +17,9 @@ import kotlin.time.Clock
  * is, Descriptor for what each of its endpoints implements - so there is one implementation for
  * both platforms rather than one per platform Matter stack.
  */
-internal class ClusterDeviceInfoProvider(
+internal class FinaliseCommissioningUseCase(
     private val client: MatterClient,
-) : DeviceInfoProvider {
+) {
 
     private val namesFromCommissioning = mutableMapOf<DeviceId, String>()
 
@@ -34,7 +34,7 @@ internal class ClusterDeviceInfoProvider(
         name?.let { namesFromCommissioning[deviceId] = it }
     }
 
-    override suspend fun readDevice(deviceId: DeviceId): Device {
+    suspend fun readDevice(deviceId: DeviceId): Device {
         val basicInfo = catchAndThrow(deviceId, Stage.READ_BASIC_INFORMATION) {
             BasicInformationCluster(deviceId, client).read()
         }

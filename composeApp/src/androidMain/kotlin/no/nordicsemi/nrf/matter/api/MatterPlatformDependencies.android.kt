@@ -10,8 +10,7 @@ import no.nordicsemi.nrf.matter.chip.ChipClient
 import no.nordicsemi.nrf.matter.chip.MatterDecommissionerImpl
 import no.nordicsemi.nrf.matter.cluster.AndroidMatterClient
 import no.nordicsemi.nrf.matter.cluster.MatterClient
-import no.nordicsemi.nrf.matter.commission.ClusterDeviceInfoProvider
-import no.nordicsemi.nrf.matter.commission.DeviceInfoProvider
+import no.nordicsemi.nrf.matter.commission.FinaliseCommissioningUseCase
 import no.nordicsemi.nrf.matter.controller.BindingController
 import no.nordicsemi.nrf.matter.controller.BindingLogsProvider
 import no.nordicsemi.nrf.matter.controller.MatterDecommissioner
@@ -55,7 +54,7 @@ internal actual class MatterPlatformDependencies {
      * Concretely typed, unlike the `actual` below, so that the Android commissioning flow can
      * hand it the name the Google Home flow gave the device.
      */
-    val clusterDeviceInfoProvider by lazy { ClusterDeviceInfoProvider(matterClient) }
+    actual val finaliseCommissioningUseCase by lazy { FinaliseCommissioningUseCase(matterClient) }
 
     actual val devicesDataSource: DevicesDataSource by lazy {
         AndroidDevicesDataSource(context)
@@ -77,7 +76,4 @@ internal actual class MatterPlatformDependencies {
     actual val bindingLogsProvider: BindingLogsProvider by lazy {
         BindingLogsProviderImpl(chipClient)
     }
-
-    actual val deviceInfoProvider: DeviceInfoProvider
-        get() = clusterDeviceInfoProvider
 }
