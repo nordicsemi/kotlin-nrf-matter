@@ -147,8 +147,9 @@ This is a Kotlin Multiplatform project targeting Android and iOS.
     - [`commonMain`](./composeApp/src/commonMain/kotlin) — the platform-agnostic half: domain
       models (`Device`, `BasicInformation`, `Endpoint`, `LockDeviceState`, …), cluster definitions,
       repositories/data sources, the decommission and binding use cases, and the `NordicLogger`
-      abstraction — backed by Room on Android and, on iOS, by `ios-matter`'s Pulse-based
-      `SwiftLogger`.
+      abstraction — backed by Room on Android and, on iOS, by `ios-matter`'s `SwiftLogger`,
+      which appends to a JSONL file in the shared app group so the app's log viewer also shows
+      what the commissioning extension recorded.
     - `androidMain` / `iosMain` — platform-specific code, e.g. wiring up Matter commissioning on
       each platform. `androidMain` also holds the wrappers around the native Matter (CHIP) SDK and
       the Google Home API (`ChipClient`, `ClustersHelper`, `BindingControllerImpl`) along with the
@@ -281,7 +282,7 @@ Three Gradle tasks per iOS target do this, in [`build.gradle.kts`](./composeApp/
 
 | Task | Does |
 | --- | --- |
-| `compileIosMatterSwift<Target>` | runs `xcodebuild` on `/ios-matter`, which also resolves and builds Pulse |
+| `compileIosMatterSwift<Target>` | runs `xcodebuild` on `/ios-matter` |
 | `iosMatterStaticLib<Target>` | `libtool`s the resulting objects into `libios-matter.a` and copies the Swift-generated ObjC header and module map beside it |
 | `cinteropIosMatter<Target>` | translates that module into the `iosMatter` Kotlin package and embeds the archive in the klib |
 
@@ -305,14 +306,21 @@ self-contained, and Xcode needs no package graph — neither `iosApp` nor `nrfMa
 
 **Editing it.** Change a `.swift` file under `/ios-matter/ios-matter` and build — the task inputs
 cover the sources and the manifest, so the library is rebuilt and re-archived automatically. There
-is no tag to push, no version to bump, and no lockfile to realign. Its own remote dependency,
-[Pulse](https://github.com/kean/Pulse), is still pinned by
-[`/ios-matter/Package.resolved`](./ios-matter/Package.resolved) and is linked into the same archive.
+is no tag to push, no version to bump, and no lockfile to realign.
 
-One consequence of `/ios-matter` staying a local package: SwiftPM refuses `unsafeFlags` in a package
-consumed as a dependency but exempts local ones, which is what lets
-[`/ios-matter/Package.swift`](./ios-matter/Package.swift) keep `-enable-library-evolution`. Its
-comment explains why that flag is needed.
+**It has no dependencies, deliberately.** Its compiled objects are archived into the cinterop klib
+and published inside `matter-support`, so anything linked here has to be redistributable and has to
+build for both iOS targets without a package graph at the consumer's end. `libios-matter.a`
+therefore holds exactly one object, `ios-matter.o`. Keeping it that way is also what lets
+[`/ios-matter/Package.swift`](./ios-matter/Package.swift) stay a dozen lines with no
+`Package.resolved`, no `unsafeFlags` and no `-enable-library-evolution`.
+
+**The manifest is a build entry point, not a distribution format.** Nothing consumes ios-matter as
+a Swift package — it is not a SwiftPM dependency of the Kotlin build, and `iosApp.xcodeproj`
+references the directory only as a folder to browse. It exists because `/ios-matter` holds no
+`.xcodeproj`, so the manifest is what lets `compileIosMatterSwift*` build the sources with
+`xcodebuild -scheme ios-matter`, and what gives Xcode a target to index them against while
+editing.
 
 ### Build and run the Android application
 

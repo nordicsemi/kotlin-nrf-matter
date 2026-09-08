@@ -44,12 +44,13 @@ nordicPublishing {
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * Archives the relocatable objects that xcodebuild produced for ios-matter and its
- * dependencies (currently Pulse and PulseObjCHelpers) into a single static library,
- * and copies the Swift-generated Objective-C header next to it.
+ * Archives the relocatable objects that xcodebuild produced for ios-matter into a
+ * static library, and copies the Swift-generated Objective-C header next to it.
  *
  * xcodebuild emits one partially-linked `.o` per module rather than an archive, so
  * there is nothing for cinterop's `-staticLibrary` to consume until libtool has run.
+ * ios-matter has no dependencies, so that is a single object today -- the task still
+ * archives whatever it finds, rather than assuming one.
  */
 abstract class PackageIosMatterStaticLib : DefaultTask() {
 
@@ -113,21 +114,6 @@ abstract class PackageIosMatterStaticLib : DefaultTask() {
     }
 }
 
-/** xcodebuild coordinates for one Kotlin/Native target. */
-data class IosMatterPlatform(val destination: String, val sdk: String)
-
-/**
- * Where the packaged artefacts for one Kotlin/Native target end up.
- *
- * [packageTask] is null off macOS, where the Apple toolchain that produces those
- * artefacts does not exist -- see [isMacOs].
- */
-data class IosMatterArtifacts(
-    val packageTask: TaskProvider<PackageIosMatterStaticLib>?,
-    val libraryDir: File,
-    val headerDir: File,
-)
-
 /**
  * Whether the Apple toolchain (`xcodebuild`, `libtool`) is available.
  *
@@ -143,86 +129,13 @@ val isMacOs = HostManager.hostIsMac
 
 val iosMatterRoot = rootProject.layout.projectDirectory.dir("ios-matter")
 
-val iosMatterPlatforms = mapOf(
-    "IosArm64" to IosMatterPlatform("generic/platform=iOS", "iphoneos"),
-    "IosSimulatorArm64" to IosMatterPlatform("generic/platform=iOS Simulator", "iphonesimulator"),
-)
-
-val iosMatterArtifacts: Map<String, IosMatterArtifacts> =
-    iosMatterPlatforms.mapValues { (suffix, platform) ->
-        val outputRoot = layout.buildDirectory.dir("ios-matter/$suffix").get().asFile
-        val derivedData = File(outputRoot, "derivedData")
-        val libraryDir = File(outputRoot, "lib")
-        val headerDir = File(outputRoot, "include")
-
-        if (!isMacOs) {
-            return@mapValues IosMatterArtifacts(null, libraryDir, headerDir)
-        }
-
-        val compile = tasks.register<Exec>("compileIosMatterSwift$suffix") {
-            group = "ios-matter"
-            description = "Compiles the vendored ios-matter Swift package for $suffix."
-
-            workingDir = iosMatterRoot.asFile
-            inputs.file(iosMatterRoot.file("Package.swift"))
-            inputs.dir(iosMatterRoot.dir("ios-matter"))
-            outputs.dir(derivedData)
-
-            // This xcodebuild usually runs *inside* another one: the Kotlin framework
-            // is built from an Xcode run-script phase. The Xcode build system exports
-            // TARGET_BUILD_DIR, CONFIGURATION_BUILD_DIR, SDKROOT, ARCHS and dozens
-            // more, and a nested invocation that inherits them builds the outer
-            // project's targets into the outer project's product directory:
-            //   error: Multiple commands produce '.../nrfMatter.appex/nrfMatter.debug.dylib'
-            // Passing only what xcodebuild genuinely needs keeps the two independent.
-            environment = listOf(
-                "PATH", "HOME", "USER", "LOGNAME", "SHELL", "TMPDIR",
-                "LANG", "LC_ALL", "DEVELOPER_DIR",
-            ).mapNotNull { key ->
-                providers.environmentVariable(key).orNull?.let { key to it }
-            }.toMap()
-            // DerivedData embeds absolute paths, so it must never be shared between
-            // machines through the build cache.
-            outputs.cacheIf { false }
-
-            commandLine(
-                "xcodebuild",
-                "-scheme", "ios-matter",
-                "-destination", platform.destination,
-                "-configuration", "Release",
-                "-derivedDataPath", derivedData.absolutePath,
-                // Kotlin/Native has no x86_64 simulator target here, and building it
-                // would only be archived and discarded.
-                "ARCHS=arm64",
-                "ONLY_ACTIVE_ARCH=NO",
-                // ios-matter's manifest already passes -enable-library-evolution;
-                // keeping the two consistent avoids a rebuild of every dependency.
-                "BUILD_LIBRARY_FOR_DISTRIBUTION=YES",
-                "build",
-            )
-        }
-
-        val packageTask = tasks.register<PackageIosMatterStaticLib>("iosMatterStaticLib$suffix") {
-            group = "ios-matter"
-            description = "Archives ios-matter and its Swift dependencies into a static library for $suffix."
-
-            dependsOn(compile)
-            derivedDataDir.set(derivedData)
-            sdkName.set(platform.sdk)
-            staticLibrary.set(File(libraryDir, "libios-matter.a"))
-            this.headerDir.set(headerDir)
-        }
-
-        IosMatterArtifacts(packageTask, libraryDir, headerDir)
-    }
-
 /** Convenience aggregate so `./gradlew :composeApp:iosMatterStaticLibs` builds every target. */
 tasks.register("iosMatterStaticLibs") {
     group = "ios-matter"
     description = "Builds the ios-matter static library for every iOS target."
-    if (isMacOs) {
-        dependsOn(iosMatterArtifacts.values.mapNotNull { it.packageTask })
-    } else {
+    // Registered per target inside `kotlin {}` below, and only on macOS.
+    dependsOn(tasks.withType<PackageIosMatterStaticLib>())
+    if (!isMacOs) {
         doFirst {
             error("ios-matter needs xcodebuild, which is only available on macOS.")
         }
@@ -253,33 +166,93 @@ kotlin {
             isStatic = true
         }
 
-        // iosArm64 -> IosArm64, matching the task-name suffixes above and the
-        // suffix Kotlin gives the generated cinterop task.
+        // iosArm64 -> IosArm64, matching the suffix Kotlin gives the generated cinterop
+        // task and the one used for the ios-matter task names below.
         val suffix = iosTarget.name.replaceFirstChar { it.uppercaseChar() }
-        val artifacts = iosMatterArtifacts.getValue(suffix)
+        val isSimulator = "Simulator" in iosTarget.name
+
+        val outputRoot = layout.buildDirectory.dir("ios-matter/$suffix").get().asFile
+        val derivedData = File(outputRoot, "derivedData")
+        val libraryDir = File(outputRoot, "lib")
+        val headerDir = File(outputRoot, "include")
+
+        // Off macOS these tasks are not registered at all -- see `isMacOs`. Kotlin/Native
+        // disables the cinterop task on those hosts anyway, so it is still configured below
+        // and simply never runs.
+        if (isMacOs) {
+            val compile = tasks.register<Exec>("compileIosMatterSwift$suffix") {
+                group = "ios-matter"
+                description = "Compiles the vendored ios-matter Swift package for $suffix."
+
+                workingDir = iosMatterRoot.asFile
+                inputs.file(iosMatterRoot.file("Package.swift"))
+                inputs.dir(iosMatterRoot.dir("ios-matter"))
+                outputs.dir(derivedData)
+
+                // This xcodebuild usually runs *inside* another one: the Kotlin framework
+                // is built from an Xcode run-script phase. The Xcode build system exports
+                // TARGET_BUILD_DIR, CONFIGURATION_BUILD_DIR, SDKROOT, ARCHS and dozens
+                // more, and a nested invocation that inherits them builds the outer
+                // project's targets into the outer project's product directory:
+                //   error: Multiple commands produce '.../nrfMatter.appex/nrfMatter.debug.dylib'
+                // Passing only what xcodebuild genuinely needs keeps the two independent.
+                environment = listOf(
+                    "PATH", "HOME", "USER", "LOGNAME", "SHELL", "TMPDIR",
+                    "LANG", "LC_ALL", "DEVELOPER_DIR",
+                ).mapNotNull { key ->
+                    providers.environmentVariable(key).orNull?.let { key to it }
+                }.toMap()
+                // DerivedData embeds absolute paths, so it must never be shared between
+                // machines through the build cache.
+                outputs.cacheIf { false }
+
+                commandLine(
+                    "xcodebuild",
+                    "-scheme", "ios-matter",
+                    "-destination",
+                    if (isSimulator) "generic/platform=iOS Simulator" else "generic/platform=iOS",
+                    "-configuration", "Release",
+                    "-derivedDataPath", derivedData.absolutePath,
+                    // Kotlin/Native has no x86_64 simulator target here, and building it
+                    // would only be archived and discarded.
+                    "ARCHS=arm64",
+                    "ONLY_ACTIVE_ARCH=NO",
+                    "build",
+                )
+            }
+
+            val packageTask = tasks.register<PackageIosMatterStaticLib>("iosMatterStaticLib$suffix") {
+                group = "ios-matter"
+                description =
+                    "Archives ios-matter into a static library for $suffix."
+
+                dependsOn(compile)
+                derivedDataDir.set(derivedData)
+                sdkName.set(if (isSimulator) "iphonesimulator" else "iphoneos")
+                staticLibrary.set(File(libraryDir, "libios-matter.a"))
+                this.headerDir.set(headerDir)
+            }
+
+            // The .def references a header and a library that only exist once the Swift
+            // package has been compiled and archived. `matching` keeps this lazy: the
+            // cinterop task is registered by the block below, not yet realised here.
+            tasks.matching { it.name == "cinteropIosMatter$suffix" }.configureEach {
+                dependsOn(packageTask)
+            }
+        }
 
         iosTarget.compilations.getByName("main").cinterops.create("iosMatter") {
             definitionFile.set(
                 layout.projectDirectory.file("src/nativeInterop/cinterop/iosMatter.def")
             )
             // All per-target, so none of it can live in the .def.
-            includeDirs(artifacts.headerDir)
+            includeDirs(headerDir)
             extraOpts(
                 "-compiler-option",
-                "-fmodule-map-file=${File(artifacts.headerDir, "ios-matter.modulemap")}",
-                "-libraryPath", artifacts.libraryDir.absolutePath,
+                "-fmodule-map-file=${File(headerDir, "ios-matter.modulemap")}",
+                "-libraryPath", libraryDir.absolutePath,
                 "-staticLibrary", "libios-matter.a",
             )
-        }
-
-        // The .def references a header and a library that only exist once the Swift
-        // package has been compiled and archived. `matching` keeps this lazy: the
-        // cinterop task is registered by the block above, not yet realised here.
-        val packageTask = artifacts.packageTask
-        if (packageTask != null) {
-            tasks.matching { it.name == "cinteropIosMatter$suffix" }.configureEach {
-                dependsOn(packageTask)
-            }
         }
     }
 
