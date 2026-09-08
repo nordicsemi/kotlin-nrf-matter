@@ -277,17 +277,39 @@ git, the Apple-side counterpart to the vendoring described above. It used to be 
 `git@github.com:sylwester-zielinski/ios-matter.git` at an exact tag; it is now built in place.
 
 **It is not a SwiftPM dependency of the Kotlin build.** It is compiled to a static library and
-consumed through plain cinterop, so the Swift object code ends up *inside* the published artifact.
-Three Gradle tasks per iOS target do this, in [`build.gradle.kts`](./composeApp/build.gradle.kts):
+consumed through cinterop, so the Swift object code ends up *inside* the published artifact. The
+[swiftklib](https://github.com/ttypic/swift-klib-plugin) Gradle plugin does this, configured in
+[`build.gradle.kts`](./composeApp/build.gradle.kts):
 
-| Task | Does |
-| --- | --- |
-| `compileIosMatterSwift<Target>` | runs `xcodebuild` on `/ios-matter` |
-| `iosMatterStaticLib<Target>` | `libtool`s the resulting objects into `libios-matter.a` and copies the Swift-generated ObjC header and module map beside it |
-| `cinteropIosMatter<Target>` | translates that module into the `iosMatter` Kotlin package and embeds the archive in the klib |
+```kotlin
+swiftklib {
+    create("iosMatter") {
+        path.set(file("../ios-matter/ios-matter"))
+        packageName("iosMatter")
+        minIos.set(26)
+    }
+}
+```
 
-`./gradlew :composeApp:iosMatterStaticLibs` builds the library for every target. All three tasks run
-automatically as part of any iOS compile — there is nothing to invoke by hand.
+Per iOS target it wraps the sources in a generated Swift package, builds them with `swift build`,
+and writes a cinterop `.def` with `modules`/`staticLibraries` — so `cinteropIosMatter<Target>`
+translates the module into the `iosMatter` Kotlin package and embeds `libiosMatter.a` in the klib.
+It runs automatically as part of any iOS compile; there is nothing to invoke by hand.
+
+Two workarounds are needed, both in the same two places:
+
+- The plugin declares a runtime dependency on `kotlin-gradle-plugin:2.0.0`. Applying it through
+  `plugins {}` puts that on the buildscript classpath and breaks the AGP KMP `android {}` DSL
+  (`Unresolved reference 'namespace'`). It is therefore applied from the root
+  [`build.gradle.kts`](./build.gradle.kts) buildscript with that dependency excluded.
+- Its generated `.def` points `-I` at `<target>.build`, but current SwiftPM writes
+  `module.modulemap` into `<target>.build/include`, so cinterop fails with
+  `module 'iosMatter' not found`. The cinterop block adds the missing include directory, resolved
+  through SwiftPM's stable `.build/release` symlink so it does not depend on the build host's
+  triple.
+
+The plugin's last release is 0.6.4 (October 2024); if either of these is fixed upstream, the
+corresponding workaround can go.
 
 Only the `@objc public` surface of ios-matter crosses the boundary; the Swift-generated
 Objective-C header is the contract, which is why the Kotlin-facing classes are annotated.
@@ -304,9 +326,9 @@ the cinterop klib avoids both problems: `no.nordicsemi.nrf.matter:matter-support
 self-contained, and Xcode needs no package graph — neither `iosApp` nor `nrfMatter` imports
 `ios_matter`, both reach it through Kotlin bridges such as `KeychainKt.prepareKeychain()`.
 
-**Editing it.** Change a `.swift` file under `/ios-matter/ios-matter` and build — the task inputs
-cover the sources and the manifest, so the library is rebuilt and re-archived automatically. There
-is no tag to push, no version to bump, and no lockfile to realign.
+**Editing it.** Change a `.swift` file under `/ios-matter/ios-matter` and build — the plugin's task
+inputs cover the sources, so the library is rebuilt and re-archived automatically. There is no tag
+to push, no version to bump, and no lockfile to realign.
 
 **It has no dependencies, deliberately.** Its compiled objects are archived into the cinterop klib
 and published inside `matter-support`, so anything linked here has to be redistributable and has to
@@ -315,12 +337,10 @@ therefore holds exactly one object, `ios-matter.o`. Keeping it that way is also 
 [`/ios-matter/Package.swift`](./ios-matter/Package.swift) stay a dozen lines with no
 `Package.resolved`, no `unsafeFlags` and no `-enable-library-evolution`.
 
-**The manifest is a build entry point, not a distribution format.** Nothing consumes ios-matter as
-a Swift package — it is not a SwiftPM dependency of the Kotlin build, and `iosApp.xcodeproj`
-references the directory only as a folder to browse. It exists because `/ios-matter` holds no
-`.xcodeproj`, so the manifest is what lets `compileIosMatterSwift*` build the sources with
-`xcodebuild -scheme ios-matter`, and what gives Xcode a target to index them against while
-editing.
+**`Package.swift` is kept only for Xcode.** Nothing consumes ios-matter as a Swift package —
+swiftklib generates its own manifest, and `iosApp.xcodeproj` references the directory only as a
+folder to browse. Ours stays because `/ios-matter` holds no `.xcodeproj`, so it is what gives Xcode
+a target to index and autocomplete the sources against while editing.
 
 ### Build and run the Android application
 

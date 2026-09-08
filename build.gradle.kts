@@ -1,3 +1,12 @@
+buildscript {
+    repositories { gradlePluginPortal() }
+    dependencies {
+        classpath("io.github.ttypic:plugin:0.6.4") {
+            exclude(group = "org.jetbrains.kotlin", module = "kotlin-gradle-plugin")
+        }
+    }
+}
+
 plugins {
     // this is necessary to avoid the plugins to be loaded multiple times
     // in each subproject's classloader
