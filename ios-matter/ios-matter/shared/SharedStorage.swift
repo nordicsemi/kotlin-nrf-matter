@@ -34,15 +34,10 @@ import Matter
         defaults.string(forKey: key)
     }
 
-    /// Stores a list of strings for the given key.
     @objc public func storeStringArray(key: String, value: [String]) {
         defaults.set(value, forKey: key)
     }
 
-    /// Returns the list of strings stored for the given key, if any.
-    ///
-    /// - Returns: The stored list, or `nil` if the key is absent or holds something other than a
-    ///   list of strings.
     @objc public func getStringArray(key: String) -> [String]? {
         defaults.stringArray(forKey: key)
     }

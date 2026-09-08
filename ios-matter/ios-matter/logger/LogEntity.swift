@@ -13,9 +13,6 @@ import Foundation
 /// Kotlin/Native, where `IOSLoggerImpl` converts it to the shared `LogEntity` model.
 @objc public final class LogEntity: NSObject {
     /// Milliseconds since the Unix epoch, stamped when the entry was logged.
-    ///
-    /// Persisted with the entry, so one replayed from the store by ``SwiftLogger/logs()`` carries
-    /// the time it was logged rather than the time it was read.
     @objc public let date: Int64
     @objc public let level: LogLevel
     /// Identifies the source of the message.

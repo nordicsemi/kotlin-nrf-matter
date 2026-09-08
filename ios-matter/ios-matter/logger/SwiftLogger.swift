@@ -21,8 +21,6 @@ import Foundation
         guard let containerURL = FileManager.default.containerURL(
             forSecurityApplicationGroupIdentifier: SharedConsts.sharedStorage
         ) else {
-            // Same failure and same fix as `UserDefaults.appGroup(_:configuredBy:)`, spelled out
-            // here too because the logger is usually the first thing any process touches.
             preconditionFailure(
                 """
                 App group "\(SharedConsts.sharedStorage)" is not available to \
@@ -36,7 +34,6 @@ import Foundation
         return LogStore(fileURL: containerURL.appendingPathComponent("matter-log.jsonl"))
     }()
 
-    /// Records one entry: to the store, to the system log, and to ``callback``.
     private static func log(level: LogLevel, tag: String, message: String) {
         let entry = LogEntity(
             date: Int64(Date().timeIntervalSince1970 * 1000),
@@ -61,10 +58,7 @@ import Foundation
     /// The store is in the shared app group, so this includes entries written by the commissioning
     /// extension's process as well as the app's.
     ///
-    /// - Returns: The stored log entries, newest first, each carrying the time it was logged.
-    /// - Throws: Nothing. Declared `throws` because Kotlin already calls this through the
-    ///   generated `logsAndReturnError(_:)`; a read failure yields an empty list instead, since a
-    ///   missing or partly corrupt log file is not worth surfacing as an error.
+    /// - Returns: The stored log entries, newest first.
     @objc public static func logs() throws -> [LogEntity] {
         store.read()
     }

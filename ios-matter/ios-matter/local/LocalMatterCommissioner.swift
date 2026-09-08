@@ -43,10 +43,6 @@ import MatterSupport
     /// ``LocalMatterClusterDiscovery``, so that the caller decides when - and whether - to pay for
     /// those reads.
     ///
-    /// The extension runs in its own process, so the two sides exchange data through
-    /// ``SharedStorage``: this writes the node ID and the rooms to offer, and reads back the name
-    /// the user typed. ``NordicMatterRequestHandler`` owns the extension's half.
-    ///
     /// - Parameters:
     ///   - deviceId: The Matter node ID to assign to the newly commissioned device.
     ///   - rooms: Room names to offer the user. An empty list leaves the extension's own defaults
@@ -65,8 +61,6 @@ import MatterSupport
         let request = MatterAddDeviceRequest(topology: topology, shouldScanNetworks: true)
         
         let storage = SharedStorage()
-        // Both of these are written by the extension. Clearing them first means a cancelled run
-        // cannot be read as the previous run's success, nor hand back its device name.
         let _ = storage.removeStorageData(forKey: SharedConsts.resultKey)
         let _ = storage.removeStorageData(forKey: SharedConsts.deviceNameKey)
         storage.storeString(key: SharedConsts.matterEnvStorageKey, value: MatterEnv.local.rawValue)

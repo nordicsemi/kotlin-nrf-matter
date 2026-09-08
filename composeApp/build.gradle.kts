@@ -45,12 +45,10 @@ nordicPublishing {
 
 /**
  * Archives the relocatable objects that xcodebuild produced for ios-matter into a
- * static library, and copies the Swift-generated Objective-C header next to it.
+ * single static library, and copies the Swift-generated Objective-C header next to it.
  *
  * xcodebuild emits one partially-linked `.o` per module rather than an archive, so
  * there is nothing for cinterop's `-staticLibrary` to consume until libtool has run.
- * ios-matter has no dependencies, so that is a single object today -- the task still
- * archives whatever it finds, rather than assuming one.
  */
 abstract class PackageIosMatterStaticLib : DefaultTask() {
 
@@ -133,7 +131,6 @@ val iosMatterRoot = rootProject.layout.projectDirectory.dir("ios-matter")
 tasks.register("iosMatterStaticLibs") {
     group = "ios-matter"
     description = "Builds the ios-matter static library for every iOS target."
-    // Registered per target inside `kotlin {}` below, and only on macOS.
     dependsOn(tasks.withType<PackageIosMatterStaticLib>())
     if (!isMacOs) {
         doFirst {
@@ -166,8 +163,8 @@ kotlin {
             isStatic = true
         }
 
-        // iosArm64 -> IosArm64, matching the suffix Kotlin gives the generated cinterop
-        // task and the one used for the ios-matter task names below.
+        // iosArm64 -> IosArm64, matching the task-name suffixes above and the
+        // suffix Kotlin gives the generated cinterop task.
         val suffix = iosTarget.name.replaceFirstChar { it.uppercaseChar() }
         val isSimulator = "Simulator" in iosTarget.name
 
@@ -176,9 +173,6 @@ kotlin {
         val libraryDir = File(outputRoot, "lib")
         val headerDir = File(outputRoot, "include")
 
-        // Off macOS these tasks are not registered at all -- see `isMacOs`. Kotlin/Native
-        // disables the cinterop task on those hosts anyway, so it is still configured below
-        // and simply never runs.
         if (isMacOs) {
             val compile = tasks.register<Exec>("compileIosMatterSwift$suffix") {
                 group = "ios-matter"
