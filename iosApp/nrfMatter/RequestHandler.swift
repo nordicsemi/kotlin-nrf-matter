@@ -16,24 +16,36 @@ import shared
 /// the user may add their device to, and selecting the WiFi or Thread network the device will
 /// operate on.
 ///
-/// Every step is delegated to `AppExtensionMatterCommissioner`, which is Kotlin code reached through
-/// the `shared` framework — this target holds no commissioning logic of its own. That Kotlin class
-/// in turn drives `ios-matter`'s `MatterCommissioner` to add the device to the local Matter fabric.
+/// Every step is delegated straight to `NordicMatters`/`Fabric`, the same shared Kotlin API
+/// (reached through the `shared` framework) the rest of the app uses — this target holds no
+/// commissioning logic of its own. The extension-specific pieces (driving `ios-matter`'s
+/// `MatterCommissioner`, and reading/writing `SharedStorage`) live as iOS-only extension functions
+/// on those two types, declared in `NordicMattersAppExtension.kt`, right next to the types they
+/// extend rather than in a private wrapper class.
 ///
 /// The extension runs in its own process, so it exchanges data with the main app through
 /// `SharedStorage` (`UserDefaults` over an app group): the app writes the node ID to commission
 /// before starting the flow, and ``configureDevice(named:in:)`` writes back the success flag the app
 /// reads once the extension closes.
 final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
-    
-    private let commissioner = AppExtensionMatterCommissioner()
+
+    /// The fabric devices are commissioned onto. Fetching it also installs Kotlin-side logging for
+    /// this process — every process running Kotlin code has to do that once for itself.
+    private let fabric: Fabric = {
+        NordicMatters.shared.initializeAppExtension()
+        return NordicMatters.shared.defaultFabric
+    }()
+
+    /// The device commissioned in ``commissionDevice(in:onboardingPayload:commissioningID:)``,
+    /// carried over to ``configureDevice(named:in:)``.
+    private var commissionedDeviceId: DeviceId?
 
     /// Returns the list of rooms available in the given home for placing a newly added device.
     ///
     /// - Parameter home: The home to fetch rooms for. Ignored — the room list is a fixed set.
     /// - Returns: The rooms the device can be assigned to.
     override func rooms(in home: MatterAddDeviceRequest.Home?) async -> [MatterAddDeviceRequest.Room] {
-        return commissioner.rooms().map { MatterAddDeviceRequest.Room(displayName: $0) }
+        return NordicMatters.shared.appExtensionRooms().map { MatterAddDeviceRequest.Room(displayName: $0) }
     }
 
     /// Commissions the device described by the onboarding payload into the given home.
@@ -44,16 +56,25 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     ///   - commissioningID: The unique identifier for this commissioning attempt.
     /// - Throws: An error if commissioning fails.
     override func commissionDevice(in home: MatterAddDeviceRequest.Home?, onboardingPayload: String, commissioningID: UUID) async throws {
-        try await commissioner.commissionDevice(payload: onboardingPayload)
+        commissionedDeviceId = try await fabric.commissionAppExtensionDevice(payload: onboardingPayload)
     }
 
-    /// Finishes configuring a newly added device with its chosen name and room, and records the result in shared storage.
+    /// Finishes configuring a newly added device with its chosen name and room: registers it with
+    /// `NordicMatters` under that name, and records the result in shared storage.
     ///
     /// - Parameters:
     ///   - name: The display name chosen for the device.
-    ///   - room: The room the device was placed in, or `nil` if no room was selected.
+    ///   - room: The room the device was placed in, or `nil` if no room was selected. Not passed on
+    ///     — `NordicMatters` has no notion of rooms yet.
+    ///
+    /// The call is discarded with `try?` because this override cannot throw: the Kotlin side
+    /// already swallows and logs registration failures, so the only error left to reach here is
+    /// cancellation, and there is nothing to report it to.
     override func configureDevice(named name: String, in room: MatterAddDeviceRequest.Room?) async {
-        commissioner.configureDevice()
+        guard let deviceId = commissionedDeviceId else {
+            return
+        }
+        try? await fabric.configureAppExtensionDevice(deviceId: deviceId, name: name)
     }
 
     /// Accepts the device credential presented during commissioning without validating it.
@@ -90,7 +111,7 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     override func selectThreadNetwork(from threadScanResults: [MatterAddDeviceExtensionRequestHandler.ThreadScanResult]) async throws -> MatterAddDeviceExtensionRequestHandler.ThreadNetworkAssociation {
 
         let networkNames = threadScanResults.map { $0.networkName }
-        commissioner.onThreadNetworksDetected(names: networkNames)
+        NordicMatters.shared.onAppExtensionThreadNetworksDetected(names: networkNames)
 
         let scanResult = threadScanResults[0] // .defaultSystemNetwork doesn't work. Selecting first.
         return MatterAddDeviceExtensionRequestHandler.ThreadNetworkAssociation.network(extendedPANID: scanResult.extendedPANID)
