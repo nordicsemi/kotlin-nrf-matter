@@ -1,0 +1,73 @@
+site_name: nRF Matter for Mobile
+site_url:
+use_directory_urls: false
+
+theme:
+  name: material
+  palette:
+    - scheme: custom-blue
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to dark mode
+    - scheme: custom-blue-dark
+      toggle:
+        icon: material/lightbulb
+        name: Switch to light mode
+  # logo: assets/logo.png
+  # favicon: assets/logo.png
+  features:
+    - content.code.annotate
+    - content.tooltips
+    - content.tabs.link
+    - navigation.indexes
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - toc.follow
+
+
+copyright:
+  Copyright &copy; 2023-2024
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - md_in_html
+  - meta
+  - pymdownx.details
+  - pymdownx.keys
+  - pymdownx.tabbed
+  - pymdownx.superfences
+  - toc:
+      permalink: true
+      toc_depth: 4
+
+ft_metadata:
+  ft:title: "nRF Matter for Mobile"
+  ft:clusterId: "nrf_matter_for_mobile"
+  ft:locale: "en-US"
+  tags:
+    - "nRF Matter for Mobile"
+
+ft_options:
+  copy_button_on_content_code: true
+  nav_mapping: first_heading_as_page_on_same_title
+
+nav:
+  - Get started: index.md
+  - Documentation revision history: revision_history.md
+  - Requirements: requirements.md
+  - Setting up a test environment:
+      - Preparing a Matter device: preparing_a_matter_device.md
+      - Thread network credentials: thread_network_credentials.md
+  - Using the mobile app:
+      - Overview and user interface: overview.md
+      - Commissioning devices: commissioning.md
+      - Configuring bindings: bindings.md
+      - Viewing logs: logs.md
+  - Development:
+      - Project structure: project_structure.md
+      - Vendored dependencies: vendored_dependencies.md
+      - Building the application: building.md
+  - Release notes: release_notes.md
