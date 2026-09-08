@@ -19,7 +19,10 @@ import Matter
 /// are two names for the same behaviour, kept because both spellings are already called.
 @objc public final class SharedStorage : NSObject {
 
-    private let defaults: UserDefaults = UserDefaults(suiteName: SharedConsts.sharedStorage)!
+    private let defaults = UserDefaults.appGroup(
+        SharedConsts.sharedStorage,
+        configuredBy: SharedConsts.sharedAppGroupInfoKey
+    )
 
     /// Stores a string value for the given key.
     @objc public func storeString(key: String, value: String) {
@@ -29,6 +32,19 @@ import Matter
     /// Returns the string value stored for the given key, if any.
     @objc public func getString(key: String) -> String? {
         defaults.string(forKey: key)
+    }
+
+    /// Stores a list of strings for the given key.
+    @objc public func storeStringArray(key: String, value: [String]) {
+        defaults.set(value, forKey: key)
+    }
+
+    /// Returns the list of strings stored for the given key, if any.
+    ///
+    /// - Returns: The stored list, or `nil` if the key is absent or holds something other than a
+    ///   list of strings.
+    @objc public func getStringArray(key: String) -> [String]? {
+        defaults.stringArray(forKey: key)
     }
 
     /// Stores a number value for the given key.

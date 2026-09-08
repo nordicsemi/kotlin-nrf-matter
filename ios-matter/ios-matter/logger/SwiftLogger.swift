@@ -20,9 +20,20 @@ import Combine
     private static let logger = Logger(subsystem: "nrf.matter", category: "SharedLogger")
     
     private static let store: LoggerStore = {
-        let containerURL = FileManager.default.containerURL(
+        guard let containerURL = FileManager.default.containerURL(
             forSecurityApplicationGroupIdentifier: SharedConsts.sharedStorage
-        )!
+        ) else {
+            // Same failure and same fix as `UserDefaults.appGroup(_:configuredBy:)`, spelled out
+            // here too because the logger is usually the first thing any process touches.
+            preconditionFailure(
+                """
+                App group "\(SharedConsts.sharedStorage)" is not available to \
+                "\(Bundle.main.bundleIdentifier ?? "this process")". Add it to the target's \
+                com.apple.security.application-groups entitlement, or name a different group in \
+                the target's Info.plist under "\(SharedConsts.sharedAppGroupInfoKey)".
+                """
+            )
+        }
         let url = containerURL.appendingPathComponent("pulse.sqlite")
         return try! LoggerStore(storeURL: url)
     }()

@@ -334,6 +334,66 @@ Use the run configuration from the run widget in your IDE's toolbar, or open the
 `/iosApp`](./iosApp)
 directory in Xcode and run it from there.
 
+### Adding the commissioning extension to another iOS app
+
+An app embedding `matter-support` needs a `MatterSupport` app extension, but not an implementation
+of one: `NordicMatterRequestHandler` ships inside the library and is found through the Objective-C
+runtime, so the extension target holds no commissioning code. `iosApp/nrfMatter` is the worked
+example — four pieces of configuration and one line of Swift.
+
+1. **App extension target.** Add one with the `com.apple.matter.support.extension.device-setup`
+   extension point, and name the library's handler as its principal class:
+
+   ```xml
+   <key>NSExtension</key>
+   <dict>
+       <key>NSExtensionPointIdentifier</key>
+       <string>com.apple.matter.support.extension.device-setup</string>
+       <key>NSExtensionPrincipalClass</key>
+       <string>NordicMatterRequestHandler</string>
+   </dict>
+   ```
+
+   No `$(PRODUCT_MODULE_NAME).` prefix — the class is not in the extension's module. Nothing needs
+   to declare or subclass it, because nothing references it at compile time.
+
+2. **App groups.** Provision two under your own team and list them in the
+   `com.apple.security.application-groups` entitlement of *both* the app and the extension, then
+   name them in *both* targets' `Info.plist`:
+
+   ```xml
+   <key>NordicMatterLocalAppGroup</key>
+   <string>group.example.matter.local</string>
+   <key>NordicMatterSharedAppGroup</key>
+   <string>group.example.matter.shared</string>
+   ```
+
+   The local group holds the Matter fabric, the shared group the app-to-extension handshake and the
+   log store. They cannot be compiled into the library, since an app group is provisioned per
+   developer team. Omitting the keys falls back to Nordic's own groups, which will not be available
+   to your app — expect a `preconditionFailure` naming the group and the fix.
+
+3. **Linker flags.** Set `OTHER_LDFLAGS` on the extension target to `-ObjC -framework <YourKotlinFramework>`
+   (`-ObjC -framework shared` here). The Kotlin framework is a *static* framework, so the linker
+   pulls only archive members that resolve a referenced symbol — and the extension references
+   nothing, since the runtime does the lookup. `-ObjC` force-loads the members that define
+   Objective-C classes; `-framework` is needed explicitly because Swift only auto-links a module it
+   actually uses.
+
+4. **One source file — any content.** Xcode needs at least one compilable source in the target to
+   run the link step. A file containing nothing but a comment is enough, and no `import` is needed:
+   the framework comes from `OTHER_LDFLAGS`, and Swift only auto-links a module it actually uses,
+   so a bare `import` would be dropped and link nothing.
+
+   Leave the target with no sources at all and Xcode skips linking silently: the `.appex` gets an
+   `Info.plist` and resources but **no executable**, and the build still reports `BUILD SUCCEEDED`.
+   See [`iosApp/nrfMatter/ExtensionPlaceholder.swift`](./iosApp/nrfMatter/ExtensionPlaceholder.swift).
+
+To offer your own rooms in the system UI, set `NordicMatters.commissioningRooms` before
+commissioning starts. The room the user picks is discarded — the system flow shows the step
+regardless, and the library has no notion of rooms — but the *name* they type is applied to the
+device.
+
 ## Requirements
 
 - Android: minSdk 27+, a device with Google Play Services (Home API is used for commissioning). The

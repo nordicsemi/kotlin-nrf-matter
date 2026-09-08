@@ -18,7 +18,10 @@ import Matter
 /// group's contents drops the fabric and orphans every commissioned device.
 final class MatterStorage : NSObject, MTRStorage {
 
-    private let defaults: UserDefaults = UserDefaults(suiteName: SharedConsts.localStorage)!
+    private let defaults = UserDefaults.appGroup(
+        SharedConsts.localStorage,
+        configuredBy: SharedConsts.localAppGroupInfoKey
+    )
     
     func storageData(forKey key: String) -> Data? {
         return defaults.data(forKey: key)

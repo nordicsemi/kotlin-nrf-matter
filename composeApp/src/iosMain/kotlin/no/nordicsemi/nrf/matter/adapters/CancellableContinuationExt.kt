@@ -23,3 +23,22 @@ fun <T> CancellableContinuation<T>.handleResult(error: NSError?, result: T? = nu
         resume(Unit as T)
     }
 }
+
+/**
+ * Resumes with [result] on success, mapping [error] to an exception the same way [handleResult]
+ * does.
+ *
+ * Separate from [handleResult] because that one reads a `null` result as "this operation has no
+ * result" and resumes with `Unit`, which fails for any `T` that is not `Unit`. Use this one where
+ * `null` is a legitimate success value.
+ */
+fun <T> CancellableContinuation<T>.handleNullableResult(error: NSError?, result: T) {
+    NordicLogger.debug("Handle operation result: $error, $result")
+    val commissioningException = error?.toCommissioningException()
+
+    when {
+        commissioningException != null -> resumeWithException(commissioningException)
+        error != null -> resumeWithException(IOSException(error))
+        else -> resume(result)
+    }
+}
