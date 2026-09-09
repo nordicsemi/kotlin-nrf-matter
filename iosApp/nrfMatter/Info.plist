@@ -17,7 +17,7 @@
 		<key>NSExtensionPointIdentifier</key>
 		<string>com.apple.matter.support.extension.device-setup</string>
 		<key>NSExtensionPrincipalClass</key>
-		<string>NordicMatterRequestHandler</string>
+		<string>$(PRODUCT_MODULE_NAME).RequestHandler</string>
 	</dict>
 </dict>
 </plist>

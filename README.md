@@ -364,13 +364,16 @@ directory in Xcode and run it from there.
 
 ### Adding the commissioning extension to another iOS app
 
-An app embedding `matter-support` needs a `MatterSupport` app extension, but not an implementation
-of one: `NordicMatterRequestHandler` ships inside the library and is found through the Objective-C
-runtime, so the extension target holds no commissioning code. `iosApp/nrfMatter` is the worked
-example — four pieces of configuration and one line of Swift.
+An app embedding `matter-support` needs a `MatterSupport` app extension, but almost none of one. The
+commissioning logic ships in the library, as iOS-only entry points on `NordicMatters` and `Fabric`
+declared in
+[`api/NordicMattersAppExtension.kt`](./composeApp/src/iosMain/kotlin/no/nordicsemi/nrf/matter/api/NordicMattersAppExtension.kt).
+The extension target holds a single Swift class that forwards each system callback to them and
+nothing else. [`iosApp/nrfMatter`](./iosApp/nrfMatter) is the worked example — three pieces of
+configuration and one source file.
 
 1. **App extension target.** Add one with the `com.apple.matter.support.extension.device-setup`
-   extension point, and name the library's handler as its principal class:
+   extension point, naming your own handler as its principal class:
 
    ```xml
    <key>NSExtension</key>
@@ -378,12 +381,15 @@ example — four pieces of configuration and one line of Swift.
        <key>NSExtensionPointIdentifier</key>
        <string>com.apple.matter.support.extension.device-setup</string>
        <key>NSExtensionPrincipalClass</key>
-       <string>NordicMatterRequestHandler</string>
+       <string>$(PRODUCT_MODULE_NAME).RequestHandler</string>
    </dict>
    ```
 
-   No `$(PRODUCT_MODULE_NAME).` prefix — the class is not in the extension's module. Nothing needs
-   to declare or subclass it, because nothing references it at compile time.
+   The `$(PRODUCT_MODULE_NAME).` prefix is required — the class is compiled into the extension's own
+   module. It cannot be a class linked in from the Kotlin framework instead: `MatterSupport` is a
+   Swift-only framework (its Objective-C umbrella header is empty), so `MatterAddDeviceExtension`
+   `RequestHandler` can only be subclassed from Swift compiled into this target, and never from
+   Kotlin.
 
 2. **App groups.** Provision two under your own team and list them in the
    `com.apple.security.application-groups` entitlement of *both* the app and the extension, then
@@ -401,26 +407,62 @@ example — four pieces of configuration and one line of Swift.
    developer team. Omitting the keys falls back to Nordic's own groups, which will not be available
    to your app — expect a `preconditionFailure` naming the group and the fix.
 
-3. **Linker flags.** Set `OTHER_LDFLAGS` on the extension target to `-ObjC -framework <YourKotlinFramework>`
-   (`-ObjC -framework shared` here). The Kotlin framework is a *static* framework, so the linker
-   pulls only archive members that resolve a referenced symbol — and the extension references
-   nothing, since the runtime does the lookup. `-ObjC` force-loads the members that define
-   Objective-C classes; `-framework` is needed explicitly because Swift only auto-links a module it
-   actually uses.
+3. **Linker flags.** Set `OTHER_LDFLAGS` on the extension target to
+   `-ObjC -framework <YourKotlinFramework>` (`-ObjC -framework shared` here). `-framework` is needed
+   explicitly because Swift only auto-links a module it actually uses, and the Kotlin framework is a
+   *static* one, so the linker pulls only archive members that resolve a referenced symbol; `-ObjC`
+   force-loads the members that define Objective-C classes.
 
-4. **One source file — any content.** Xcode needs at least one compilable source in the target to
-   run the link step. A file containing nothing but a comment is enough, and no `import` is needed:
-   the framework comes from `OTHER_LDFLAGS`, and Swift only auto-links a module it actually uses,
-   so a bare `import` would be dropped and link nothing.
+4. **The handler.** One Swift file, which is the whole of the extension's own code:
 
-   Leave the target with no sources at all and Xcode skips linking silently: the `.appex` gets an
-   `Info.plist` and resources but **no executable**, and the build still reports `BUILD SUCCEEDED`.
-   See [`iosApp/nrfMatter/ExtensionPlaceholder.swift`](./iosApp/nrfMatter/ExtensionPlaceholder.swift).
+   ```swift
+   import MatterSupport
+   import shared
+
+   final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
+
+       private let fabric: Fabric = {
+           NordicMatters.shared.initializeAppExtension()
+           return NordicMatters.shared.defaultFabric
+       }()
+
+       override func rooms(in home: MatterAddDeviceRequest.Home?) async -> [MatterAddDeviceRequest.Room] {
+           return NordicMatters.shared.appExtensionRooms()
+               .map { MatterAddDeviceRequest.Room(displayName: $0) }
+       }
+
+       override func commissionDevice(in home: MatterAddDeviceRequest.Home?, onboardingPayload: String, commissioningID: UUID) async throws {
+           try await fabric.commissionAppExtensionDevice(payload: onboardingPayload)
+       }
+
+       override func configureDevice(named name: String, in room: MatterAddDeviceRequest.Room?) async {
+           fabric.configureAppExtensionDevice(name: name)
+       }
+
+       // ...plus validateDeviceCredential, selectWiFiNetwork and selectThreadNetwork
+   }
+   ```
+
+   `initializeAppExtension()` installs Kotlin-side logging: the extension is a separate process, so
+   nothing the app does at start-up applies to it and every process running Kotlin has to do this
+   once for itself.
+
+   Xcode needs at least one compilable source in the target to run the link step, which this file
+   satisfies. Leave the target with no sources at all and Xcode skips linking silently: the `.appex`
+   gets an `Info.plist` and resources but **no executable**, and the build still reports
+   `BUILD SUCCEEDED`.
 
 To offer your own rooms in the system UI, set `NordicMatters.commissioningRooms` before
-commissioning starts. The room the user picks is discarded — the system flow shows the step
-regardless, and the library has no notion of rooms — but the *name* they type is applied to the
-device.
+commissioning starts. The app hands them to the extension through the shared app group, and
+`appExtensionRooms()` falls back to the default list if it finds none. The room the user picks is
+discarded — the system flow shows the step regardless, and the library has no notion of rooms — but
+the *name* they type is applied to the device.
+
+**The extension does not write to the fabric.** Its `Fabric` is built in the extension's own process
+against the extension's own container, so a device registered there would be invisible to the app.
+`commissionAppExtensionDevice` only pairs the device; `configureAppExtensionDevice` records the
+chosen name and a success flag in the shared app group, and `MatterCommissionerImpl.commission` in
+the app reads them back and registers the device once the system flow returns.
 
 ## Requirements
 
