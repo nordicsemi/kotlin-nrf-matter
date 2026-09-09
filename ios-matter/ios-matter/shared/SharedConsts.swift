@@ -12,17 +12,13 @@ import Foundation
 
     @objc public static let localAppGroupInfoKey = "NordicMatterLocalAppGroup"
     @objc public static let sharedAppGroupInfoKey = "NordicMatterSharedAppGroup"
+    @objc public static let keychainGroupInfoKey = "NordicMatterKeychainGroup"
 
     /// App group identifier for storage used by the local fabric.
-    @objc public static let localStorage = appGroup(
-        infoKey: localAppGroupInfoKey,
-        fallback: "group.nordicsemi.nrf.matter.local"
-    )
+    @objc public static let localStorage = required(infoKey: localAppGroupInfoKey)
     /// App group identifier for storage shared between the main app and the extension.
-    @objc public static let sharedStorage = appGroup(
-        infoKey: sharedAppGroupInfoKey,
-        fallback: "group.nordicsemi.nrf.matter.shared"
-    )
+    @objc public static let sharedStorage = required(infoKey: sharedAppGroupInfoKey)
+    @objc public static let keychainGroup = required(infoKey: keychainGroupInfoKey)
 
     /// Storage key for the currently configured ``MatterEnv``.
     @objc public static let matterEnvStorageKey = "MatterEnvironment"
@@ -33,10 +29,10 @@ import Foundation
     @objc public static let roomsKey = "roomsKey"
     @objc public static let deviceNameKey = "deviceNameKey"
 
-    private static func appGroup(infoKey: String, fallback: String) -> String {
+    private static func required(infoKey: String) -> String {
         guard let configured = Bundle.main.object(forInfoDictionaryKey: infoKey) as? String,
               !configured.isEmpty else {
-            return fallback
+            preconditionFailure("No \"\(infoKey)\" in the Info.plist.")
         }
         return configured
     }

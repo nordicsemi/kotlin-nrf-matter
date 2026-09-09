@@ -404,8 +404,39 @@ configuration and one source file.
 
    The local group holds the Matter fabric, the shared group the app-to-extension handshake and the
    log store. They cannot be compiled into the library, since an app group is provisioned per
-   developer team. Omitting the keys falls back to Nordic's own groups, which will not be available
-   to your app — expect a `preconditionFailure` naming the group and the fix.
+   developer team, so both keys are required — there is no default. Omitting one, or leaving it
+   empty, trips a `preconditionFailure` naming the missing key and the target whose Info.plist
+   lacks it.
+
+   *Both* plists is not a typo. `Bundle.main` in an app extension is the `.appex` bundle, so the
+   extension never sees the host app's keys. Values that disagree put the two processes on different
+   `UserDefaults` suites and fail silently rather than loudly.
+
+   The keychain holding the NOC signing keypair needs the same treatment. `KeypairHelper` scopes it
+   to the group named by `NordicMatterKeychainGroup`, which `iosApp` and `nrfMatter` both set:
+
+   ```xml
+   <key>NordicMatterKeychainGroup</key>
+   <string>$(AppIdentifierPrefix)nordicsemi.nrf.matter</string>
+   ```
+
+   Xcode expands `$(AppIdentifierPrefix)` at build time, so the value carries no hardcoded team ID,
+   and the group it resolves to must also be listed in the `keychain-access-groups` entitlement of
+   both targets. This key is required too. If you would rather not provision a keychain group and
+   entitle it, name your shared app group here instead — an app group identifier is valid as a
+   keychain access group, which is the shorter path for a new app:
+
+   ```xml
+   <key>NordicMatterKeychainGroup</key>
+   <string>group.example.matter.shared</string>
+   ```
+
+   Getting this one wrong is the least obvious failure in the whole setup, because nothing reports
+   it. The extension finds no key, `MatterKeypair` generates a second one,
+   `createController(onExistingFabric:)` fails, and `LocalControllerProvider` falls back to
+   `onNewFabric` — commissioning reports success onto a fabric the app cannot see. Changing the
+   value on an app that has already commissioned devices orphans them for the same reason: the
+   keypair does not move with the group.
 
 3. **Linker flags.** Set `OTHER_LDFLAGS` on the extension target to
    `-ObjC -framework <YourKotlinFramework>` (`-ObjC -framework shared` here). `-framework` is needed

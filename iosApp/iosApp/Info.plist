@@ -6,6 +6,8 @@
 	<string>group.nordicsemi.nrf.matter.local</string>
 	<key>NordicMatterSharedAppGroup</key>
 	<string>group.nordicsemi.nrf.matter.shared</string>
+	<key>NordicMatterKeychainGroup</key>
+	<string>$(AppIdentifierPrefix)nordicsemi.nrf.matter</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>CADisableMinimumFrameDurationOnPhone</key>

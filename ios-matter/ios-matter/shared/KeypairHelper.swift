@@ -16,6 +16,7 @@ class KeypairHelper {
     
     private let logTag: String
     private let tag: Data
+    private let accessGroup: String
     
     /// Creates a helper that manages the signing keypair stored under a fixed application tag.
     ///
@@ -24,6 +25,7 @@ class KeypairHelper {
         self.logTag = logTag
         let name = "com.nordicsemi.nrf.matter"
         tag = name.data(using: .utf8)!
+        accessGroup = SharedConsts.keychainGroup
     }
 
     /// Generates a new private key in the keychain, replacing any existing one with the same tag.
@@ -40,6 +42,7 @@ class KeypairHelper {
             kSecPrivateKeyAttrs as String : [
                 kSecAttrIsPermanent as String       : true,
                 kSecAttrApplicationTag as String    : tag,
+                kSecAttrAccessGroup as String       : accessGroup,
             ]
         ]
 
@@ -72,6 +75,7 @@ class KeypairHelper {
             kSecClass as String                 : kSecClassKey,
             kSecAttrApplicationTag as String    : tag,
             kSecAttrKeyType as String           : kSecAttrKeyTypeECSECPrimeRandom,
+            kSecAttrAccessGroup as String       : accessGroup,
             kSecReturnRef as String             : kCFBooleanTrue as Any,
             kSecMatchLimit as String: kSecMatchLimitOne
         ]
@@ -97,7 +101,8 @@ class KeypairHelper {
         
         let deleteQuery: [String: Any] = [
             kSecClass as String: kSecClassKey,
-            kSecAttrApplicationTag as String: tag
+            kSecAttrApplicationTag as String: tag,
+            kSecAttrAccessGroup as String: accessGroup
         ]
         SecItemDelete(deleteQuery as CFDictionary)
     }
