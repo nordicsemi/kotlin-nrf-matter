@@ -16,6 +16,7 @@ object NordicMatters {
     val fabrics: List<Fabric>
         get() = _fabrics.load()
 
+    //TODO for now only one Fabric is supported and it's always Fabric with id = 1
     val defaultFabric: Fabric
         get() {
             while (true) {
@@ -33,15 +34,6 @@ object NordicMatters {
 
     val matterClient: MatterClient
         get() = matterDependencies.matterClient
-
-    fun createNewFabric(): Fabric {
-        while (true) {
-            val current = _fabrics.load()
-            val fabric = newFabric(current)
-
-            if (_fabrics.compareAndSet(current, current + fabric)) return fabric
-        }
-    }
 
     private fun newFabric(existing: List<Fabric>): Fabric {
         val id = existing.maxOfOrNull { it.id }?.plus(1) ?: FabricId(1)
