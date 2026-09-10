@@ -18,11 +18,11 @@ private const val TAG = "AppExtension"
 private val appExtensionCommissioner = MatterCommissioner()
 private val appExtensionStorage = SharedStorage()
 
-fun NordicMatters.initializeAppExtension() {
+fun NordicMatters.initializeLogger() {
     NordicLogger.setLogger(IOSLoggerImpl())
 }
 
-fun NordicMatters.appExtensionRooms(): List<String> {
+fun NordicMatters.rooms(): List<String> {
     val names = appExtensionStorage.getStringArrayWithKey(SharedConsts.roomsKey)
         ?.filterIsInstance<String>()
         ?: commissioningRooms
@@ -31,7 +31,7 @@ fun NordicMatters.appExtensionRooms(): List<String> {
     return names
 }
 
-fun NordicMatters.onAppExtensionThreadNetworksDetected(names: List<String>) {
+fun NordicMatters.logThreadNetworks(names: List<String>) {
     NordicLogger.info("Selecting Thread network from ${names.size} scan results.", tag = TAG)
 
     names.forEach {
@@ -44,7 +44,7 @@ fun NordicMatters.onAppExtensionThreadNetworksDetected(names: List<String>) {
     IOSException::class,
     IllegalStateException::class,
 )
-suspend fun Fabric.commissionAppExtensionDevice(payload: String) {
+suspend fun Fabric.commissionDevice(payload: String) {
     val nodeId = appExtensionStorage.getNumberWithKey(SharedConsts.nodeIdKey)
         ?: error("No node ID found in shared storage.")
 
@@ -56,7 +56,7 @@ suspend fun Fabric.commissionAppExtensionDevice(payload: String) {
     }
 }
 
-fun Fabric.configureAppExtensionDevice(name: String) {
+fun Fabric.finalizeDevice(name: String) {
     NordicLogger.info("Device configured as \"$name\". Reporting success.", tag = TAG)
 
     appExtensionStorage.storeStringWithKey(SharedConsts.deviceNameKey, name)

@@ -7,23 +7,25 @@ import MatterSupport
 import shared
 
 final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
-
-    private let fabric: Fabric = {
-        NordicMatters.shared.initializeAppExtension()
-        return NordicMatters.shared.defaultFabric
-    }()
+    
+    private let fabric: Fabric
+    
+    override init() {
+        NordicMatters.shared.initializeLogger()
+        fabric = NordicMatters.shared.defaultFabric
+    }
 
     override func rooms(in home: MatterAddDeviceRequest.Home?) async -> [MatterAddDeviceRequest.Room] {
-        return NordicMatters.shared.appExtensionRooms()
+        return NordicMatters.shared.rooms()
             .map { MatterAddDeviceRequest.Room(displayName: $0) }
     }
 
     override func commissionDevice(in home: MatterAddDeviceRequest.Home?, onboardingPayload: String, commissioningID: UUID) async throws {
-        try await fabric.commissionAppExtensionDevice(payload: onboardingPayload)
+        try await fabric.commissionDevice(payload: onboardingPayload)
     }
 
     override func configureDevice(named name: String, in room: MatterAddDeviceRequest.Room?) async {
-        fabric.configureAppExtensionDevice(name: name)
+        fabric.finalizeDevice(name: name)
     }
 
     override func validateDeviceCredential(_ deviceCredential: MatterAddDeviceExtensionRequestHandler.DeviceCredential) async throws {
@@ -34,7 +36,7 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     }
 
     override func selectThreadNetwork(from threadScanResults: [MatterAddDeviceExtensionRequestHandler.ThreadScanResult]) async throws -> MatterAddDeviceExtensionRequestHandler.ThreadNetworkAssociation {
-        NordicMatters.shared.onAppExtensionThreadNetworksDetected(
+        NordicMatters.shared.logThreadNetworks(
             names: threadScanResults.map { $0.networkName }
         )
 
