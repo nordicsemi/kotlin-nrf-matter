@@ -5,6 +5,7 @@ package no.nordicsemi.nrf.matter.api
 import no.nordicsemi.nrf.matter.cluster.Cluster
 import no.nordicsemi.nrf.matter.cluster.MatterClient
 import no.nordicsemi.nrf.matter.model.DeviceId
+import no.nordicsemi.nrf.matter.model.DeviceType
 import kotlin.concurrent.atomics.AtomicReference
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.jvm.JvmInline
@@ -42,9 +43,9 @@ object NordicMatters {
     }
 
     private val _customClusters =
-        AtomicReference<Map<Long, Pair<Long?, (DeviceId, Int, MatterClient) -> Cluster>>>(emptyMap())
+        AtomicReference<Map<Long, Pair<DeviceType?, (DeviceId, Int, MatterClient) -> Cluster>>>(emptyMap())
 
-    fun registerCustomCluster(clusterId: Long, deviceType: Long? = null, factory: (DeviceId, Int, MatterClient) -> Cluster) {
+    fun registerCustomCluster(clusterId: Long, deviceType: DeviceType? = null, factory: (DeviceId, Int, MatterClient) -> Cluster) {
         while (true) {
             val current = _customClusters.load()
             val updated = current + (clusterId to (deviceType to factory))
@@ -53,8 +54,17 @@ object NordicMatters {
         }
     }
 
-    internal fun getCustomClusters(): Map<Long, Pair<Long?, (DeviceId, Int, MatterClient) -> Cluster>> =
+    internal fun getCustomClusters(): Map<Long, Pair<DeviceType?, (DeviceId, Int, MatterClient) -> Cluster>> =
         _customClusters.load()
+
+    fun parseDeviceType(type: Long): DeviceType {
+        val customDeviceType = _customClusters.load()
+            .values
+            .mapNotNull { it.first }
+            .firstOrNull { it.id == type }
+
+        return customDeviceType ?: DeviceType.parse(type)
+    }
 }
 
 @JvmInline

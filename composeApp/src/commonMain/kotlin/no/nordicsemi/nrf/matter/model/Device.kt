@@ -65,46 +65,27 @@ data class Device(
     val endpoints: List<Endpoint> = emptyList(),
 )
 
-@Serializable
-enum class DeviceType {
-    UNSUPPORTED,
-    LIGHT_ON_OFF,
-    DIMMABLE_LIGHT,
-    LIGHT_SWITCH,
-    OUTLET,
-    DOOR_LOCK,
-    COLOR_TEMPERATURE_LIGHT,
-    EXTENDED_COLOR_LIGHT,
-    ;
+enum class StandardDeviceType(val value: DeviceType) {
+    UNSUPPORTED(DeviceType(-1, "Unsupported")),
+    LIGHT_ON_OFF(DeviceType(256L, "Light On/Off")),
+    DIMMABLE_LIGHT(DeviceType(257L, "Dimmable Light")),
+    LIGHT_SWITCH(DeviceType(259L, "Light Switch")),
+    OUTLET(DeviceType(266L, "Outlet")),
+    DOOR_LOCK(DeviceType(268L, "Color Temperature Light")),
+    COLOR_TEMPERATURE_LIGHT(DeviceType(269L, "Extended Color Light")),
+    EXTENDED_COLOR_LIGHT(DeviceType(10L, "Door Lock")),
+}
 
-    override fun toString(): String {
-        return when (this) {
-            UNSUPPORTED -> "Not Supported"
-            LIGHT_ON_OFF -> "Light On/Off"
-            DIMMABLE_LIGHT -> "Dimmable Light"
-            LIGHT_SWITCH -> "Light Switch"
-            OUTLET -> "Outlet"
-            COLOR_TEMPERATURE_LIGHT -> "Color Temperature Light"
-            EXTENDED_COLOR_LIGHT -> "Extended Color Light"
-            DOOR_LOCK -> "Door Lock"
-        }
-    }
+@Serializable
+data class DeviceType(
+    val id: Long,
+    val name: String,
+) {
 
     companion object {
         fun parse(matterDeviceType: Long): DeviceType {
-            return when (matterDeviceType) {
-                256L -> DeviceType.LIGHT_ON_OFF // 0x0100 On/Off Light
-                257L -> DeviceType.DIMMABLE_LIGHT // 0x0101 Dimmable Light
-                259L -> DeviceType.LIGHT_SWITCH // 0x0103 On/Off Light Switch
-                260L -> DeviceType.LIGHT_SWITCH // 0x0104 Dimmer Switch
-
-                266L -> DeviceType.OUTLET // 0x010A (On/Off Plug-in Unit)
-                268L -> DeviceType.COLOR_TEMPERATURE_LIGHT // 0x010C Color Temperature Light
-                269L -> DeviceType.EXTENDED_COLOR_LIGHT // 0x010D Extended Color Light
-                10L -> DeviceType.DOOR_LOCK // 0x000A door lock // todo need to review the hex value
-//            11L ->   Door Lock Controller // (0x000B)
-                else -> DeviceType.UNSUPPORTED
-            }
+            return StandardDeviceType.entries.firstOrNull { it.value.id == matterDeviceType }?.value
+                ?: StandardDeviceType.UNSUPPORTED.value
         }
     }
 }

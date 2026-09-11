@@ -2,7 +2,7 @@ package no.nordicsemi.nrf.matter.cluster
 
 import no.nordicsemi.nrf.matter.api.NordicMatters
 import no.nordicsemi.nrf.matter.model.Device
-import no.nordicsemi.nrf.matter.model.DeviceType
+import no.nordicsemi.nrf.matter.model.StandardDeviceType
 
 fun Device.toClusters(): List<Cluster> {
     val device = this
@@ -16,13 +16,12 @@ fun Device.toClusters(): List<Cluster> {
                 DoorLockClusterInfo.ID -> DoorLockCluster(deviceId, endpoint.id, client)
 
                 else -> NordicMatters.getCustomClusters()[clusterId]?.let { factory ->
-                    factory.first?.let { deviceTypeId ->
-                        val deviceType = DeviceType.parse(deviceTypeId)
+                    factory.first?.let { customDeviceType ->
                         factory.second
-                            .takeIf { deviceType != DeviceType.UNSUPPORTED }
-                            .takeIf { device.deviceType == deviceType }
+                            .takeIf { customDeviceType != StandardDeviceType.UNSUPPORTED.value }
+                            .takeIf { device.deviceType == customDeviceType }
                             ?.invoke(deviceId, endpoint.id, client)
-                    } ?: factory.second.invoke(deviceId, endpoint.id, client)
+                    }
                 }
             }
         }

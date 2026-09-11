@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter.model
 
 import kotlinx.serialization.Serializable
+import no.nordicsemi.nrf.matter.api.NordicMatters
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -54,7 +55,9 @@ fun List<Endpoint>.endpoint(id: Int): Endpoint? = firstOrNull { it.id == id }
 fun List<Endpoint>.deviceTypes(): List<DeviceType> =
     filterNot { it.isRoot }
         .flatMap { it.types }
-        .map { DeviceType.parse(it) }
+        .map { NordicMatters.parseDeviceType(it) }
 
 fun List<Endpoint>.deviceType(): DeviceType =
-    deviceTypes().firstOrNull { it != DeviceType.UNSUPPORTED } ?: DeviceType.UNSUPPORTED
+    deviceTypes()
+        .firstOrNull { it != StandardDeviceType.UNSUPPORTED.value }
+        ?: StandardDeviceType.UNSUPPORTED.value
