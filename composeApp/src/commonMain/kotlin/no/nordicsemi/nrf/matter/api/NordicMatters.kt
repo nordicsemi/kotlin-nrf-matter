@@ -42,18 +42,18 @@ object NordicMatters {
     }
 
     private val _customClusters =
-        AtomicReference<Map<Long, (DeviceId, Int, MatterClient) -> Cluster>>(emptyMap())
+        AtomicReference<Map<Long, Pair<Long?, (DeviceId, Int, MatterClient) -> Cluster>>>(emptyMap())
 
-    fun registerCustomCluster(clusterId: Long, factory: (DeviceId, Int, MatterClient) -> Cluster) {
+    fun registerCustomCluster(clusterId: Long, deviceType: Long? = null, factory: (DeviceId, Int, MatterClient) -> Cluster) {
         while (true) {
             val current = _customClusters.load()
-            val updated = current + (clusterId to factory)
+            val updated = current + (clusterId to (deviceType to factory))
 
             if (_customClusters.compareAndSet(current, updated)) return
         }
     }
 
-    internal fun getCustomClusters(): Map<Long, (DeviceId, Int, MatterClient) -> Cluster> =
+    internal fun getCustomClusters(): Map<Long, Pair<Long?, (DeviceId, Int, MatterClient) -> Cluster>> =
         _customClusters.load()
 }
 

@@ -11,10 +11,12 @@ fun Device.isNordicManufacturerSpecific(): Boolean =
 fun registerNordicClusters() {
     NordicMatters.registerCustomCluster(
         clusterId = ManufacturerSpecClusterInfo.ID,
+        deviceType = NORDIC_MANUFACTURER_SPECIFIC_DEVICE_TYPE,
         factory = ::ManufacturerSpecCluster,
     )
     NordicMatters.registerCustomCluster(
         clusterId = BasicInfoExtClusterInfo.ID,
+        deviceType = NORDIC_MANUFACTURER_SPECIFIC_DEVICE_TYPE,
         factory = ::BasicInfoExtCluster,
     )
 }
