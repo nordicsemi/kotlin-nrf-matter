@@ -59,6 +59,7 @@ private class WebCommissioningTask(
 
         scope.launch {
             WebDemoEvents.publish(WebDemoAction.CommissioningStarted)
+            WebDemoEvents.awaitCommissioningAcknowledged()
             delay(1200)
 
             if (Random.nextInt(100) < FAILURE_CHANCE_PERCENT) {

@@ -34,6 +34,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,12 +52,15 @@ import androidx.compose.ui.unit.dp
 import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.docs.components.DocPanel
 import no.nordicsemi.nrf.matter.docs.components.ObserveWebDemoEvents
+import no.nordicsemi.nrf.matter.docs.components.OnboardingWalkthroughOverlay
 import no.nordicsemi.nrf.matter.docs.docs.DocAnchor
 import no.nordicsemi.nrf.matter.docs.docs.DocLinks
 import no.nordicsemi.nrf.matter.docs.docs.LinkTarget
 import no.nordicsemi.nrf.matter.docs.platform.openUrl
 import no.nordicsemi.nrf.matter.docs.screens.DocsBrowserScreen
 import no.nordicsemi.nrf.matter.theme.NordicTheme
+import no.nordicsemi.nrf.matter.webdemo.WebDemoAction
+import no.nordicsemi.nrf.matter.webdemo.WebDemoEvents
 import org.koin.compose.viewmodel.koinViewModel
 import no.nordicsemi.nrf.matter.App as RealApp
 
@@ -67,7 +72,13 @@ private val PHONE_MARGIN = 16.dp
 fun App() {
     var revealedAnchor by remember { mutableStateOf<DocAnchor?>(null) }
     var showDocsBrowser by remember { mutableStateOf<DocAnchor?>(null) }
+    var showOnboarding by remember { mutableStateOf(false) }
     var coachMarkDismissed by rememberSaveable { mutableStateOf(false) }
+
+    val lastWebDemoAction by WebDemoEvents.lastAction.collectAsState()
+    LaunchedEffect(lastWebDemoAction) {
+        if (lastWebDemoAction is WebDemoAction.CommissioningStarted) showOnboarding = true
+    }
 
     fun handleLink(target: LinkTarget) {
         when (target) {
@@ -147,6 +158,18 @@ fun App() {
                         initialAnchor = browserAnchor,
                         onLink = ::handleLink,
                         onClose = { showDocsBrowser = null },
+                    )
+                }
+            }
+
+            if (showOnboarding) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    OnboardingWalkthroughOverlay(
+                        onLink = ::handleLink,
+                        onDone = {
+                            showOnboarding = false
+                            WebDemoEvents.acknowledgeCommissioning()
+                        },
                     )
                 }
             }

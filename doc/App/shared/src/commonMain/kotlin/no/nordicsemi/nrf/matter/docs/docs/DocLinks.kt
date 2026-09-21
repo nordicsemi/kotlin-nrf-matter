@@ -33,7 +33,6 @@ object DocLinks {
     val ActiveBindingTableEntries = DocAnchor(DocPage.BINDINGS, "active-binding-table-entries")
 
     val CommissioningIntro = DocAnchor(DocPage.COMMISSIONING)
-    val StartingCommissioning = DocAnchor(DocPage.COMMISSIONING, "starting-commissioning")
     val CommissioningOnAndroid = DocAnchor(DocPage.COMMISSIONING, "commissioning-on-android")
     val CommissioningOnIos = DocAnchor(DocPage.COMMISSIONING, "commissioning-on-ios")
     val IfCommissioningFails = DocAnchor(DocPage.COMMISSIONING, "if-commissioning-fails")
@@ -66,7 +65,6 @@ object DocLinks {
         "matter-device-information" -> MatterDeviceInformation
         "what-is-matter" -> AppIntro
         "source-code" -> SourceCode
-        "add-new-device" -> StartingCommissioning
         "nav-tab-Dashboard" -> Dashboard
         "nav-tab-Bindings" -> BindingsIntro
         "nav-tab-Logs Panel" -> LogsIntro
@@ -85,7 +83,7 @@ object DocLinks {
         WebDemoAction.BindingStarted -> WritingABinding
         is WebDemoAction.BindingCompleted -> ActiveBindingTableEntries
         is WebDemoAction.DeviceDecommissioned -> RemovingADevice
-        WebDemoAction.CommissioningStarted -> StartingCommissioning
+        WebDemoAction.CommissioningStarted -> null
         is WebDemoAction.CommissioningSucceeded -> DeviceCards
         WebDemoAction.CommissioningFailed -> IfCommissioningFails
     }

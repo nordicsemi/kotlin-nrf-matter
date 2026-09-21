@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter.webdemo
 
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import no.nordicsemi.nrf.matter.model.DeviceId
 
@@ -16,10 +17,19 @@ import no.nordicsemi.nrf.matter.model.DeviceId
  */
 object WebDemoEvents {
     val lastAction = MutableStateFlow<WebDemoAction?>(null)
+    private val commissioningAcknowledgement = Channel<Unit>(Channel.CONFLATED)
 
     /** Public (not internal): `:shared`'s wasmJs actuals publish named interactions too, see [WebDemoAction.NamedInteraction]. */
     fun publish(action: WebDemoAction) {
         lastAction.value = action
+    }
+
+    suspend fun awaitCommissioningAcknowledged() {
+        commissioningAcknowledgement.receive()
+    }
+
+    fun acknowledgeCommissioning() {
+        commissioningAcknowledgement.trySend(Unit)
     }
 }
 

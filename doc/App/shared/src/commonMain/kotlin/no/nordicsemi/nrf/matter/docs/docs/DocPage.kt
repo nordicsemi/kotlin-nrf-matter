@@ -9,6 +9,7 @@ enum class DocGroup(val displayName: String) {
 
 enum class DocPage(val resourceFile: String, val displayTitle: String, val group: DocGroup) {
     INDEX("index.md", "Get started", DocGroup.GETTING_STARTED),
+    ONBOARDING("onboarding.md", "Guided onboarding", DocGroup.GETTING_STARTED),
     REQUIREMENTS("requirements.md", "Requirements", DocGroup.GETTING_STARTED),
     PREPARING_DEVICE("preparing_a_matter_device.md", "Preparing a Matter device", DocGroup.GETTING_STARTED),
     THREAD_CREDENTIALS("thread_network_credentials.md", "Thread network credentials", DocGroup.GETTING_STARTED),
