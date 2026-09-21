@@ -1,11 +1,10 @@
 package no.nordicsemi.nrf.matter.api
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
 import no.nordicsemi.nrf.matter.MatterCommissioner
 import no.nordicsemi.nrf.matter.adapters.BindingControllerImpl
 import no.nordicsemi.nrf.matter.adapters.MatterCommissionerImpl
 import no.nordicsemi.nrf.matter.adapters.MatterDecommissionerImpl
+import no.nordicsemi.nrf.matter.binding.BindingDataSource
 import no.nordicsemi.nrf.matter.binding.BindingLogsProviderImpl
 import no.nordicsemi.nrf.matter.binding.DataStoreProvider
 import no.nordicsemi.nrf.matter.cluster.IosMatterClient
@@ -33,7 +32,7 @@ internal actual class MatterPlatformDependencies {
     actual val bindingController: BindingController by lazy { BindingControllerImpl() }
     actual val bindingLogsProvider: BindingLogsProvider by lazy { BindingLogsProviderImpl() }
 
-    actual val bindingDataStore: DataStore<Preferences> by lazy {
-        DataStoreProvider().createDataStore()
+    actual val bindingDataSource: BindingDataSource by lazy {
+        DataStoreProvider().createBindingDataSource()
     }
 }

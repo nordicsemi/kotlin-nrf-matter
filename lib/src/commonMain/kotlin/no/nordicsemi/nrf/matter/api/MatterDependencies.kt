@@ -1,6 +1,5 @@
 package no.nordicsemi.nrf.matter.api
 
-import no.nordicsemi.nrf.matter.binding.BaseBindingDataSource
 import no.nordicsemi.nrf.matter.cluster.MatterClient
 import no.nordicsemi.nrf.matter.commission.FinaliseCommissioningUseCase
 import no.nordicsemi.nrf.matter.controller.BindingController
@@ -14,8 +13,7 @@ internal class MatterDependencies(val platformDependencies: MatterPlatformDepend
 
     val devicesRepository = DevicesRepository(platformDependencies.devicesDataSource)
     val devicesStateRepository = DevicesStateRepository(platformDependencies.deviceStateDataSource)
-    val bindingRepository =
-        BindingRepository(BaseBindingDataSource(platformDependencies.bindingDataStore))
+    val bindingRepository = BindingRepository(platformDependencies.bindingDataSource)
 
     val matterClient: MatterClient get() = platformDependencies.matterClient
     val bindingController: BindingController get() = platformDependencies.bindingController

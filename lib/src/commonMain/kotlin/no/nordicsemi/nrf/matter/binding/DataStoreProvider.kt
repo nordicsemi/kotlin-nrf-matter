@@ -1,8 +1,5 @@
 package no.nordicsemi.nrf.matter.binding
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-
 /*
  * Copyright (c) 2025, Nordic Semiconductor
  * All rights reserved.
@@ -37,5 +34,5 @@ import androidx.datastore.preferences.core.Preferences
 const val bindingDataStoreFileName = "BindingStore"
 
 expect class DataStoreProvider {
-    fun createDataStore(): DataStore<Preferences>
+    internal fun createBindingDataSource(): BindingDataSource
 }

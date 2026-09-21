@@ -3,7 +3,7 @@ package no.nordicsemi.nrf.matter.platform
 expect val currentType: PlatformType
 
 enum class PlatformType {
-    IOS, ANDROID
+    IOS, ANDROID, WEB
 }
 
 expect fun getAppVersion(): String

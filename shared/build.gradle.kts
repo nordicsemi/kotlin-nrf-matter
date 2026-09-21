@@ -1,3 +1,7 @@
+@file:OptIn(ExperimentalWasmDsl::class)
+
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.compose.compiler)
@@ -20,6 +24,11 @@ kotlin {
         }
     }
 
+    wasmJs {
+        browser()
+        binaries.executable()
+    }
+
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -37,6 +46,12 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.jetbrains.compose.runtime)
             implementation(libs.jetbrains.compose.viewmodel)
+            // no wasmJs artifact, so it can't live in commonMain now that this module also
+            // targets wasmJs -- see ui/MatterBlur.kt for the per-platform seam.
+            implementation(libs.skydoves.cloudy)
+        }
+        iosMain.dependencies {
+            implementation(libs.skydoves.cloudy)
         }
         commonMain.dependencies {
             api(project(":lib"))
@@ -65,8 +80,6 @@ kotlin {
             implementation(libs.jetbrains.lifecycle.navigation)
 
             implementation(libs.kotlinx.serialization.json)
-
-            implementation(libs.skydoves.cloudy)
 
             implementation(libs.cmptoast)
             implementation(libs.compottie)

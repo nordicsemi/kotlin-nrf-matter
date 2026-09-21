@@ -10,7 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.skydoves.cloudy.cloudy
+import no.nordicsemi.nrf.matter.ui.matterBlur
 import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.commission.DecommissionState
 import no.nordicsemi.nrf.matter.model.BasicInformation
@@ -62,7 +62,7 @@ internal fun DeviceList(
         modifier = Modifier
             .fillMaxSize()
             .padding(8.dp)
-            .then(if (decommissionState is DecommissionState.InProgress) Modifier.cloudy() else Modifier),
+            .then(if (decommissionState is DecommissionState.InProgress) Modifier.matterBlur() else Modifier),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
 

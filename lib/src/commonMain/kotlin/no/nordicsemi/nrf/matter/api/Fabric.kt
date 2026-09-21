@@ -1,7 +1,6 @@
 package no.nordicsemi.nrf.matter.api
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
@@ -48,7 +47,7 @@ class Fabric internal constructor(
         return device
     }
 
-    suspend fun decommissionDevice(deviceId: DeviceId) = withContext(Dispatchers.IO) {
+    suspend fun decommissionDevice(deviceId: DeviceId) = withContext(Dispatchers.Default) {
         try {
             matterDecommissioner.decommission(deviceId)
         } catch (c: CancellationException) {
@@ -61,7 +60,7 @@ class Fabric internal constructor(
         forget(deviceId)
     }
 
-    suspend fun forceRemoveDevice(deviceId: DeviceId) = withContext(Dispatchers.IO) {
+    suspend fun forceRemoveDevice(deviceId: DeviceId) = withContext(Dispatchers.Default) {
         forget(deviceId)
     }
 
@@ -92,7 +91,7 @@ class Fabric internal constructor(
     suspend fun bindDevices(
         sourceDeviceId: DeviceId,
         targetDeviceId: DeviceId,
-    ): DeviceBinding = withContext(Dispatchers.IO) {
+    ): DeviceBinding = withContext(Dispatchers.Default) {
         val devices = getDevices()
         val source = devices.firstOrNull { it.deviceId == sourceDeviceId }
             ?: error("Device $sourceDeviceId is not commissioned into this fabric.")

@@ -1,6 +1,7 @@
-@file:OptIn(ExperimentalKotlinGradlePluginApi::class)
+@file:OptIn(ExperimentalKotlinGradlePluginApi::class, ExperimentalWasmDsl::class)
 
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.konan.target.HostManager
 
 plugins {
@@ -153,7 +154,12 @@ kotlin {
             enable = true
         }
     }
-    
+
+    wasmJs {
+        browser()
+        binaries.executable()
+    }
+
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -261,6 +267,15 @@ kotlin {
             implementation(libs.room.runtime)
             implementation(libs.room.ktx)
             implementation(libs.androidx.startup)
+            // data store -- androidx.datastore has no wasmJs artifact, so it can't live in
+            // commonMain now that this module also targets wasmJs; the binding storage seam
+            // (DataStoreProvider.createBindingDataSource()) is entirely per-platform instead.
+            implementation(libs.androidx.dataStore.preferences)
+            implementation(libs.androidx.dataStore.core)
+        }
+        iosMain.dependencies {
+            implementation(libs.androidx.dataStore.preferences)
+            implementation(libs.androidx.dataStore.core)
         }
         commonMain.dependencies {
             implementation(libs.kotlinx.coroutines.core)
@@ -272,9 +287,6 @@ kotlin {
             implementation(libs.kotlinx.datetime)
             // serialization
             implementation(libs.kotlinx.serialization.json)
-            // data store
-            implementation(libs.androidx.dataStore.preferences)
-            implementation(libs.androidx.dataStore.core)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

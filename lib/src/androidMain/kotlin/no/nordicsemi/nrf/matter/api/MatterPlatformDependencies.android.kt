@@ -1,8 +1,7 @@
 package no.nordicsemi.nrf.matter.api
 
 import android.content.Context
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
+import no.nordicsemi.nrf.matter.binding.BindingDataSource
 import no.nordicsemi.nrf.matter.binding.DataStoreProvider
 import no.nordicsemi.nrf.matter.chip.BindingControllerImpl
 import no.nordicsemi.nrf.matter.chip.BindingLogsProviderImpl
@@ -39,8 +38,8 @@ internal actual class MatterPlatformDependencies {
         AndroidDeviceStateDataSource(context)
     }
 
-    actual val bindingDataStore: DataStore<Preferences> by lazy {
-        DataStoreProvider(context).createDataStore()
+    actual val bindingDataSource: BindingDataSource by lazy {
+        DataStoreProvider(context).createBindingDataSource()
     }
 
     actual val matterClient: MatterClient by lazy { AndroidMatterClient(chipClient) }

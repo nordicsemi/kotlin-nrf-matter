@@ -1,49 +1,276 @@
 package no.nordicsemi.nrf.matter.docs
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import org.jetbrains.compose.resources.painterResource
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import no.nordicsemi.nrf.matter.HomeViewModel
+import no.nordicsemi.nrf.matter.docs.components.DocPanel
+import no.nordicsemi.nrf.matter.docs.components.ObserveWebDemoEvents
+import no.nordicsemi.nrf.matter.docs.docs.DocAnchor
+import no.nordicsemi.nrf.matter.docs.docs.DocLinks
+import no.nordicsemi.nrf.matter.docs.docs.LinkTarget
+import no.nordicsemi.nrf.matter.docs.platform.openUrl
+import no.nordicsemi.nrf.matter.docs.screens.DocsBrowserScreen
+import no.nordicsemi.nrf.matter.theme.NordicTheme
+import org.koin.compose.viewmodel.koinViewModel
+import no.nordicsemi.nrf.matter.App as RealApp
 
-import docs.shared.generated.resources.Res
-import docs.shared.generated.resources.compose_multiplatform
+private val PHONE_WIDTH = 412.dp
+private val PANEL_WIDTH = 400.dp
 
 @Composable
-@Preview
 fun App() {
-    MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
-        Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .safeContentPadding()
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
+    var revealedAnchor by remember { mutableStateOf<DocAnchor?>(null) }
+    var showDocsBrowser by remember { mutableStateOf<DocAnchor?>(null) }
+    var coachMarkDismissed by rememberSaveable { mutableStateOf(false) }
+
+    fun handleLink(target: LinkTarget) {
+        when (target) {
+            is LinkTarget.External -> openUrl(target.url)
+            is LinkTarget.Internal -> {
+                revealedAnchor = null
+                showDocsBrowser = target.anchor
             }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
+        }
+    }
+
+    NordicTheme {
+        BoxWithConstraints(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.radialGradient(
+                        colors = listOf(
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.10f),
+                            MaterialTheme.colorScheme.background,
+                        ),
+                        radius = 1400f,
+                    ),
+                ),
+        ) {
+            val panelBesideFrame = maxWidth - PHONE_WIDTH >= PANEL_WIDTH + 32.dp
+            val isPhoneViewport = maxWidth < PHONE_WIDTH
+            val capturedMaxHeight = maxHeight
+
+            Box(modifier = Modifier.fillMaxSize().padding(if (isPhoneViewport) 0.dp else 24.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxSize(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
+                    PhoneFrame(isPhoneViewport = isPhoneViewport) {
+                        PhoneFrameContent(
+                            revealedAnchor = revealedAnchor,
+                            onReveal = { revealedAnchor = it },
+                            onDismissReveal = { revealedAnchor = null },
+                            coachMarkDismissed = coachMarkDismissed,
+                            onDismissCoachMark = { coachMarkDismissed = true },
+                            panelBesideFrame = panelBesideFrame,
+                            maxHeight = capturedMaxHeight,
+                            onLink = ::handleLink,
+                            onOpenFullPage = { target -> revealedAnchor = null; showDocsBrowser = target },
+                            onOpenDocsBrowser = { showDocsBrowser = DocAnchor(DocLinks.AppIntro.page) },
+                        )
+                    }
+
+                    SidePanel(
+                        visible = panelBesideFrame && revealedAnchor != null,
+                        anchor = revealedAnchor,
+                        onLink = ::handleLink,
+                        onDismiss = { revealedAnchor = null },
+                        onOpenFullPage = { target -> revealedAnchor = null; showDocsBrowser = target },
+                    )
+                }
+            }
+
+            val browserAnchor = showDocsBrowser
+            if (browserAnchor != null) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    DocsBrowserScreen(
+                        initialAnchor = browserAnchor,
+                        onLink = ::handleLink,
+                        onClose = { showDocsBrowser = null },
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun BoxScope.PhoneFrameContent(
+    revealedAnchor: DocAnchor?,
+    onReveal: (DocAnchor) -> Unit,
+    onDismissReveal: () -> Unit,
+    coachMarkDismissed: Boolean,
+    onDismissCoachMark: () -> Unit,
+    panelBesideFrame: Boolean,
+    maxHeight: Dp,
+    onLink: (LinkTarget) -> Unit,
+    onOpenFullPage: (DocAnchor) -> Unit,
+    onOpenDocsBrowser: () -> Unit,
+) {
+    RealApp(homeViewModel = koinViewModel<HomeViewModel>())
+
+    ObserveWebDemoEvents(onReveal)
+
+    FloatingActionButton(
+        onClick = onOpenDocsBrowser,
+        modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
+    ) {
+        Icon(Icons.Filled.MenuBook, contentDescription = "Browse all docs")
+    }
+
+    AnimatedVisibility(
+        visible = !coachMarkDismissed,
+        modifier = Modifier.align(Alignment.BottomStart).padding(start = 80.dp, bottom = 28.dp),
+        enter = fadeIn(),
+        exit = fadeOut(),
+    ) {
+        CoachMark(onDismiss = onDismissCoachMark)
+    }
+
+    if (!panelBesideFrame && revealedAnchor != null) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.32f))
+                .clickable(onClick = onDismissReveal),
+        )
+    }
+
+    if (!panelBesideFrame) {
+        AnimatedVisibility(
+            visible = revealedAnchor != null,
+            modifier = Modifier.align(Alignment.BottomCenter),
+            enter = slideInVertically(initialOffsetY = { it }),
+            exit = slideOutVertically(targetOffsetY = { it }),
+        ) {
+            val anchor = revealedAnchor
+            if (anchor != null) {
+                DocPanel(
+                    anchor = anchor,
+                    onLink = onLink,
+                    onDismiss = onDismissReveal,
+                    onOpenFullPage = onOpenFullPage,
+                    modifier = Modifier.fillMaxWidth().heightIn(max = maxHeight * 0.75f),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun SidePanel(
+    visible: Boolean,
+    anchor: DocAnchor?,
+    onLink: (LinkTarget) -> Unit,
+    onDismiss: () -> Unit,
+    onOpenFullPage: (DocAnchor) -> Unit,
+) {
+    AnimatedVisibility(visible = visible, enter = fadeIn(), exit = fadeOut()) {
+        if (anchor != null) {
+            Surface(
+                modifier = Modifier.padding(start = 20.dp).widthIn(max = PANEL_WIDTH).fillMaxHeight(0.94f),
+                shape = RoundedCornerShape(20.dp),
+                shadowElevation = 8.dp,
+            ) {
+                DocPanel(
+                    anchor = anchor,
+                    onLink = onLink,
+                    onDismiss = onDismiss,
+                    onOpenFullPage = onOpenFullPage,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PhoneFrame(isPhoneViewport: Boolean, content: @Composable BoxScope.() -> Unit) {
+    if (isPhoneViewport) {
+        Box(modifier = Modifier.fillMaxSize(), content = content)
+        return
+    }
+    Surface(
+        modifier = Modifier
+            .widthIn(max = PHONE_WIDTH)
+            .fillMaxHeight(0.94f)
+            .clip(RoundedCornerShape(36.dp)),
+        shape = RoundedCornerShape(36.dp),
+        shadowElevation = 24.dp,
+        border = BorderStroke(8.dp, Color(0xFF10151A)),
+    ) {
+        Box(modifier = Modifier.fillMaxSize(), content = content)
+    }
+}
+
+@Composable
+private fun CoachMark(onDismiss: () -> Unit) {
+    val transition = rememberInfiniteTransition(label = "coach-mark")
+    val scale by transition.animateFloat(
+        initialValue = 1f,
+        targetValue = 1.05f,
+        animationSpec = infiniteRepeatable(animation = tween(900, easing = LinearOutSlowInEasing), repeatMode = RepeatMode.Reverse),
+        label = "coach-mark-scale",
+    )
+
+    Surface(
+        color = MaterialTheme.colorScheme.primary,
+        shape = RoundedCornerShape(20.dp),
+        modifier = Modifier.scale(scale).clip(CircleShape).clickable(onClick = onDismiss),
+    ) {
+        Text(
+            "Tap the book for docs",
+            color = MaterialTheme.colorScheme.onPrimary,
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+        )
     }
 }
