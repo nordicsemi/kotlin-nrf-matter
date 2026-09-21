@@ -30,6 +30,22 @@ internal enum class WebDeviceProfile(
     val serverClusters: List<Long>,
     val clientClusters: List<Long>,
 ) {
+    ON_OFF_LIGHT(
+        displayName = "Kitchen Light",
+        vendorName = "Nordic Semiconductor",
+        productName = "nRF52840 DK -- Light Bulb",
+        deviceTypeId = 256L, // StandardDeviceType.LIGHT_ON_OFF
+        serverClusters = listOf(OnOffClusterInfo.ID),
+        clientClusters = emptyList(),
+    ),
+    LIGHT_SWITCH(
+        displayName = "Hallway Switch",
+        vendorName = "Nordic Semiconductor",
+        productName = "nRF52840 DK -- Light Switch",
+        deviceTypeId = 259L, // StandardDeviceType.LIGHT_SWITCH
+        serverClusters = emptyList(),
+        clientClusters = listOf(OnOffClusterInfo.ID),
+    ),
     DIMMABLE_LIGHT(
         displayName = "Living Room Light",
         vendorName = "Nordic Semiconductor",
@@ -45,14 +61,6 @@ internal enum class WebDeviceProfile(
         deviceTypeId = 10L, // StandardDeviceType.DOOR_LOCK
         serverClusters = listOf(DoorLockClusterInfo.ID),
         clientClusters = emptyList(),
-    ),
-    LIGHT_SWITCH(
-        displayName = "Hallway Switch",
-        vendorName = "Nordic Semiconductor",
-        productName = "nRF52840 DK -- Light Switch",
-        deviceTypeId = 259L, // StandardDeviceType.LIGHT_SWITCH
-        serverClusters = emptyList(),
-        clientClusters = listOf(OnOffClusterInfo.ID),
     ),
     MANUFACTURER_SPECIFIC(
         displayName = "nRF54L15 DK",

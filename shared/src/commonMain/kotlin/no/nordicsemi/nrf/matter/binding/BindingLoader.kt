@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -43,6 +44,7 @@ import no.nordicsemi.nrf.matter.shared.generated.resources.Res
 import no.nordicsemi.nrf.matter.shared.generated.resources.binding_links_only
 import no.nordicsemi.nrf.matter.theme.NordicBlue
 import no.nordicsemi.nrf.matter.theme.NordicTheme
+import no.nordicsemi.nrf.matter.ui.matterPhoneWidth
 import org.jetbrains.compose.resources.painterResource
 
 /*
@@ -171,59 +173,61 @@ internal fun BindingLoaderDialog(
             usePlatformDefaultWidth = false
         )
     ) {
-        Column(modifier = Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                BindingLoader()
-                Spacer(modifier = Modifier.height(16.dp))
-                loadingText()
-            }
-
-            Card(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.inverseOnSurface
-                )
-            ) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Column(modifier = Modifier.fillMaxHeight().matterPhoneWidth()) {
                 Column(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(12.dp)
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .padding(24.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    Text(
-                        text = "PROCESS LOGS",
-                        style = MaterialTheme.typography.labelSmall,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                    BindingLoader()
+                    Spacer(modifier = Modifier.height(16.dp))
+                    loadingText()
+                }
+
+                Card(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.inverseOnSurface
                     )
-
-                    HorizontalDivider()
-
-                    LazyColumn(
-                        state = lazyListState,
+                ) {
+                    Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(top = 8.dp),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                            .padding(12.dp)
                     ) {
-                        items(
-                            items = logs
-                        ) { log ->
-                            Text(
-                                text = log,
-                                style = MaterialTheme.typography.bodySmall,
-                                fontFamily = FontFamily.Monospace,
-                                color = NordicBlue,
-                            )
+                        Text(
+                            text = "PROCESS LOGS",
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+
+                        HorizontalDivider()
+
+                        LazyColumn(
+                            state = lazyListState,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(top = 8.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            items(
+                                items = logs
+                            ) { log ->
+                                Text(
+                                    text = log,
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontFamily = FontFamily.Monospace,
+                                    color = NordicBlue,
+                                )
+                            }
                         }
                     }
                 }
