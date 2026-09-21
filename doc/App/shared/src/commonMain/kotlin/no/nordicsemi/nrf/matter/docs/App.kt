@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -62,6 +61,7 @@ import no.nordicsemi.nrf.matter.App as RealApp
 
 private val PHONE_WIDTH = 412.dp
 private val PANEL_WIDTH = 400.dp
+private val PHONE_MARGIN = 16.dp
 
 @Composable
 fun App() {
@@ -93,39 +93,51 @@ fun App() {
                     ),
                 ),
         ) {
-            val panelBesideFrame = maxWidth - PHONE_WIDTH >= PANEL_WIDTH + 32.dp
+            val panelBesideFrame = maxWidth - PHONE_WIDTH - (PHONE_MARGIN * 2) >= PANEL_WIDTH + 48.dp
             val isPhoneViewport = maxWidth < PHONE_WIDTH
             val capturedMaxHeight = maxHeight
 
-            Box(modifier = Modifier.fillMaxSize().padding(if (isPhoneViewport) 0.dp else 24.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    PhoneFrame(isPhoneViewport = isPhoneViewport) {
-                        PhoneFrameContent(
-                            revealedAnchor = revealedAnchor,
-                            onReveal = { revealedAnchor = it },
-                            onDismissReveal = { revealedAnchor = null },
-                            coachMarkDismissed = coachMarkDismissed,
-                            onDismissCoachMark = { coachMarkDismissed = true },
-                            panelBesideFrame = panelBesideFrame,
-                            maxHeight = capturedMaxHeight,
-                            onLink = ::handleLink,
-                            onOpenFullPage = { target -> revealedAnchor = null; showDocsBrowser = target },
-                            onOpenDocsBrowser = { showDocsBrowser = DocAnchor(DocLinks.AppIntro.page) },
-                        )
-                    }
+            // The phone is always dead-center: Box positions each aligned child independently,
+            // so the side panel appearing/disappearing never shifts it (a Row would recenter the
+            // whole row and shove the phone sideways).
+            PhoneFrame(
+                isPhoneViewport = isPhoneViewport,
+                modifier = Modifier.align(Alignment.Center),
+            ) {
+                PhoneFrameContent(
+                    revealedAnchor = revealedAnchor,
+                    onReveal = { revealedAnchor = it },
+                    onDismissReveal = { revealedAnchor = null },
+                    panelBesideFrame = panelBesideFrame,
+                    maxHeight = capturedMaxHeight,
+                    onLink = ::handleLink,
+                    onOpenFullPage = { target -> revealedAnchor = null; showDocsBrowser = target },
+                )
+            }
 
-                    SidePanel(
-                        visible = panelBesideFrame && revealedAnchor != null,
-                        anchor = revealedAnchor,
-                        onLink = ::handleLink,
-                        onDismiss = { revealedAnchor = null },
-                        onOpenFullPage = { target -> revealedAnchor = null; showDocsBrowser = target },
-                    )
-                }
+            SidePanel(
+                visible = panelBesideFrame && revealedAnchor != null,
+                anchor = revealedAnchor,
+                onLink = ::handleLink,
+                onDismiss = { revealedAnchor = null },
+                onOpenFullPage = { target -> revealedAnchor = null; showDocsBrowser = target },
+                modifier = Modifier.align(Alignment.CenterEnd).padding(end = 24.dp),
+            )
+
+            FloatingActionButton(
+                onClick = { showDocsBrowser = DocAnchor(DocLinks.AppIntro.page) },
+                modifier = Modifier.align(Alignment.BottomStart).padding(20.dp),
+            ) {
+                Icon(Icons.Filled.MenuBook, contentDescription = "Browse all docs")
+            }
+
+            AnimatedVisibility(
+                visible = !coachMarkDismissed,
+                modifier = Modifier.align(Alignment.BottomStart).padding(start = 84.dp, bottom = 32.dp),
+                enter = fadeIn(),
+                exit = fadeOut(),
+            ) {
+                CoachMark(onDismiss = { coachMarkDismissed = true })
             }
 
             val browserAnchor = showDocsBrowser
@@ -147,33 +159,14 @@ private fun BoxScope.PhoneFrameContent(
     revealedAnchor: DocAnchor?,
     onReveal: (DocAnchor) -> Unit,
     onDismissReveal: () -> Unit,
-    coachMarkDismissed: Boolean,
-    onDismissCoachMark: () -> Unit,
     panelBesideFrame: Boolean,
     maxHeight: Dp,
     onLink: (LinkTarget) -> Unit,
     onOpenFullPage: (DocAnchor) -> Unit,
-    onOpenDocsBrowser: () -> Unit,
 ) {
     RealApp(homeViewModel = koinViewModel<HomeViewModel>())
 
     ObserveWebDemoEvents(onReveal)
-
-    FloatingActionButton(
-        onClick = onOpenDocsBrowser,
-        modifier = Modifier.align(Alignment.BottomStart).padding(16.dp),
-    ) {
-        Icon(Icons.Filled.MenuBook, contentDescription = "Browse all docs")
-    }
-
-    AnimatedVisibility(
-        visible = !coachMarkDismissed,
-        modifier = Modifier.align(Alignment.BottomStart).padding(start = 80.dp, bottom = 28.dp),
-        enter = fadeIn(),
-        exit = fadeOut(),
-    ) {
-        CoachMark(onDismiss = onDismissCoachMark)
-    }
 
     if (!panelBesideFrame && revealedAnchor != null) {
         Box(
@@ -212,11 +205,12 @@ private fun SidePanel(
     onLink: (LinkTarget) -> Unit,
     onDismiss: () -> Unit,
     onOpenFullPage: (DocAnchor) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
-    AnimatedVisibility(visible = visible, enter = fadeIn(), exit = fadeOut()) {
+    AnimatedVisibility(visible = visible, modifier = modifier, enter = fadeIn(), exit = fadeOut()) {
         if (anchor != null) {
             Surface(
-                modifier = Modifier.padding(start = 20.dp).widthIn(max = PANEL_WIDTH).fillMaxHeight(0.94f),
+                modifier = Modifier.widthIn(max = PANEL_WIDTH).fillMaxHeight().padding(vertical = PHONE_MARGIN),
                 shape = RoundedCornerShape(20.dp),
                 shadowElevation = 8.dp,
             ) {
@@ -233,15 +227,20 @@ private fun SidePanel(
 }
 
 @Composable
-private fun PhoneFrame(isPhoneViewport: Boolean, content: @Composable BoxScope.() -> Unit) {
+private fun PhoneFrame(
+    isPhoneViewport: Boolean,
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.() -> Unit,
+) {
     if (isPhoneViewport) {
-        Box(modifier = Modifier.fillMaxSize(), content = content)
+        Box(modifier = modifier.fillMaxSize(), content = content)
         return
     }
     Surface(
-        modifier = Modifier
+        modifier = modifier
             .widthIn(max = PHONE_WIDTH)
-            .fillMaxHeight(0.94f)
+            .fillMaxHeight()
+            .padding(vertical = PHONE_MARGIN)
             .clip(RoundedCornerShape(36.dp)),
         shape = RoundedCornerShape(36.dp),
         shadowElevation = 24.dp,

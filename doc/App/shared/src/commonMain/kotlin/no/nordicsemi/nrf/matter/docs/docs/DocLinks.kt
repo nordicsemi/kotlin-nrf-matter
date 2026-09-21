@@ -54,20 +54,34 @@ object DocLinks {
     /** `no.nordicsemi.nrf.matter.nordic.ManufacturerSpecClusterInfo.ID` in `:shared`. */
     private const val MANUFACTURER_SPEC_CLUSTER_ID = 0xFFF1FC01L
 
+    private fun forClusterId(clusterId: Long): DocAnchor? = when (clusterId) {
+        OnOffClusterInfo.ID, LevelControlClusterInfo.ID -> LightBulbControls
+        DoorLockClusterInfo.ID -> DoorLockControls
+        MANUFACTURER_SPEC_CLUSTER_ID, BasicInfoClusterInfo.ID -> ManufacturerSpecificControls
+        else -> null
+    }
+
+    private fun forNamedInteraction(key: String): DocAnchor? = when (key) {
+        "device-card-expand" -> SupportedDeviceTypes
+        "matter-device-information" -> MatterDeviceInformation
+        "what-is-matter" -> AppIntro
+        "source-code" -> SourceCode
+        "add-new-device" -> StartingCommissioning
+        "nav-tab-Dashboard" -> Dashboard
+        "nav-tab-Bindings" -> BindingsIntro
+        "nav-tab-Logs Panel" -> LogsIntro
+        else -> null
+    }
+
     /**
-     * Maps a live [WebDemoAction] published by the real `:lib` web fakes to the doc section that
-     * explains it -- the seam that lets clicking a *real* control in the *real* app shell reveal
+     * Maps a live [WebDemoAction] published by the real `:lib`/`:shared` web fakes to the doc
+     * section that explains it -- the seam that lets interacting with the *real* app shell reveal
      * documentation instead of just doing the real thing.
      */
     fun forWebDemoAction(action: WebDemoAction): DocAnchor? = when (action) {
-        is WebDemoAction.ClusterCommandExecuted -> when (action.clusterId) {
-            OnOffClusterInfo.ID, LevelControlClusterInfo.ID -> LightBulbControls
-            DoorLockClusterInfo.ID -> DoorLockControls
-            MANUFACTURER_SPEC_CLUSTER_ID, BasicInfoClusterInfo.ID -> ManufacturerSpecificControls
-            else -> null
-        }
-
-        is WebDemoAction.ClusterAttributeWritten -> null
+        is WebDemoAction.ClusterCommandExecuted -> forClusterId(action.clusterId)
+        is WebDemoAction.ClusterAttributeObserved -> forClusterId(action.clusterId)
+        is WebDemoAction.NamedInteraction -> forNamedInteraction(action.key)
         WebDemoAction.BindingStarted -> WritingABinding
         is WebDemoAction.BindingCompleted -> ActiveBindingTableEntries
         is WebDemoAction.DeviceDecommissioned -> RemovingADevice

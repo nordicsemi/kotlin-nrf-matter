@@ -51,8 +51,13 @@ internal class WebMatterClient : MatterClient() {
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T> observeAttribute(deviceId: DeviceId, endpoint: Int, clusterId: Long, attributeId: Long): Flow<T> =
-        flowFor(deviceId, endpoint, clusterId, attributeId) as Flow<T>
+    override fun <T> observeAttribute(deviceId: DeviceId, endpoint: Int, clusterId: Long, attributeId: Long): Flow<T> {
+        // Fires the moment a real cluster controller subscribes -- i.e. the moment a device
+        // card expands -- so simply looking at a device reveals its control docs, not just
+        // touching its controls.
+        WebDemoEvents.publish(WebDemoAction.ClusterAttributeObserved(deviceId, endpoint, clusterId, attributeId))
+        return flowFor(deviceId, endpoint, clusterId, attributeId) as Flow<T>
+    }
 
     override suspend fun <T> executeCommand(
         value: T,

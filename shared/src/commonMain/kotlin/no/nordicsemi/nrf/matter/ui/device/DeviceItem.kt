@@ -77,6 +77,7 @@ import no.nordicsemi.nrf.matter.ui.rvc.RvcOperationalStateController
 import no.nordicsemi.nrf.matter.ui.rvc.RvcRunModeController
 import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorActionItem
 import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorController
+import no.nordicsemi.nrf.matter.webdemo.notifyWebDemoInteraction
 
 @Composable
 internal fun DeviceItem(
@@ -129,6 +130,7 @@ internal fun DeviceItem(
             .padding(8.dp)
             .clip(RoundedCornerShape(16.dp))
             .clickable {
+                if (!isExpanded) notifyWebDemoInteraction("device-card-expand")
                 isExpanded = !isExpanded
             }
             .then(if (showMatterDeviceInfo || showDeviceInfo) Modifier.matterBlur() else Modifier)
@@ -270,6 +272,7 @@ private fun SharedSection(
             .padding(16.dp)
             .clip(RoundedCornerShape(16.dp))
             .clickable {
+                notifyWebDemoInteraction("matter-device-information")
                 onShowMatterDeviceInfoChange(true)
             },
         verticalArrangement = Arrangement.spacedBy(16.dp)

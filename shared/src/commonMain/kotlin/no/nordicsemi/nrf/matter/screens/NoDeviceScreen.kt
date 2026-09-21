@@ -48,6 +48,7 @@ import no.nordicsemi.nrf.matter.platform.getAppVersion
 import no.nordicsemi.nrf.matter.shared.generated.resources.Res
 import no.nordicsemi.nrf.matter.shared.generated.resources.no_matter_devices
 import no.nordicsemi.nrf.matter.theme.NordicTheme
+import no.nordicsemi.nrf.matter.webdemo.notifyWebDemoInteraction
 import org.jetbrains.compose.resources.painterResource
 
 /*
@@ -128,7 +129,7 @@ fun NoDevicesScreen(
 
             // Action Button
             Button(
-                onClick = { onAddDeviceClick() },
+                onClick = { notifyWebDemoInteraction("add-new-device"); onAddDeviceClick() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
@@ -151,7 +152,7 @@ fun NoDevicesScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TextButton(onClick = { onMatterUrlClick() }) {
+            TextButton(onClick = { notifyWebDemoInteraction("what-is-matter"); onMatterUrlClick() }) {
                 Text(
                     "What is Matter?",
                     style = MaterialTheme.typography.labelLarge,
@@ -182,7 +183,7 @@ fun NoDevicesScreen(
                 text = "Source Code",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.clickable { onSourceCodeClick() }
+                modifier = Modifier.clickable { notifyWebDemoInteraction("source-code"); onSourceCodeClick() }
             )
         }
     }
