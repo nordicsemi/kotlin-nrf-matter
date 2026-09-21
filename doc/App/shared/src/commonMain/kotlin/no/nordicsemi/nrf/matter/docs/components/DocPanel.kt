@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -16,6 +17,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,6 +35,7 @@ import no.nordicsemi.nrf.matter.docs.docs.DocSection
 import no.nordicsemi.nrf.matter.docs.docs.DocsRepository
 import no.nordicsemi.nrf.matter.docs.docs.LinkTarget
 import no.nordicsemi.nrf.matter.docs.markdown.MarkdownContent
+import no.nordicsemi.nrf.matter.docs.markdown.MdBlock
 
 @Composable
 fun DocPanel(
@@ -41,10 +44,19 @@ fun DocPanel(
     onDismiss: () -> Unit,
     onOpenFullPage: (DocAnchor) -> Unit,
     modifier: Modifier = Modifier,
+    dismissible: Boolean = true,
+    showFullPage: Boolean = false,
+    primaryActionLabel: String? = null,
+    onPrimaryAction: (() -> Unit)? = null,
 ) {
     var section by remember { mutableStateOf<DocSection?>(null) }
-    LaunchedEffect(anchor) {
-        section = DocsRepository.section(anchor)
+    var fullPageBlocks by remember { mutableStateOf<List<MdBlock>>(emptyList()) }
+    LaunchedEffect(anchor, showFullPage) {
+        if (showFullPage) {
+            fullPageBlocks = DocsRepository.blocksOf(anchor.page)
+        } else {
+            section = DocsRepository.section(anchor)
+        }
     }
 
     Surface(
@@ -69,17 +81,19 @@ fun DocPanel(
                         fontWeight = FontWeight.Bold,
                     )
                 }
-                IconButton(onClick = onDismiss) {
-                    Icon(Icons.Filled.Close, contentDescription = "Close")
+                if (dismissible) {
+                    IconButton(onClick = onDismiss) {
+                        Icon(Icons.Filled.Close, contentDescription = "Close")
+                    }
                 }
             }
             HorizontalDivider()
 
             Box(modifier = Modifier.weight(1f)) {
-                val current = section
-                if (current != null) {
+                val blocks = if (showFullPage) fullPageBlocks else section?.blocks
+                if (blocks != null) {
                     MarkdownContent(
-                        blocks = current.blocks,
+                        blocks = blocks,
                         onLinkClick = { target -> onLink(DocsRepository.resolveLink(target, anchor.page)) },
                         modifier = Modifier
                             .fillMaxSize()
@@ -89,10 +103,29 @@ fun DocPanel(
                 }
             }
 
-            HorizontalDivider()
-            Row(modifier = Modifier.fillMaxWidth().padding(12.dp), horizontalArrangement = Arrangement.End) {
-                Button(onClick = { onOpenFullPage(anchor) }) {
-                    Text("View full page: ${anchor.page.displayTitle}")
+            if (!showFullPage || (primaryActionLabel != null && onPrimaryAction != null)) {
+                HorizontalDivider()
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Spacer(modifier = Modifier.weight(1f))
+                    if (!showFullPage) {
+                        if (primaryActionLabel != null && onPrimaryAction != null) {
+                            OutlinedButton(onClick = { onOpenFullPage(anchor) }) {
+                                Text("View full page: ${anchor.page.displayTitle}")
+                            }
+                        } else {
+                            Button(onClick = { onOpenFullPage(anchor) }) {
+                                Text("View full page: ${anchor.page.displayTitle}")
+                            }
+                        }
+                    }
+                    if (primaryActionLabel != null && onPrimaryAction != null) {
+                        Button(onClick = onPrimaryAction) {
+                            Text(primaryActionLabel)
+                        }
+                    }
                 }
             }
         }

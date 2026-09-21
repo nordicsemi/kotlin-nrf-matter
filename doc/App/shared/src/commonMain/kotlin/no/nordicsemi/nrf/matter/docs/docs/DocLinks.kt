@@ -32,6 +32,8 @@ object DocLinks {
     val WhatWritingABindingDoes = DocAnchor(DocPage.BINDINGS, "what-writing-a-binding-does")
     val ActiveBindingTableEntries = DocAnchor(DocPage.BINDINGS, "active-binding-table-entries")
 
+    val OnboardingWalkthrough = DocAnchor(DocPage.ONBOARDING)
+
     val CommissioningIntro = DocAnchor(DocPage.COMMISSIONING)
     val CommissioningOnAndroid = DocAnchor(DocPage.COMMISSIONING, "commissioning-on-android")
     val CommissioningOnIos = DocAnchor(DocPage.COMMISSIONING, "commissioning-on-ios")
@@ -83,7 +85,7 @@ object DocLinks {
         WebDemoAction.BindingStarted -> WritingABinding
         is WebDemoAction.BindingCompleted -> ActiveBindingTableEntries
         is WebDemoAction.DeviceDecommissioned -> RemovingADevice
-        WebDemoAction.CommissioningStarted -> null
+        WebDemoAction.CommissioningStarted -> OnboardingWalkthrough
         is WebDemoAction.CommissioningSucceeded -> DeviceCards
         WebDemoAction.CommissioningFailed -> IfCommissioningFails
     }
