@@ -58,8 +58,6 @@ class RvcOperationalStateController(
 
     fun pause() = runCommand { cluster.pause() }
     fun resume() = runCommand { cluster.resume() }
-    fun start() = runCommand { cluster.start() }
-    fun stop() = runCommand { cluster.stop() }
     fun goHome() = runCommand { cluster.goHome() }
 
     private fun runCommand(action: suspend () -> Unit) {

@@ -15,8 +15,6 @@ object RvcOperationalStateClusterInfo {
 
     object Command {
         const val PAUSE: Long = 0x00
-        const val STOP: Long = 0x01
-        const val START: Long = 0x02
         const val RESUME: Long = 0x03
         const val GO_HOME: Long = 0x80
     }
@@ -35,8 +33,6 @@ class RvcOperationalStateCluster(
     override val id: Long = RvcOperationalStateClusterInfo.ID
 
     suspend fun pause() = executeCommand(commandId = RvcOperationalStateClusterInfo.Command.PAUSE)
-    suspend fun stop() = executeCommand(commandId = RvcOperationalStateClusterInfo.Command.STOP)
-    suspend fun start() = executeCommand(commandId = RvcOperationalStateClusterInfo.Command.START)
     suspend fun resume() = executeCommand(commandId = RvcOperationalStateClusterInfo.Command.RESUME)
     suspend fun goHome() = executeCommand(commandId = RvcOperationalStateClusterInfo.Command.GO_HOME)
 

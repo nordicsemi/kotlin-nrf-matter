@@ -50,10 +50,8 @@ internal fun RvcControlPanel(
 }
 
 private enum class RvcAction(val label: String) {
-    START("Start"),
     PAUSE("Pause"),
     RESUME("Resume"),
-    STOP("Stop"),
     GO_HOME("Go home"),
 }
 
@@ -70,10 +68,8 @@ private fun OperationalStateSection(controller: RvcOperationalStateController) {
             optionLabel = { it.label },
             onOptionSelected = { action ->
                 when (action) {
-                    RvcAction.START -> controller.start()
                     RvcAction.PAUSE -> controller.pause()
                     RvcAction.RESUME -> controller.resume()
-                    RvcAction.STOP -> controller.stop()
                     RvcAction.GO_HOME -> controller.goHome()
                 }
             },

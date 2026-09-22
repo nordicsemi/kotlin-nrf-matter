@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.skydoves.cloudy.cloudy
 import no.nordicsemi.nrf.matter.binding.isBindingSource
+import no.nordicsemi.nrf.matter.cluster.cleaningMode
 import no.nordicsemi.nrf.matter.commission.DecommissionDevice
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
@@ -93,6 +94,7 @@ internal fun DeviceItem(
     val contactSensorState = contactSensor?.state?.collectAsStateWithLifecycle()?.value
     val temperatureSensorState = temperatureSensor?.state?.collectAsStateWithLifecycle()?.value
     val rvcOperationalStateValue = rvcOperationalState?.state?.collectAsStateWithLifecycle()?.value
+    val rvcRunModeValue = rvcRunMode?.state?.collectAsStateWithLifecycle()?.value
 
     // The lock keeps its last known state while it is moving, so that the label does not flicker.
     var isLocked by remember { mutableStateOf(false) }
@@ -157,7 +159,12 @@ internal fun DeviceItem(
                 rvcOperationalState != null && rvcOperationalStateValue != null -> RvcActionItem(
                     operationalState = rvcOperationalStateValue,
                     onPlay = {
-                        if (isVacuumPaused) rvcOperationalState.resume() else rvcOperationalState.start()
+                        if (isVacuumPaused) {
+                            rvcOperationalState.resume()
+                        } else {
+                            (rvcRunModeValue as? UiState.Success)?.data?.supportedModes?.cleaningMode()
+                                ?.let { rvcRunMode.changeToMode(it.mode) }
+                        }
                     },
                     onStop = rvcOperationalState::goHome,
                 )
