@@ -72,7 +72,6 @@ import no.nordicsemi.nrf.matter.ui.rvc.RvcCleanModeController
 import no.nordicsemi.nrf.matter.ui.rvc.RvcControlPanel
 import no.nordicsemi.nrf.matter.ui.rvc.RvcOperationalStateController
 import no.nordicsemi.nrf.matter.ui.rvc.RvcRunModeController
-import no.nordicsemi.nrf.matter.ui.rvc.ServiceAreaController
 import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorActionItem
 import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorController
 
@@ -92,7 +91,6 @@ internal fun DeviceItem(
     val rvcOperationalState = clusters.filterIsInstance<RvcOperationalStateController>().firstOrNull()
     val rvcRunMode = clusters.filterIsInstance<RvcRunModeController>().firstOrNull()
     val rvcCleanMode = clusters.filterIsInstance<RvcCleanModeController>().firstOrNull()
-    val serviceArea = clusters.filterIsInstance<ServiceAreaController>().firstOrNull()
 
     val onOffState = onOff?.state?.collectAsStateWithLifecycle()?.value
     val lockState = doorLock?.state?.collectAsStateWithLifecycle()?.value
@@ -195,8 +193,8 @@ internal fun DeviceItem(
                 basicInfoExt?.let { RandomNumberControl(it) }
                 manufacturerSpec?.let { LedAndButtonControl(it) }
 
-                if (rvcOperationalState != null || rvcRunMode != null || rvcCleanMode != null || serviceArea != null) {
-                    RvcControlPanel(rvcOperationalState, rvcRunMode, rvcCleanMode, serviceArea)
+                if (rvcOperationalState != null || rvcRunMode != null || rvcCleanMode != null) {
+                    RvcControlPanel(rvcOperationalState, rvcRunMode, rvcCleanMode)
                 }
 
                 SharedSection(device, showMatterDeviceInfo) { showMatterDeviceInfo = it }

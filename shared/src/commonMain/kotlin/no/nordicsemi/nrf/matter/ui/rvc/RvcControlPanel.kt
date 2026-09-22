@@ -1,24 +1,13 @@
 package no.nordicsemi.nrf.matter.ui.rvc
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Pause
@@ -30,8 +19,6 @@ import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -48,8 +35,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import no.nordicsemi.nrf.matter.cluster.ModeOption
@@ -61,7 +46,6 @@ internal fun RvcControlPanel(
     operationalState: RvcOperationalStateController?,
     runMode: RvcRunModeController?,
     cleanMode: RvcCleanModeController?,
-    serviceArea: ServiceAreaController?,
 ) {
     Column(
         modifier = Modifier
@@ -72,7 +56,6 @@ internal fun RvcControlPanel(
         operationalState?.let { OperationalStateSection(it) }
         runMode?.let { RunModeSection(it) }
         cleanMode?.let { CleanModeSection(it) }
-        serviceArea?.let { ServiceAreaSection(it) }
     }
 }
 
@@ -261,103 +244,6 @@ private fun <T> Picker(
             }
         }
     }
-}
-
-@Composable
-private fun ServiceAreaSection(controller: ServiceAreaController) {
-    val state by controller.state.collectAsStateWithLifecycle()
-    val data = (state as? UiState.Success)?.data ?: return
-
-    if (data.supportedAreas.isEmpty()) return
-
-    var selected by remember(data.selectedAreaIds) { mutableStateOf(data.selectedAreaIds.toSet()) }
-
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            text = "Areas",
-            style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier.alpha(0.6f),
-        )
-
-        // The one boxed section in this panel: areas is the block with the most content and the
-        // only one with its own call to action, so it earns a distinct container the compact
-        // mode row above doesn't need.
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(RoundedCornerShape(12.dp))
-                .background(MaterialTheme.colorScheme.surfaceContainerLow)
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-        ) {
-            FlowRow(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-                verticalArrangement = Arrangement.spacedBy(0.dp),
-            ) {
-                data.supportedAreas.forEach { area ->
-                    val isCurrent = area.areaId == data.currentAreaId
-
-                    FilterChip(
-                        selected = area.areaId in selected,
-                        onClick = {
-                            selected = if (area.areaId in selected) {
-                                selected - area.areaId
-                            } else {
-                                selected + area.areaId
-                            }
-                        },
-                        label = { Text(area.name ?: "Area ${area.areaId}") },
-                        leadingIcon = if (isCurrent) {
-                            { PulsingDot(MaterialTheme.colorScheme.primary) }
-                        } else null,
-                        colors = tonalFilterChipColors(),
-                    )
-                }
-            }
-
-            FilledTonalButton(
-                onClick = { controller.selectAreas(selected.toList()) },
-                colors = ButtonDefaults.filledTonalButtonColors(
-                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
-                    contentColor = MaterialTheme.colorScheme.primary,
-                ),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text("Clean selected areas")
-            }
-        }
-    }
-}
-
-// The app theme's default selected-chip colors come from secondaryContainer, a strong solid blue
-// with white text — fine for a single chip, but this panel has many, and a wall of solid blocks
-// is what actually read as messy. A soft tint reads as "selected" without shouting.
-@Composable
-private fun tonalFilterChipColors() = FilterChipDefaults.filterChipColors(
-    selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
-    selectedLabelColor = MaterialTheme.colorScheme.primary,
-    selectedLeadingIconColor = MaterialTheme.colorScheme.primary,
-)
-
-// A quiet "this is happening right now" signal on the area the vacuum is currently in, distinct
-// from the bolder spin on the device icon so the panel doesn't compete with itself for attention.
-@Composable
-private fun PulsingDot(color: Color) {
-    val alpha by rememberInfiniteTransition(label = "area-pulse")
-        .animateFloat(
-            initialValue = 1f,
-            targetValue = 0.25f,
-            animationSpec = infiniteRepeatable(tween(700, easing = LinearEasing), RepeatMode.Reverse),
-            label = "pulse-alpha",
-        )
-
-    Box(
-        modifier = Modifier
-            .size(8.dp)
-            .clip(CircleShape)
-            .background(color.copy(alpha = alpha))
-    )
 }
 
 private fun Int.toDurationLabel(): String {
