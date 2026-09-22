@@ -1,0 +1,19 @@
+package no.nordicsemi.nrf.matter.cluster
+
+data class ModeOption(val label: String, val mode: Int, val modeTags: List<Int>)
+
+// The RVC Run Mode cluster's standard "Cleaning" mode tag (Matter spec, Mode Tags table). Every
+// compliant device exposes at least one mode carrying this tag, used to start a cleaning run.
+const val CLEANING_MODE_TAG: Int = 0x4001
+
+fun List<ModeOption>.cleaningMode(): ModeOption? = firstOrNull { CLEANING_MODE_TAG in it.modeTags }
+
+object ModeOptionStruct {
+    const val LABEL: Long = 0
+    const val MODE: Long = 1
+    const val MODE_TAGS: Long = 2
+}
+
+object ModeTagStruct {
+    const val VALUE: Long = 1
+}

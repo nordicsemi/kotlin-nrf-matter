@@ -41,8 +41,8 @@ internal fun RvcControlPanel(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         operationalState?.let { OperationalStateSection(it) }
-        runMode?.let { ModeSection(title = "Run mode", controller = it) }
-        cleanMode?.let { ModeSection(title = "Clean mode", controller = it) }
+        runMode?.let { RunModeSection(it) }
+        cleanMode?.let { CleanModeSection(it) }
         serviceArea?.let { ServiceAreaSection(it) }
     }
 }
@@ -89,14 +89,30 @@ private fun OperationalStateSection(controller: RvcOperationalStateController) {
 }
 
 @Composable
-private fun ModeSection(title: String, controller: ModeController) {
+private fun RunModeSection(controller: RvcRunModeController) {
     val state by controller.state.collectAsStateWithLifecycle()
     val data = (state as? UiState.Success)?.data ?: return
 
     val selectedLabel = data.supportedModes.firstOrNull { it.mode == data.currentMode }?.label ?: "Unknown"
 
     Picker(
-        label = title,
+        label = "Run mode",
+        selectedLabel = selectedLabel,
+        options = data.supportedModes,
+        optionLabel = ModeOption::label,
+        onOptionSelected = { option -> controller.changeToMode(option.mode) },
+    )
+}
+
+@Composable
+private fun CleanModeSection(controller: RvcCleanModeController) {
+    val state by controller.state.collectAsStateWithLifecycle()
+    val data = (state as? UiState.Success)?.data ?: return
+
+    val selectedLabel = data.supportedModes.firstOrNull { it.mode == data.currentMode }?.label ?: "Unknown"
+
+    Picker(
+        label = "Clean mode",
         selectedLabel = selectedLabel,
         options = data.supportedModes,
         optionLabel = ModeOption::label,

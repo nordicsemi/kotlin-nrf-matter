@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter.cluster
 
+import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.nrf.matter.model.DeviceId
 
 object RvcRunModeClusterInfo {
@@ -19,10 +20,28 @@ class RvcRunModeCluster(
     override val deviceId: DeviceId,
     override val endpoint: Int,
     controller: MatterClient,
-) : ModeBaseCluster(controller) {
+) : Cluster(controller) {
 
     override val id: Long = RvcRunModeClusterInfo.ID
-    override val supportedModesAttribute: Long = RvcRunModeClusterInfo.Attribute.SUPPORTED_MODES
-    override val currentModeAttribute: Long = RvcRunModeClusterInfo.Attribute.CURRENT_MODE
-    override val changeToModeCommand: Long = RvcRunModeClusterInfo.Command.CHANGE_TO_MODE
+
+    suspend fun changeToMode(mode: Int) {
+        executeCommand(commandId = RvcRunModeClusterInfo.Command.CHANGE_TO_MODE, value = mode.toUByte())
+    }
+
+    fun observeCurrentMode(): Flow<Number> =
+        observeAttribute(RvcRunModeClusterInfo.Attribute.CURRENT_MODE)
+
+    suspend fun supportedModes(): List<ModeOption> =
+        readAttribute<List<*>?>(RvcRunModeClusterInfo.Attribute.SUPPORTED_MODES)
+            .orEmpty()
+            .filterIsInstance<MatterStruct>()
+            .mapNotNull { struct ->
+                val mode = struct.longOrNull(ModeOptionStruct.MODE) ?: return@mapNotNull null
+                val label = struct[ModeOptionStruct.LABEL] as? String ?: return@mapNotNull null
+                val modeTags = (struct[ModeOptionStruct.MODE_TAGS] as? List<*>)
+                    .orEmpty()
+                    .filterIsInstance<MatterStruct>()
+                    .mapNotNull { it.longOrNull(ModeTagStruct.VALUE)?.toInt() }
+                ModeOption(label, mode.toInt(), modeTags)
+            }
 }
