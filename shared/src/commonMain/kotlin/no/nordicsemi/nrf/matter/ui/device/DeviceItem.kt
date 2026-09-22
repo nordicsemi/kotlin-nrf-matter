@@ -1,6 +1,11 @@
 package no.nordicsemi.nrf.matter.ui.device
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -34,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -134,6 +140,7 @@ internal fun DeviceItem(
                 if (it.isContactDetected) "Contact detected" else "Contact not detected"
             } ?: device.toSubtitle(),
             bindingCapable = device.isBindingSource() != null,
+            spinning = isVacuumRunning,
         ) {
             when {
                 doorLock != null && lockState != null -> LockActionItem(
@@ -305,6 +312,7 @@ private fun DeviceHeader(
     title: String,
     subtitle: String,
     bindingCapable: Boolean,
+    spinning: Boolean = false,
     mainAction: @Composable () -> Unit
 ) {
     Row(
@@ -317,6 +325,19 @@ private fun DeviceHeader(
         val boxColor = if (isOn)
             NordicSun
         else MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.1f)
+
+        // The one animated moment in this card: the icon spins while the device is actively
+        // doing the thing it exists to do (currently only wired up for a running vacuum).
+        val rotation = if (spinning) {
+            rememberInfiniteTransition(label = "device-icon-spin")
+                .animateFloat(
+                    initialValue = 0f,
+                    targetValue = 360f,
+                    animationSpec = infiniteRepeatable(tween(1400, easing = LinearEasing)),
+                    label = "angle",
+                ).value
+        } else 0f
+
         Box(
             modifier = Modifier
                 .size(48.dp)
@@ -332,7 +353,7 @@ private fun DeviceHeader(
                 tint = if (isOn)
                     MaterialTheme.colorScheme.primary else
                     MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(28.dp).rotate(rotation)
             )
         }
 
