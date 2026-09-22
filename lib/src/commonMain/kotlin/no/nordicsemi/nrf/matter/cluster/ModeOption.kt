@@ -17,3 +17,16 @@ object ModeOptionStruct {
 object ModeTagStruct {
     const val VALUE: Long = 1
 }
+
+fun List<*>?.toModeOptions(): List<ModeOption> =
+    orEmpty()
+        .filterIsInstance<MatterStruct>()
+        .mapNotNull { struct ->
+            val mode = struct.longOrNull(ModeOptionStruct.MODE) ?: return@mapNotNull null
+            val label = struct[ModeOptionStruct.LABEL] as? String ?: return@mapNotNull null
+            val modeTags = (struct[ModeOptionStruct.MODE_TAGS] as? List<*>)
+                .orEmpty()
+                .filterIsInstance<MatterStruct>()
+                .mapNotNull { it.longOrNull(ModeTagStruct.VALUE)?.toInt() }
+            ModeOption(label, mode.toInt(), modeTags)
+        }

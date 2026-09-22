@@ -32,16 +32,5 @@ class RvcCleanModeCluster(
         observeAttribute(RvcCleanModeClusterInfo.Attribute.CURRENT_MODE)
 
     suspend fun supportedModes(): List<ModeOption> =
-        readAttribute<List<*>?>(RvcCleanModeClusterInfo.Attribute.SUPPORTED_MODES)
-            .orEmpty()
-            .filterIsInstance<MatterStruct>()
-            .mapNotNull { struct ->
-                val mode = struct.longOrNull(ModeOptionStruct.MODE) ?: return@mapNotNull null
-                val label = struct[ModeOptionStruct.LABEL] as? String ?: return@mapNotNull null
-                val modeTags = (struct[ModeOptionStruct.MODE_TAGS] as? List<*>)
-                    .orEmpty()
-                    .filterIsInstance<MatterStruct>()
-                    .mapNotNull { it.longOrNull(ModeTagStruct.VALUE)?.toInt() }
-                ModeOption(label, mode.toInt(), modeTags)
-            }
+        readAttribute<List<*>?>(RvcCleanModeClusterInfo.Attribute.SUPPORTED_MODES).toModeOptions()
 }
