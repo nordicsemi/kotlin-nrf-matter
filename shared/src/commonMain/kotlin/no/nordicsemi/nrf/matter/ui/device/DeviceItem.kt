@@ -44,6 +44,7 @@ import no.nordicsemi.nrf.matter.commission.DecommissionDevice
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.LockDeviceState
+import no.nordicsemi.nrf.matter.model.RvcOperationalState
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
 import no.nordicsemi.nrf.matter.ui.UiState
@@ -59,6 +60,12 @@ import no.nordicsemi.nrf.matter.ui.lock.DoorLockController
 import no.nordicsemi.nrf.matter.ui.lock.LockActionItem
 import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecControlItem
 import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecController
+import no.nordicsemi.nrf.matter.ui.rvc.RvcActionItem
+import no.nordicsemi.nrf.matter.ui.rvc.RvcCleanModeController
+import no.nordicsemi.nrf.matter.ui.rvc.RvcControlPanel
+import no.nordicsemi.nrf.matter.ui.rvc.RvcOperationalStateController
+import no.nordicsemi.nrf.matter.ui.rvc.RvcRunModeController
+import no.nordicsemi.nrf.matter.ui.rvc.ServiceAreaController
 import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorActionItem
 import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorController
 
@@ -75,12 +82,17 @@ internal fun DeviceItem(
     val basicInfoExt = clusters.filterIsInstance<BasicInfoExtController>().firstOrNull()
     val contactSensor = clusters.filterIsInstance<ContactSensorController>().firstOrNull()
     val temperatureSensor = clusters.filterIsInstance<TemperatureSensorController>().firstOrNull()
+    val rvcOperationalState = clusters.filterIsInstance<RvcOperationalStateController>().firstOrNull()
+    val rvcRunMode = clusters.filterIsInstance<RvcRunModeController>().firstOrNull()
+    val rvcCleanMode = clusters.filterIsInstance<RvcCleanModeController>().firstOrNull()
+    val serviceArea = clusters.filterIsInstance<ServiceAreaController>().firstOrNull()
 
     val onOffState = onOff?.state?.collectAsStateWithLifecycle()?.value
     val lockState = doorLock?.state?.collectAsStateWithLifecycle()?.value
     val manufacturerSpecState = manufacturerSpec?.state?.collectAsStateWithLifecycle()?.value
     val contactSensorState = contactSensor?.state?.collectAsStateWithLifecycle()?.value
     val temperatureSensorState = temperatureSensor?.state?.collectAsStateWithLifecycle()?.value
+    val rvcOperationalStateValue = rvcOperationalState?.state?.collectAsStateWithLifecycle()?.value
 
     // The lock keeps its last known state while it is moving, so that the label does not flicker.
     var isLocked by remember { mutableStateOf(false) }
@@ -88,7 +100,8 @@ internal fun DeviceItem(
         (lockState as? UiState.Success)?.let { isLocked = it.data == LockDeviceState.LOCKED }
     }
 
-    val isActive = onOffState?.isOn == true || isLocked
+    val isVacuumRunning = (rvcOperationalStateValue as? UiState.Success)?.data?.state == RvcOperationalState.RUNNING
+    val isActive = onOffState?.isOn == true || isLocked || isVacuumRunning
     val isIconLit = isActive || contactSensorState?.isContactDetected == true
     var isExpanded by rememberSaveable { mutableStateOf(false) }
     var showMatterDeviceInfo by rememberSaveable { mutableStateOf(false) }
@@ -139,6 +152,13 @@ internal fun DeviceItem(
                     temperatureCelsius = temperatureSensorState.temperatureCelsius,
                 )
 
+                rvcOperationalState != null && rvcOperationalStateValue != null -> RvcActionItem(
+                    operationalState = rvcOperationalStateValue,
+                    onPauseResume = {
+                        if (isVacuumRunning) rvcOperationalState.pause() else rvcOperationalState.resume()
+                    },
+                )
+
                 else -> Icon(
                     imageVector = if (isExpanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
                     contentDescription = null,
@@ -157,6 +177,10 @@ internal fun DeviceItem(
                 levelControl?.let { BrightnessControl(it, device.deviceId) }
                 basicInfoExt?.let { RandomNumberControl(it) }
                 manufacturerSpec?.let { LedAndButtonControl(it) }
+
+                if (rvcOperationalState != null || rvcRunMode != null || rvcCleanMode != null || serviceArea != null) {
+                    RvcControlPanel(rvcOperationalState, rvcRunMode, rvcCleanMode, serviceArea)
+                }
 
                 SharedSection(device, showMatterDeviceInfo) { showMatterDeviceInfo = it }
 

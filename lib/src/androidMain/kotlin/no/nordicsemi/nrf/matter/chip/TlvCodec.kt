@@ -61,9 +61,15 @@ internal fun TlvWriter.putValue(tag: Tag, value: Any?): TlvWriter = when (value)
     is Double -> put(tag, value)
     is String -> put(tag, value)
     is ByteArray -> put(tag, value)
+    is List<*> -> apply {
+        startArray(tag)
+        value.forEach { putValue(AnonymousTag, it) }
+        endArray()
+    }
+
     else -> throw IllegalArgumentException(
         "Unsupported Matter value type: ${value::class.simpleName}. Supported types are Boolean, " +
-                "signed and unsigned integers, Float, Double, String and ByteArray."
+                "signed and unsigned integers, Float, Double, String, ByteArray and List of those."
     )
 }
 

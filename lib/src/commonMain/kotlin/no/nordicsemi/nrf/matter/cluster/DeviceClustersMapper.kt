@@ -16,6 +16,10 @@ fun Device.toClusters(): List<Cluster> {
                 DoorLockClusterInfo.ID -> DoorLockCluster(deviceId, endpoint.id, client)
                 ContactSensorClusterInfo.ID -> ContactSensorCluster(deviceId, endpoint.id, client)
                 TemperatureMeasurementClusterInfo.ID -> TemperatureMeasurementCluster(deviceId, endpoint.id, client)
+                RvcRunModeClusterInfo.ID -> RvcRunModeCluster(deviceId, endpoint.id, client)
+                RvcCleanModeClusterInfo.ID -> RvcCleanModeCluster(deviceId, endpoint.id, client)
+                RvcOperationalStateClusterInfo.ID -> RvcOperationalStateCluster(deviceId, endpoint.id, client)
+                ServiceAreaClusterInfo.ID -> ServiceAreaCluster(deviceId, endpoint.id, client)
 
                 else -> NordicMatters.getCustomClusters()[clusterId]?.let { factory ->
                     factory.first?.let { customDeviceType ->

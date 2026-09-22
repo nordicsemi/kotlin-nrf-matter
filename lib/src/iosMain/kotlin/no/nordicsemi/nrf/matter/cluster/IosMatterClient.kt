@@ -194,9 +194,10 @@ private fun Any?.toMatterValue(): MatterValue = when (this) {
     is Double -> MatterValue.double(this)
     is String -> MatterValue.string(this)
     is ByteArray -> MatterValue.bytes(toNSData())
+    is List<*> -> MatterValue.arrayValue(map { it.toMatterValue() })
     else -> throw IllegalArgumentException(
         "Unsupported Matter value type: ${this::class.simpleName}. Supported types are Boolean, " +
-                "signed and unsigned integers, Float, Double, String and ByteArray."
+                "signed and unsigned integers, Float, Double, String, ByteArray and List of those."
     )
 }
 
