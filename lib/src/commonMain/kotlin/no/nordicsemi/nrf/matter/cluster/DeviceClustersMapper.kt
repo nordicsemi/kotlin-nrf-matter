@@ -19,6 +19,7 @@ fun Device.toClusters(): List<Cluster> {
                 RvcRunModeClusterInfo.ID -> RvcRunModeCluster(deviceId, endpoint.id, client)
                 RvcCleanModeClusterInfo.ID -> RvcCleanModeCluster(deviceId, endpoint.id, client)
                 RvcOperationalStateClusterInfo.ID -> RvcOperationalStateCluster(deviceId, endpoint.id, client)
+                SmokeCoAlarmClusterInfo.ID -> SmokeCoAlarmCluster(deviceId, endpoint.id, client)
 
                 else -> NordicMatters.getCustomClusters()[clusterId]?.let { factory ->
                     factory.first?.let { customDeviceType ->

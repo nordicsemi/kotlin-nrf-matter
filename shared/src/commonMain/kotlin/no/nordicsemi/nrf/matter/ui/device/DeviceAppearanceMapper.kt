@@ -17,6 +17,7 @@ import no.nordicsemi.nrf.matter.shared.generated.resources.door_lock_open_right
 import no.nordicsemi.nrf.matter.shared.generated.resources.light_bulb
 import no.nordicsemi.nrf.matter.shared.generated.resources.power_settings
 import no.nordicsemi.nrf.matter.shared.generated.resources.smart_outlet
+import no.nordicsemi.nrf.matter.shared.generated.resources.smoke_co_alarm
 import no.nordicsemi.nrf.matter.shared.generated.resources.temperature
 import org.jetbrains.compose.resources.painterResource
 
@@ -31,6 +32,7 @@ fun Device.toIcon(isActive: Boolean): Painter = when (deviceType) {
     SupportedDeviceType.CONTACT_SENSOR.value -> painterResource(Res.drawable.contact_sensor)
     SupportedDeviceType.TEMPERATURE_SENSOR.value -> painterResource(Res.drawable.temperature)
     SupportedDeviceType.ROBOTIC_VACUUM_CLEANER.value -> rememberVectorPainter(Icons.Outlined.CleaningServices)
+    SupportedDeviceType.SMOKE_CO_ALARM.value -> painterResource(Res.drawable.smoke_co_alarm)
     else -> painterResource(Res.drawable.light_bulb)
 }
 
@@ -57,6 +59,7 @@ private fun DeviceType.toSubtitle(): String = when (this) {
     SupportedDeviceType.CONTACT_SENSOR.value -> "Indicates opening status."
     SupportedDeviceType.TEMPERATURE_SENSOR.value -> "Measures temperature"
     SupportedDeviceType.ROBOTIC_VACUUM_CLEANER.value -> "Robot vacuum cleaner"
+    SupportedDeviceType.SMOKE_CO_ALARM.value -> "Detects smoke and carbon monoxide"
 
     else -> "Unsupported device type."
 }

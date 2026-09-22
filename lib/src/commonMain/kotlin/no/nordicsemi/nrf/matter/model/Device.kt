@@ -80,6 +80,7 @@ enum class SupportedDeviceType(val value: DeviceType) {
     CONTACT_SENSOR(DeviceType(21L, "Contact Sensor")),
     TEMPERATURE_SENSOR(DeviceType(770L, "Temperature Sensor")),
     ROBOTIC_VACUUM_CLEANER(DeviceType(116L, "Robotic Vacuum Cleaner")),
+    SMOKE_CO_ALARM(DeviceType(0x0076L, "Smoke CO Alarm")),
 }
 
 @Serializable
