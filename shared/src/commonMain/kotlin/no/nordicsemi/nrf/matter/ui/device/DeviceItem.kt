@@ -100,7 +100,9 @@ internal fun DeviceItem(
         (lockState as? UiState.Success)?.let { isLocked = it.data == LockDeviceState.LOCKED }
     }
 
-    val isVacuumRunning = (rvcOperationalStateValue as? UiState.Success)?.data?.state == RvcOperationalState.RUNNING
+    val vacuumState = (rvcOperationalStateValue as? UiState.Success)?.data?.state
+    val isVacuumRunning = vacuumState == RvcOperationalState.RUNNING
+    val isVacuumPaused = vacuumState == RvcOperationalState.PAUSED
     val isActive = onOffState?.isOn == true || isLocked || isVacuumRunning
     val isIconLit = isActive || contactSensorState?.isContactDetected == true
     var isExpanded by rememberSaveable { mutableStateOf(false) }
@@ -154,9 +156,10 @@ internal fun DeviceItem(
 
                 rvcOperationalState != null && rvcOperationalStateValue != null -> RvcActionItem(
                     operationalState = rvcOperationalStateValue,
-                    onPauseResume = {
-                        if (isVacuumRunning) rvcOperationalState.pause() else rvcOperationalState.resume()
+                    onPlay = {
+                        if (isVacuumPaused) rvcOperationalState.resume() else rvcOperationalState.start()
                     },
+                    onStop = rvcOperationalState::goHome,
                 )
 
                 else -> Icon(

@@ -1,22 +1,18 @@
 package no.nordicsemi.nrf.matter.ui.rvc
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.nrf.matter.model.RvcOperationalState
 import no.nordicsemi.nrf.matter.ui.UiState
@@ -24,26 +20,21 @@ import no.nordicsemi.nrf.matter.ui.UiState
 @Composable
 fun RvcActionItem(
     operationalState: UiState<RvcOperationalStateData>,
-    onPauseResume: () -> Unit,
+    onPlay: () -> Unit,
+    onStop: () -> Unit,
 ) {
     val data = (operationalState as? UiState.Success)?.data
+    val isRunning = data?.state == RvcOperationalState.RUNNING
 
     Box(contentAlignment = Alignment.Center) {
-        Surface(
-            color = Color.LightGray.copy(alpha = 0.2f),
-            shape = RoundedCornerShape(8.dp),
-            modifier = Modifier
-                .clip(RoundedCornerShape(8.dp))
-                .clickable { onPauseResume() }
-                .alpha(if (data != null) 1f else 0f)
+        IconButton(
+            onClick = { if (isRunning) onStop() else onPlay() },
+            modifier = Modifier.alpha(if (data != null) 1f else 0f),
         ) {
-            Text(
-                text = data?.state.toLabel(),
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                style = MaterialTheme.typography.labelSmall,
-                fontFamily = FontFamily.Monospace,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFFE11D48)
+            Icon(
+                imageVector = if (isRunning) Icons.Filled.Stop else Icons.Filled.PlayArrow,
+                contentDescription = if (isRunning) "Stop cleaning" else "Start cleaning",
+                tint = MaterialTheme.colorScheme.primary,
             )
         }
 

@@ -29,21 +29,29 @@ class ServiceAreaController(
 
     private val _supportedAreas = MutableStateFlow<List<ServiceArea>>(emptyList())
 
+    // CurrentArea is an optional attribute: a device that does not implement it never reports
+    // it, so it must not gate the combined state below on its own flow.
+    private val _currentAreaId = MutableStateFlow<Int?>(null)
+
     init {
         execute { cluster.supportedAreas() }
             .catch { emit(emptyList()) }
             .onEach { areas -> _supportedAreas.update { areas } }
             .launchIn(scope)
 
+        cluster.observeCurrentArea()
+            .onEach { _currentAreaId.update { _ -> it?.toInt() } }
+            .launchIn(scope)
+
         combine(
             _supportedAreas,
             cluster.observeSelectedAreas(),
-            cluster.observeCurrentArea(),
-        ) { supportedAreas, selectedAreas, currentArea ->
+            _currentAreaId,
+        ) { supportedAreas, selectedAreas, currentAreaId ->
             ServiceAreaData(
                 supportedAreas = supportedAreas,
                 selectedAreaIds = selectedAreas.map { it.toInt() },
-                currentAreaId = currentArea?.toInt(),
+                currentAreaId = currentAreaId,
             )
         }
             .onEach { data -> _state.update { UiState.Success(data) } }

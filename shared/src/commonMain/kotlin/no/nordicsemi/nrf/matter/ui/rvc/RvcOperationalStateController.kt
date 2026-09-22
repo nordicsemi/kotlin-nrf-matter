@@ -27,16 +27,29 @@ class RvcOperationalStateController(
     private val _state = MutableStateFlow<UiState<RvcOperationalStateData>>(UiState.Loading())
     val state = _state.asStateFlow()
 
+    // CurrentPhase and CountdownTime are optional attributes: a device that does not implement
+    // them never reports them, so they must not gate the combined state below on their own flow.
+    private val _currentPhase = MutableStateFlow<Int?>(null)
+    private val _countdownTimeSeconds = MutableStateFlow<Int?>(null)
+
     init {
+        cluster.observeCurrentPhase()
+            .onEach { _currentPhase.update { _ -> it?.toInt() } }
+            .launchIn(scope)
+
+        cluster.observeCountdownTime()
+            .onEach { _countdownTimeSeconds.update { _ -> it?.toInt() } }
+            .launchIn(scope)
+
         combine(
             cluster.observeOperationalState(),
-            cluster.observeCurrentPhase(),
-            cluster.observeCountdownTime(),
+            _currentPhase,
+            _countdownTimeSeconds,
         ) { operationalState, currentPhase, countdownTime ->
             RvcOperationalStateData(
                 state = operationalState.toInt().toRvcOperationalState(),
-                currentPhase = currentPhase?.toInt(),
-                countdownTimeSeconds = countdownTime?.toInt(),
+                currentPhase = currentPhase,
+                countdownTimeSeconds = countdownTime,
             )
         }
             .onEach { data -> _state.update { UiState.Success(data) } }
