@@ -1,6 +1,5 @@
 package no.nordicsemi.nrf.matter.ui.rvc
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -8,9 +7,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -20,9 +24,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import no.nordicsemi.nrf.matter.cluster.ModeOption
 import no.nordicsemi.nrf.matter.ui.UiState
 
 @Composable
@@ -45,31 +49,47 @@ internal fun RvcControlPanel(
     }
 }
 
+private enum class RvcAction(val label: String) {
+    START("Start"),
+    PAUSE("Pause"),
+    RESUME("Resume"),
+    STOP("Stop"),
+    GO_HOME("Go home"),
+}
+
 @Composable
 private fun OperationalStateSection(controller: RvcOperationalStateController) {
     val state by controller.state.collectAsStateWithLifecycle()
     val data = (state as? UiState.Success)?.data
 
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surfaceContainerLow)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(data?.state.toLabel(), style = MaterialTheme.typography.titleMedium)
-            data?.currentPhase?.let { Text("Phase $it", style = MaterialTheme.typography.titleMedium) }
-            data?.countdownTimeSeconds?.let {
-                Text("${it}s left", style = MaterialTheme.typography.titleMedium)
-            }
-        }
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Picker(
+            label = "Status",
+            selectedLabel = data?.state.toLabel(),
+            options = RvcAction.entries,
+            optionLabel = { it.label },
+            onOptionSelected = { action ->
+                when (action) {
+                    RvcAction.START -> controller.start()
+                    RvcAction.PAUSE -> controller.pause()
+                    RvcAction.RESUME -> controller.resume()
+                    RvcAction.STOP -> controller.stop()
+                    RvcAction.GO_HOME -> controller.goHome()
+                }
+            },
+        )
 
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TextButton(onClick = controller::pause) { Text("Pause") }
-            TextButton(onClick = controller::resume) { Text("Resume") }
-            TextButton(onClick = controller::goHome) { Text("Go home") }
+        val details = listOfNotNull(
+            data?.currentPhase?.let { "Phase $it" },
+            data?.countdownTimeSeconds?.let { "${it}s left" },
+        ).joinToString(" · ")
+
+        if (details.isNotEmpty()) {
+            Text(
+                text = details,
+                style = MaterialTheme.typography.labelMedium,
+                modifier = Modifier.alpha(0.5f),
+            )
         }
     }
 }
@@ -79,22 +99,55 @@ private fun ModeSection(title: String, controller: ModeController) {
     val state by controller.state.collectAsStateWithLifecycle()
     val data = (state as? UiState.Success)?.data ?: return
 
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.labelMedium,
-            modifier = Modifier.alpha(0.5f),
+    val selectedLabel = data.supportedModes.firstOrNull { it.mode == data.currentMode }?.label ?: "Unknown"
+
+    Picker(
+        label = title,
+        selectedLabel = selectedLabel,
+        options = data.supportedModes,
+        optionLabel = ModeOption::label,
+        onOptionSelected = { option -> controller.changeToMode(option.mode) },
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun <T> Picker(
+    label: String,
+    selectedLabel: String,
+    options: List<T>,
+    optionLabel: (T) -> String,
+    onOptionSelected: (T) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it },
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        OutlinedTextField(
+            value = selectedLabel,
+            onValueChange = {},
+            readOnly = true,
+            label = { Text(label) },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                .fillMaxWidth(),
         )
 
-        Row(
-            modifier = Modifier.horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ExposedDropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
         ) {
-            data.supportedModes.forEach { option ->
-                FilterChip(
-                    selected = option.mode == data.currentMode,
-                    onClick = { controller.changeToMode(option.mode) },
-                    label = { Text(option.label) },
+            options.forEach { option ->
+                DropdownMenuItem(
+                    text = { Text(optionLabel(option)) },
+                    onClick = {
+                        onOptionSelected(option)
+                        expanded = false
+                    },
                 )
             }
         }
