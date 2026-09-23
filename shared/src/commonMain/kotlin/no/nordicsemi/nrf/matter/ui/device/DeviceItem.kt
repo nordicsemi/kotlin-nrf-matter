@@ -290,7 +290,7 @@ private fun SharedSection(
                 modifier = Modifier.weight(1f)
             )
             Icon(
-                imageVector = if (showMatterDeviceInfo) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = "Info",
             )
         }
