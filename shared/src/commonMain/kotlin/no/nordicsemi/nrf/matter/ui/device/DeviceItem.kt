@@ -56,6 +56,7 @@ import no.nordicsemi.nrf.matter.model.LockDeviceState
 import no.nordicsemi.nrf.matter.model.RvcOperationalState
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
+import no.nordicsemi.nrf.matter.ui.DeviceInfoBottomSheet
 import no.nordicsemi.nrf.matter.ui.UiState
 import no.nordicsemi.nrf.matter.ui.contact.ContactSensorActionItem
 import no.nordicsemi.nrf.matter.ui.contact.ContactSensorController
@@ -82,7 +83,6 @@ internal fun DeviceItem(
     device: Device,
     clusters: List<ClusterController>,
     onDecommission: (DeviceId) -> Unit,
-    onShowDeviceInfo: (DeviceId) -> Unit,
 ) {
     val onOff = clusters.filterIsInstance<OnOffController>().firstOrNull()
     val doorLock = clusters.filterIsInstance<DoorLockController>().firstOrNull()
@@ -116,6 +116,7 @@ internal fun DeviceItem(
     val isIconLit = isActive || contactSensorState?.isContactDetected == true
     var isExpanded by rememberSaveable { mutableStateOf(false) }
     var showMatterDeviceInfo by rememberSaveable { mutableStateOf(false) }
+    var showDeviceInfo by rememberSaveable { mutableStateOf(false) }
 
     OutlinedCard(
         shape = RoundedCornerShape(16.dp),
@@ -130,7 +131,7 @@ internal fun DeviceItem(
             .clickable {
                 isExpanded = !isExpanded
             }
-            .then(if (showMatterDeviceInfo) Modifier.cloudy() else Modifier)
+            .then(if (showMatterDeviceInfo || showDeviceInfo) Modifier.cloudy() else Modifier)
     ) {
 
         DeviceHeader(
@@ -201,7 +202,7 @@ internal fun DeviceItem(
                 }
 
                 SharedSection(device, showMatterDeviceInfo) { showMatterDeviceInfo = it }
-                EndpointsClustersRow(onClick = { onShowDeviceInfo(device.deviceId) })
+                EndpointsClustersRow(onClick = { showDeviceInfo = true })
 
                 // Decommission device
                 DecommissionDevice(device.deviceId, onDecommission)
@@ -211,6 +212,11 @@ internal fun DeviceItem(
         // Basic Information Bottom Sheet Dialog
         if (showMatterDeviceInfo) {
             BasicInformationBottomSheet(device, onDismiss = { showMatterDeviceInfo = false })
+        }
+
+        // Endpoints & Clusters Bottom Sheet Dialog
+        if (showDeviceInfo) {
+            DeviceInfoBottomSheet(device, onDismiss = { showDeviceInfo = false })
         }
     }
 }

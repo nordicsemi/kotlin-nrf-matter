@@ -15,7 +15,6 @@ import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.commission.DecommissionState
 import no.nordicsemi.nrf.matter.model.BasicInformation
 import no.nordicsemi.nrf.matter.model.Device
-import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.Endpoint
 import no.nordicsemi.nrf.matter.model.StandardDeviceType
 import no.nordicsemi.nrf.matter.model.toDeviceId
@@ -54,8 +53,7 @@ import no.nordicsemi.nrf.matter.ui.device.DeviceItem
 
 @Composable
 internal fun DeviceList(
-    homeViewModel: HomeViewModel,
-    onDeviceInfoClick: (DeviceId) -> Unit,
+    homeViewModel: HomeViewModel
 ) {
     val decommissionState by homeViewModel.decommissionState.collectAsStateWithLifecycle()
     val devices by homeViewModel.devices.collectAsStateWithLifecycle()
@@ -76,7 +74,6 @@ internal fun DeviceList(
                 device = controller.device,
                 clusters = controller.clusters,
                 onDecommission = homeViewModel::decommissionDevice,
-                onShowDeviceInfo = onDeviceInfoClick,
             )
         }
     }

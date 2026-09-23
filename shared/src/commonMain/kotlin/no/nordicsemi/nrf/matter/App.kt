@@ -28,7 +28,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavBackStack
@@ -39,13 +38,11 @@ import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import no.nordicsemi.nrf.matter.screens.BindingsScreen
 import no.nordicsemi.nrf.matter.screens.CommissioningScreen
-import no.nordicsemi.nrf.matter.screens.DeviceInfoScreen
 import no.nordicsemi.nrf.matter.screens.LoggerScreen
 import no.nordicsemi.nrf.matter.model.DevicesListUiModel
 import no.nordicsemi.nrf.matter.navigation.AppBar
 import no.nordicsemi.nrf.matter.navigation.BindingRoute
 import no.nordicsemi.nrf.matter.navigation.CommissioningRoute
-import no.nordicsemi.nrf.matter.navigation.DeviceInfoRoute
 import no.nordicsemi.nrf.matter.navigation.HomeRoute
 import no.nordicsemi.nrf.matter.navigation.LoggerRoute
 import no.nordicsemi.nrf.matter.navigation.config
@@ -209,27 +206,9 @@ private fun EntryProviderScope<NavKey>.screens(
     entry<HomeRoute> {
         HomeScreen(
             homeViewModel = homeViewModel,
-            onCommissionClick = onCommissioningStarted,
-            onDeviceInfoClick = { deviceId ->
-                backStack.add(DeviceInfoRoute(deviceId))
-            }
+            onCommissionClick = onCommissioningStarted
         )
 
-    }
-    entry<DeviceInfoRoute> { route ->
-        val devices by homeViewModel.devices.collectAsStateWithLifecycle()
-        val device = devices.firstOrNull { it.device.deviceId == route.deviceId }?.device
-
-        DeviceInfoScreen(
-            device = device,
-            onBack = {
-                when (backActionFor(backStack.lastOrNull(), backStack.size)) {
-                    BackAction.POP -> backStack.removeLastOrNull()
-                    BackAction.GO_HOME -> backStack.replaceWith(routesForTab(HomeRoute))
-                    BackAction.EXIT -> Unit
-                }
-            }
-        )
     }
     entry<LoggerRoute> { _ ->
         LoggerScreen()
@@ -294,7 +273,6 @@ private fun rememberTopBarTitle(
                 is CommissioningRoute -> "Commissioning"
                 is BindingRoute -> "Bindings"
                 is LoggerRoute -> "Logs"
-                is DeviceInfoRoute -> "Device Info"
                 else -> "nRF Matter"
             }
         }

@@ -4,7 +4,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Cable
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Terminal
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation3.runtime.NavKey
@@ -13,7 +12,6 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
-import no.nordicsemi.nrf.matter.model.DeviceId
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -69,12 +67,6 @@ data class CommissioningRoute(
     }
 }
 
-@Serializable
-@SerialName("DeviceInfo")
-data class DeviceInfoRoute(
-    val deviceId: DeviceId,
-) : NavKey
-
 val config = SavedStateConfiguration {
     serializersModule = SerializersModule {
         polymorphic(NavKey::class) {
@@ -82,7 +74,6 @@ val config = SavedStateConfiguration {
             subclass(CommissioningRoute::class, CommissioningRoute.serializer())
             subclass(BindingRoute::class, BindingRoute.serializer())
             subclass(LoggerRoute::class, LoggerRoute.serializer())
-            subclass(DeviceInfoRoute::class, DeviceInfoRoute.serializer())
         }
     }
 }
@@ -93,7 +84,6 @@ val NavKey.title: String
         is BindingRoute -> "Bindings"
         is LoggerRoute -> "Logs Panel"
         is CommissioningRoute -> "Commissioning"
-        is DeviceInfoRoute -> "Device Info"
         else -> "Unknown"
     }
 
@@ -103,6 +93,5 @@ val NavKey.icon: ImageVector
         is BindingRoute -> Icons.Default.Cable
         is LoggerRoute -> Icons.Default.Terminal
         is CommissioningRoute -> Icons.Default.Add
-        is DeviceInfoRoute -> Icons.Default.Info
         else -> Icons.Default.Home
     }
