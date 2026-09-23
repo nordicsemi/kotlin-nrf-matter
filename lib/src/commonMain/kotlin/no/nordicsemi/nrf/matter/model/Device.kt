@@ -91,6 +91,7 @@ data class DeviceType(
     companion object {
         fun parse(matterDeviceType: Long): DeviceType {
             return StandardDeviceType.entries.firstOrNull { it.value.id == matterDeviceType }?.value
+                ?: StandardDeviceTypeNames.name(matterDeviceType)?.let { DeviceType(matterDeviceType, it) }
                 ?: StandardDeviceType.UNSUPPORTED.value
         }
     }

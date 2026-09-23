@@ -8,6 +8,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.commission.DecommissionState
 import no.nordicsemi.nrf.matter.commission.DecommissionStateHandler
+import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.ui.DeviceList
 
 /*
@@ -45,6 +46,7 @@ import no.nordicsemi.nrf.matter.ui.DeviceList
 fun HomeScreen(
     homeViewModel: HomeViewModel,
     onCommissionClick: () -> Unit,
+    onDeviceInfoClick: (DeviceId) -> Unit,
 ) {
     val uriHandler = LocalUriHandler.current
     val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
@@ -70,6 +72,7 @@ fun HomeScreen(
         } else {
             DeviceList(
                 homeViewModel = homeViewModel,
+                onDeviceInfoClick = onDeviceInfoClick,
             )
         }
     }

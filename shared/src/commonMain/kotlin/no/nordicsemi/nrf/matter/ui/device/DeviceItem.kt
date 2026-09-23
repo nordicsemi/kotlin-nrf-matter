@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Info
@@ -80,6 +82,7 @@ internal fun DeviceItem(
     device: Device,
     clusters: List<ClusterController>,
     onDecommission: (DeviceId) -> Unit,
+    onShowDeviceInfo: (DeviceId) -> Unit,
 ) {
     val onOff = clusters.filterIsInstance<OnOffController>().firstOrNull()
     val doorLock = clusters.filterIsInstance<DoorLockController>().firstOrNull()
@@ -198,6 +201,7 @@ internal fun DeviceItem(
                 }
 
                 SharedSection(device, showMatterDeviceInfo) { showMatterDeviceInfo = it }
+                EndpointsClustersRow(onClick = { onShowDeviceInfo(device.deviceId) })
 
                 // Decommission device
                 DecommissionDevice(device.deviceId, onDecommission)
@@ -300,6 +304,34 @@ private fun SharedSection(
                 modifier = Modifier.weight(1f)
             )
         }
+    }
+}
+
+@Composable
+private fun EndpointsClustersRow(onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Icon(
+            imageVector = Icons.AutoMirrored.Outlined.List,
+            contentDescription = "Endpoints & Clusters",
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = "Endpoints & Clusters",
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(1f)
+        )
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = null,
+        )
     }
 }
 
