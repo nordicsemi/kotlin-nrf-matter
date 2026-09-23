@@ -54,5 +54,5 @@ fun List<Endpoint>.deviceTypes(): List<DeviceType> =
 
 fun List<Endpoint>.deviceType(): DeviceType =
     deviceTypes()
-        .firstOrNull { it != StandardDeviceType.UNSUPPORTED.value }
-        ?: StandardDeviceType.UNSUPPORTED.value
+        .firstOrNull { it != SupportedDeviceType.UNSUPPORTED.value }
+        ?: SupportedDeviceType.UNSUPPORTED.value
