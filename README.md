@@ -1,473 +1,418 @@
 # nRF Matter for Mobile
 
-[![Download on the App Store](assets/AppStore.png)](https://apps.apple.com/ng/app/nrf-matter/id6786253679) [![Download on the App Store](assets/PlayStore.png)](https://play.google.com/store/apps/details?id=no.nordicsemi.nrf.matter)
+[![Download on the App Store](assets/AppStore.png)](https://apps.apple.com/app/nrf-matter/id6786253679) [![Get it on Google Play](assets/PlayStore.png)](https://play.google.com/store/apps/details?id=no.nordicsemi.nrf.matter)
 
-A [Matter](https://nrfconnectdocs.nordicsemi.com/ncs/latest/nrf/protocols/matter/index.html)
-commissioning and control companion app by
-[Nordic Semiconductor](https://www.nordicsemi.com/), built with Kotlin Multiplatform and Compose Multiplatform, with the iOS-specific implementation written in Swift.
+nRF Matter for Mobile is a commissioning and control companion app by [Nordic Semiconductor](https://www.nordicsemi.com/) for the [Matter](https://www.nordicsemi.com/Products/Technologies/Matter) protocol. The app is available for Android and iOS. It is built with Kotlin Multiplatform and Compose Multiplatform, with the iOS-specific implementation written in Swift.
 
-The app lets you:
+[![Release notes](assets/ReleaseNotes.png)](https://github.com/nordicsemi/kotlin-nrf-matter/releases) [![App development](assets/AppDevelopment.png)](./app_development.md)
 
-- **Commission** new Matter devices onto your fabric:
-    - Android — via the Android Home API / Google Play Services, provisioning the device onto both
-      the Google Home fabric and the app’s local fabric.
-    - iOS — via Apple's `MatterSupport` framework (`MatterAddDeviceRequest`), onto a local fabric
-      managed
-      directly by the app itself (using `Matter.framework` / `MTRDeviceController`), with a bundled
-      app
-      extension providing the system QR-code scanning UI.
-- **Control** commissioned devices — door locks, lights, switches, and manufacturer-specific
-  clusters.
-- **Manage bindings** between devices, e.g. a switch controlling a light.
-- **View logs** for diagnosing commissioning and cluster interactions.
+For Matter developer documentation from Nordic Semiconductor, see the [nRF Connect SDK](https://nrfconnectdocs.nordicsemi.com/ncs/latest/nrf/installation/install_ncs.html) and [Matter add-on](https://nrfconnectdocs.nordicsemi.com/addons/ncs-matter/latest/index.html) documentation.
 
-## Preparing the work setup
+---
 
-The apps for working need a Matter-enabled device. There are 2 common ways of getting such a device.
-1. Using a Matter Virtual Device. It works over a local network, and it's easier to set up.
-2. Using one of Nordic's DKs. It will require a working Thread Border Router accessible in a local network.
+**Contents:** [Features](#features) · [Minimum OS Requirements](#minimum-os-requirements) · [Supported Matter device types](#supported-matter-device-types) · [Working with the app](#working-with-the-app)
 
-Those 2 approaches are explained in detail in below section.
+## Features
 
-### Matter Virtual Device
+The app acts as a Matter **controller and administrator** on its own local fabric. It commissions accessories, keeps their node IDs and credentials, reads and writes their clusters, and writes Access Control List and Binding Cluster entries on them.
 
-If you don't have a Thread Border Router or physical accessory handy, Google's
+The application supports the following features:
+
+* **Commissioning** new Matter devices onto your fabric:
+    * Android — through the Android Home API and Google Play Services, provisioning the device onto both the Google Home fabric and the app's local fabric.
+    * iOS — through Apple's `MatterSupport` framework (`MatterAddDeviceRequest`), onto a local fabric managed directly by the app itself (using `Matter.framework` and `MTRDeviceController`), with a bundled app extension providing the system QR-code scanning UI.
+* **Controlling** commissioned devices — door locks, light bulbs (dimmable light bulb), switches, and manufacturer-specific clusters.
+* **Managing bindings** between devices, for example a light switch controlling a light bulb directly.
+* **Viewing logs** for diagnosing commissioning and cluster interactions.
+
+The app is built in Compose Multiplatform, the user interface provides identical screens, labels, and controls across both Android and iOS. The app automatically adapts to the system theme on both
+platforms. The only platform-specific behavior occurs during commissioning, where execution is handed off to the native operating system — Google Play Services on Android and Apple’s `MatterSupport` on iOS.
+
+Upon launch, the app opens to the Dashboard. If no accessories have been commissioned, a Getting Started screen appears with options to begin setup, access Matter documentation, and view the app version. Once a device is commissioned, the Dashboard dynamically updates to display the list of commissioned devices.
+
+---
+
+## Minimum OS Requirements
+
+To download and run the nRF Matter application, your device must meet the following OS requirements:
+
+* Android OS: Android 8.1 (API level 27) or newer.
+* iOS / iPadOS:
+
+  * iOS 26.0 or newer. Both the vendored [`/ios-matter`](./ios-matter/Package.swift) package and the Xcode targets set that as their minimum, because the Apple `Matter` and `MatterSupport` APIs the app relies on are only available there.
+  * Xcode: Building requires Xcode 26+, recent enough for `swift-tools-version: 6.3`.
+
+---
+
+## Supported Matter device types
+
+The application implements controls for the following Matter device types. Accessories reporting any other device type can still be commissioned and inspected, but not controlled.
+
+| Device type                  | Matter device type ID | Controls available in the app |
+|------------------------------|-----------------------|-------------------------------|
+| On/off light                 | `0x0100`              | On/off switch only |
+| Dimmable light               | `0x0101`              | On/off switch, brightness control |
+| Door lock                    | `0x000A`              | Lock/unlock control  |
+| Light switch                 | `0x0103`              | None - this is a client node configured on the Bindings screen |
+| Manufacturer-specific device | `0xFFF10001`          | Generate number, LED switch, button state  |
+
+---
+
+## Working with the app
+
+**Contents:** [Requirements](#requirements) · [Preparing a Matter device](#preparing-a-matter-device) · [Thread network credentials](#thread-network-credentials) · [Commissioning devices](#commissioning-devices) · [Checking device information](#checking-device-information) · [Configuring bindings](#configuring-bindings) · [Viewing logs](#viewing-logs) · [Removing a device](#removing-a-device)
+
+---
+
+### Requirements
+
+This section lists additional OS-specific requirements for working with the app and Matter devices.
+
+#### Android requirements
+
+To use the nRF Matter application with Matter devices, make sure you meet the following hardware and software requirements for your operating system. These are separate from [Minimum OS requirements](#minimum-os-requirements) for running the app.
+
+*  Android APIs
+
+  * Google Play Services: Required, specifically with access to Google's Home API (used for local fabric and ecosystem device commissioning).
+
+* Hardware & Architecture
+
+  * Physical Device Required: The nRF Matter app requires a physical device to perform commissioning. It will not run on Android Emulators.
+  * 64-bit Architecture Only (`arm64-v8a`): The app relies on compiled native CHIP/Matter libraries (`libCHIPController.so`) built specifically for 64-bit ARM processors.
+
+* Permissions & Device Profiles
+
+  * Local Network & Bluetooth Permissions: The app requires explicit user permission for Camera and Bluetooth (for initial Bluetooth LE commissioning).
+
+* Thread & Network Prerequisites
+
+  * Thread Border Router (for Thread devices): If you are commissioning Matter-over-Thread hardware using the app, a Thread Border Router (such as a Nest Hub or Google TV Streamer 4K) must be configured on the same Wi-Fi subnet. For more information, see [Thread network credentials](#thread-network-credentials).
+  * Wi-Fi Subnet: The Android device must be connected to a Wi-Fi network that supports IPv6 and allows mDNS traffic without client isolation.
+  * Bluetooth Low Energy (Bluetooth LE): Required for initial Matter device discovery and Bluetooth LE commissioning.
+
+* Account and Companion Prerequisites
+
+  * Google Account: An active Google account signed in on the phone (required for Google Home API/Play Services authentication during commissioning). For Thread devices, the same Google Home app account is used to share Thread network credentials with the nRF Matter app once a border router is on the network.
+
+#### iOS requirements
+
+To run the nRF Matter app on an Apple device, the hardware and software must meet the following requirements:
+
+* Hardware & Architecture
+
+  * 64-bit iOS Device: Requires an iPhone or iPad powered by a 64-bit Apple Silicon chip (A-series) with physical Bluetooth LE capabilities.
+  * Simulator vs. Physical Device: While app UI can run in the Xcode simulator, device commissioning requires a physical iPhone or iPad to handle Bluetooth LE scanning and local network multicast discovery.
+
+* Permissions & Device Profiles
+
+  * Local Network & Bluetooth Permissions: The app requires explicit user permission for Local Network (to discover mDNS nodes) and camera and Bluetooth (for initial Bluetooth LE commissioning).
+  * iCloud Account: An active Apple ID/iCloud account signed in to the iPhone is required to sync and manage local Matter fabric keys securely.
+
+* Thread & Network Prerequisites
+
+  * Thread Border Router (for Thread devices): If you are commissioning Matter-over-Thread hardware using the app, a Thread Border Router (such as a Nest Hub or Google TV Streamer 4K) must be configured on the same Wi-Fi subnet. For more information, see [Thread network credentials](#thread-network-credentials).
+  * Wi-Fi Subnet: The iOS device must be connected to a Wi-Fi network that supports IPv6 and allows mDNS traffic without client isolation.
+
+---
+
+### Preparing a Matter device
+
+To work with the application you need a Matter-enabled accessory device. Use one of the following ways of getting one:
+
+* Using [Matter Virtual Device](#matter-virtual-device). It works over a local network and is easier to set up.
+* Using one of [Nordic Semiconductor development kits](#nordic-semiconductor-development-kits). This requires a working Thread Border Router accessible on the local network.
+
+Both approaches are explained in the following sections.
+
+#### Matter Virtual Device
+
+If you do not have a Thread Border Router or a physical accessory at hand, Google's
 [Matter Virtual Device](https://developers.home.google.com/matter/tools/virtual-device) (MVD) tool
-lets you
-commission a simulated Matter accessory from a Mac or Linux devices instead.
-The nRF Matter implementation currently supports only a subset of the device types available in the Matter Virtual Device application:
-1. **Dimmable Light**
-2. **Door Lock**
+lets you commission a simulated Matter accessory from a Mac or Linux machine instead.
 
-To explore and test additional device types, a compatible Nordic development kit (DK) is required.
+The nRF Matter implementation currently supports only a subset of the device types available in the
+Matter Virtual Device application:
 
-#### Testing without a hub: Matter Virtual Device (MVD)
+* Dimmable Light
+* Door Lock
 
+To explore and test additional device types, a compatible Nordic development kit is required.
 
-1. Download the MVD `.dmg` for your Mac (Apple Silicon or Intel) and drag it into `Applications`. The Matter Virtual Device (MVD) can be downloaded from the official Google Home developer resources [here](https://developers.home.google.com/matter/tools/virtual-device#install_mvd).
-2. Launch MVD and configure the simulated accessory (device type, name, discriminator, Matter port,
-   test VID/PID). After launching the application, the initial screen will look like this:
-<img  width="500" alt="Screenshot 2026-07-22 at 13 04 52" src="https://github.com/user-attachments/assets/aac2b545-1e16-4ef1-81bc-68d74bbc186b" />
+##### How to test without a hub
 
-3. Commission it from this app like a real device — it shows a QR code and joins over the macOS
-   existing Wi-Fi connection.
-4. The Mac running MVD and the phone **must be on the same Wi-Fi network**.
-5. Once commissioned, you can control the simulated device from this app.
-   
-<div align="center">
-  <img src="https://github.com/user-attachments/assets/dfc2d152-9898-459e-a768-b8b793201a94" width="49%" />
-  <img src="https://github.com/user-attachments/assets/89b3650e-246e-4217-a727-308c960e9604" width="49%" />
-</div>
+To test without a hub, complete the following steps:
 
-### Nordic Semiconductor DKs
+1. Make sure that the Mac/Linux running MVD and the phone **must be on the same Wi-Fi network**.
+1. Download the MVD `.dmg` for your Mac (Apple Silicon or Intel) and drag it into `Applications`.
+   You can download the Matter Virtual Device from the [official Google Home developer resources](https://developers.home.google.com/matter/tools/virtual-device#install_mvd).
+1. Launch MVD and configure the simulated accessory: device type, name, discriminator, Matter port, and test VID/PID.
 
-Another option is to configure a Nordic Semiconductor development kit (DK) to act as a Matter device using one of the available Matter samples.
-The samples can be installed using the [Matter Quick Start app](https://docs.nordicsemi.com/r/bundle/nrf-connect-for-desktop/page/matter-quick-start-app) 
-which is a part of [nRF Connect For Desktop](https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-Desktop/Download).
+    After launching the application, the initial screen looks as follows:
 
-1. **Door Lock** — available directly in the Matter Quick Start App.
-2. **Light** — available directly in the Matter Quick Start App.
-3. **Switch** - build this [sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/light_switch) in Visual Studio.
-4. **Manufacturer specific cluster + cluster extension** - build this [sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/manufacturer_specific) in Visual Studio.
+    ![MVD initial screen](assets/MVD_initial_screen.png "Matter Virtual Device initial screen")
 
-> [!TIP]
-> All examples display a link with a QR code required for commissioning in the logs. The logs from a DK can be viewed using the [Serial Terminal app](https://docs.nordicsemi.com/r/bundle/nrf-connect-for-desktop/page/serial-terminal-app).
-> To view the logs, open the Serial Terminal app and connect the DK using the appropriate serial terminal port. If the device has not yet been commissioned, press the reset button on the DK. The device will then print the logs, including the QR code link, in the logs panel.
-> 
-> <img width="914" height="21" alt="Screenshot 2026-07-22 at 15 35 56" src="https://github.com/user-attachments/assets/844905d9-5701-4426-b049-5d686369b455" />
+1. Commission the simulated accessory from this app like a real device.
 
-## Initial setup: hosting Thread network credentials
+    The accessory shows a QR code and joins over the existing Wi-Fi® connection of the macOS host.
 
-Commissioning a **Thread** Matter device requires a Thread Border Router already running on the
-local
-network, and Thread network credentials available on the phone. Setup code is not part of this
-repository — it relies on the OS-provided home hub infrastructure, which is configured once per
-network before the app is used.
+    ![MVD QR code](assets/mvd_qr_code.png "Matter Virtual Device QR code")
 
-### Installing Thread Network Credentials on iOS
+Once commissioned, you can control the simulated accessory device from the MVD dashboard.
 
-Matter examples installed on DKs require a **Thread Border Router** connected to the same local network as the app. In
-addition, the iPhone must already have the corresponding **Thread Network Credentials** installed.
-The credentials are installed via the system API and are available to all apps on the phone.
+![MVD after commissioning](assets/mvd_added.png "Matter Virtual Device after commissioning")
 
-The process for obtaining these credentials depends on the Thread ecosystem being used. In most
-cases, when the Thread network is provided by a device such as a Samsung TV or a dedicated hub such
-as **Google TV Streamer 4K**, the manufacturer's companion app must be used to download and install
-the Thread Network Credentials on the iPhone.
+#### Nordic Semiconductor development kits
 
-For example:
+You can configure a Nordic Semiconductor development kit to act as a Matter device using one of the available Matter samples:
 
-- **Samsung**: [SmartThings](https://apps.apple.com/us/app/smartthings/id1222822904)
-- **Google**: [Google Home](https://apps.apple.com/us/app/google-home/id680819774)
+* Matter Door Lock
+* Matter Light Bulb
+* Matter Light Switch
+* Matter Manufacturer-specific clusters
 
-For detailed instructions, refer to the documentation provided by the device manufacturer. In
-general, the required credentials are installed after signing in to the companion app, adding the
-Thread-enabled device to the home, and enabling its Thread Border Router functionality.
+For the authoritative, up-to-date list of supported hardware, see Nordic's [Matter hardware and memory requirements](https://nrfconnectdocs.nordicsemi.com/addons/ncs-matter/latest/matter/getting_started/hw_requirements.html) page - new development kits and SoCs are added there as they gain Matter support.
+You can also check the [sample documentation](https://nrfconnectdocs.nordicsemi.com/addons/ncs-matter/latest/samples/index.html) for the list of development kits supported by each sample.
 
-If the credentials are not immediately available, commissioning a Matter device using the
-corresponding companion app may trigger the download and installation of the Thread Network
-Credentials.
+These samples can be installed using the [Matter Quick Start app](https://docs.nordicsemi.com/r/bundle/nrf-connect-for-desktop/page/matter-quick-start-app), which is a part of [nRF Connect for Desktop](https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-Desktop/Download). Alternatively, you can install them from the [Matter add-on to the nRF Connect SDK](https://nrfconnectdocs.nordicsemi.com/addons/ncs-matter/latest/index.html).
 
-> **Note**
->
-> The app has been tested with **Google TV Streamer 4K**. At the time of writing, Google does not
-> provide any alternative method for installing or sharing Thread Network Credentials on iPhone
-> other
-> than through the **Google Home** app.
->
+<details>
+  <summary>Finding the commissioning QR code</summary>
 
-### Android
+All samples print a link with the QR code required for commissioning in their logs. The logs from a development kit can be viewed using the [Serial Terminal app](https://docs.nordicsemi.com/r/bundle/nrf-connect-for-desktop/page/serial-terminal-app).
 
-Set up a Thread Border Router — such as a Nest Hub (2nd gen) or Google TV Streamer 4K — via the
-Google
-Home app. Google Play Services (the Home API) then makes the credentials available to this app the
-same
-way.
+To view the logs, open the Serial Terminal app and connect the kit using the appropriate serial port. If the device has not yet been commissioned, press the reset button on the kit. The device then prints the logs, including the QR code link, in the logs panel.
 
-- The phone and the hub **must be on the same Wi-Fi network** — credential/device discovery relies
-  on
-  local-network multicast (mDNS), which doesn't cross subnets or routers.
-- The hub needs a **user account signed in** (a Google account added via the Google Home app) before it will share any credentials — a freshly unboxed,
-  no-account hub won't work.
-- Make sure the router on the network has **IPv6 enabled** — without it, Thread commissioning can
-  appear to succeed, but device control might fail afterward.
-- Matter standardizes Thread credential sharing across ecosystems, so a single hub can plausibly
-  serve
-  both platforms — e.g. a Google TV Streamer 4K set up once in Google Home has been observed working
-  for both iOS and Android commissioning in this app, without a separate Apple-ecosystem hub.
+![QR code link in the serial log](assets/qr_code_serial_log.png "QR code link in the serial log")
 
-## Project structure
+</details>
 
-This is a Kotlin Multiplatform project targeting Android and iOS.
+---
 
-* [`/lib`](./lib/src) — the Matter layer, published as the `matter-support` library.
-  It owns commissioning, cluster access, bindings, persistence, and logging, and carries no UI
-  beyond the `CommissioningTask` composable that drives the platform commissioning flow. Contains
-  the usual KMP source sets:
-    - [`commonMain`](./lib/src/commonMain/kotlin) — the platform-agnostic half: domain
-      models (`Device`, `BasicInformation`, `Endpoint`, `LockDeviceState`, …), cluster definitions,
-      repositories/data sources, the decommission and binding use cases, and the `NordicLogger`
-      abstraction — backed by Room on Android and, on iOS, by `ios-matter`'s `SwiftLogger`,
-      which appends to a JSONL file in the shared app group so the app's log viewer also shows
-      what the commissioning extension recorded.
-    - `androidMain` / `iosMain` — platform-specific code, e.g. wiring up Matter commissioning on
-      each platform. `androidMain` also holds the wrappers around the native Matter (CHIP) SDK and
-      the Google Home API (`ChipClient`, `ClustersHelper`, `BindingControllerImpl`) along with the
-      prebuilt binaries they need — see
-      [Native Matter (CHIP) SDK binaries](#native-matter-chip-sdk-binaries).
-* [`/shared`](./shared) — the Compose Multiplatform UI: screens for home, commissioning, bindings
-  and logs, per-device-type controllers for locks, lights and switches, the theme, navigation, and
-  the view models and Koin bindings (`uiModule`) behind them. It `api`/`export`s `:lib`, so
-  it is also the iOS framework the Xcode project consumes — Swift needs a single `import shared` to
-  reach the whole Kotlin surface. Both Xcode targets build it through a run-script phase calling
-  `./gradlew :shared:embedAndSignAppleFrameworkForXcode`.
+### Thread network credentials
 
-* [`/androidApp`](./androidApp) — the Android application entry point.
-* [`/iosApp`](./iosApp/iosApp) — the iOS application entry point (SwiftUI host for the shared
-  Compose UI), plus the `nrfMatter` target — the `MatterSupport` app extension that provides the
-  system commissioning/QR-code UI.
-  Even though the UI is shared, this project is required as the entry point for the iOS app, and is
-  where
-  you'd add any additional SwiftUI code.
-* [`/ios-matter`](./ios-matter) — the Swift package that wraps Apple's Matter and MatterSupport
-  frameworks, vendored into this repo rather than resolved from git. `:lib` cinterops against
-  it, so this is where the iOS half of commissioning, cluster access, and the keypair/storage shared
-  with the Matter extension lives. See
-  [`/ios-matter` — vendored Matter Swift package](#ios-matter--vendored-matter-swift-package).
+**Note:** If your accessory does not use Thread, go to [Commissioning devices](#commissioning-devices).
 
-### Native Matter (CHIP) SDK binaries
+Commissioning a Thread Matter device requires a Thread Border Router already running on the local network, and Thread network credentials available on the phone.
 
-[`/lib/libs`](./lib/libs) contains prebuilt binaries checked directly into git —
-they are not built by this Gradle project:
+This setup is not part of the application. It relies on the home hub infrastructure provided by the operating system, which is configured once per network before the app is used.
 
-- Jars: `AndroidPlatform.jar`, `CHIPClusterID.jar`, `CHIPClusters.jar`, `CHIPController.jar`,
-  `CHIPInteractionModel.jar`, `OnboardingPayload.jar`, `libMatterJson.jar`, `libMatterTlv.jar`.
-- Native libraries: [`/lib/libs/jniLibs/arm64-v8a`](./lib/libs/jniLibs/arm64-v8a) —
-  `libCHIPController.so` and `libc++_shared.so` (`arm64-v8a` only — there's no `x86_64` build, so
-  these
-  libs won't load on an Android emulator, only on a physical arm64 device).
+#### How to install Thread network credentials on iOS
 
-These binaries are built against **Matter 1.5.0**, as provided by Nordic. It comes from Nordic's
-fork of Project CHIP,
-[`nrfconnect/sdk-connectedhomeip`](https://github.com/nrfconnect/sdk-connectedhomeip) (the NCS
-downstream of
-[project-chip/connectedhomeip](https://github.com/project-chip/connectedhomeip)) — specifically its
-Android
-`chip-tool` build target for arm64. To rebuild them from source, follow the instructions provided in the
-[nrfconnect/sdk-connectedhomeip](https://github.com/nrfconnect/sdk-connectedhomeip/blob/9895b2bdb4c43b48426930f03e3c05502babd2f0/docs/platforms/android/android_building.md).
+Matter samples installed on development kits require a Thread Border Router connected to the same local network as the app. In addition, the iPhone must already have the corresponding Thread network credentials installed. The credentials are installed through the system API and are available to all apps on the phone.
 
-> **Note:** if you build  `.jars`/`.so` files yourself against a newer Matter version, this project
-> may need some changes to handle the newer version — newer Matter releases can add, rename, or
-> change the behavior of
-> the APIs these binaries expose.
+The process for obtaining these credentials depends on the Thread ecosystem being used. In most cases, when the Thread network is provided by a device such as a TV or a dedicated hub, the manufacturer's companion app must be used to download and install the Thread network credentials on the iPhone. This can be for example Samsung's [SmartThings](https://apps.apple.com/us/app/smartthings/id1222822904) app or Google's [Google Home](https://apps.apple.com/us/app/google-home/id680819774) app.
 
-### `mavenLocal` — vendored Google Home API artifacts (Android only)
+For detailed instructions, refer to the documentation provided by the device manufacturer. In general, the required credentials are installed after signing in to the companion app, adding the Thread-enabled device to the home, and enabling its Thread Border Router functionality.
 
-This project includes a `./mavenLocal` directory checked directly into git — a pre-built local Maven
-repository
-with the same directory structure and artifact metadata (`maven-metadata.xml`, checksums) that
-Gradle expects.
-It is wired up in [`settings.gradle.kts`](./settings.gradle.kts).
+If the credentials are not immediately available, commissioning a Matter device using the corresponding companion app may trigger the download and installation of the Thread network credentials.
 
-When you clone this repo and build, Gradle finds the Home API artifacts from `./mavenLocal`
-transparently
-— no manual setup required.
+**Note:** The app has been tested with the Google TV Streamer 4K. At the time of writing, Google does not provide any alternative method for installing or sharing Thread network credentials on iPhone other than through the Google Home app.
 
-#### What `./mavenLocal` contains
+#### How to install Thread network credentials on Android
 
-The directory vendors the following Android dependencies Google doesn't publish on public Maven
-repos:
+Set up a Thread Border Router, such as a Nest Hub (2nd generation) or a Google TV Streamer 4K, through the Google Home app. Google Play Services, by way of the Home API, then makes the credentials available to this app in the same way.
 
-- **`com.google.android.gms:play-services-home`** at `17.1.0` — the main Google Home Mobile SDK for
-  Matter (the Home API). Provides API interfaces, device control, authorization, and commissioning
-  services.
-- **`com.google.android.gms:play-services-home-types`** at `17.1.0` — a helper library containing
-  models
-  for device types, traits, command parameters, and other domain types. Its POM declares a
-  compile-scope
-  dependency on `play-services-home`, so **both artifacts must always be updated together**.
+Keep in mind the following requirements:
 
-Google's public Maven repo (`google()` / `dl.google.com/android/maven2`) only publishes
-`play-services-home`
-up to `16.0.0` and doesn't publish `play-services-home-types` at all. Version `17.1.0` introduced
-several new
-APIs that weren't available in `16.0.0`
-
-#### Gradle setup and availability of Google Home APIs for Android
-
-> **Note:** This is not required just to build the project — `./mavenLocal` folder already ships the
-> vendored `17.1.0` artifacts in this repo, so the steps below only matter if you're deliberately
-> updating to a newer version.
->
-The Google Home APIs are currently in **open beta**, which means they are available to developers,
-but they may
-change without notice. They are **not** part of the standard Android SDK or the usual Google Play
-Services
-libraries (`com.google.android.gms.*`), and they are **not yet available** in Maven Central or
-Google's
-standard Maven repositories (`google()` / `dl.google.com/android/maven2`).
-Therefore, getting started requires a few non-standard integration steps.
-
-#### How to get the SDK: manual download
-
-1. Sign in to the [Google Cloud Console](https://console.cloud.google.com/) with your Google
-   account.
-2. Access the Home APIs early-access program and download the ZIP archive containing the SDK
-   artifacts.
-3. Extract the SDK into your system's local Maven repository, the `.m2/repository` directory. This is
-   the standard path used for local Maven repositories.
-    - **Linux:** `~/.m2/repository/`
-    - **macOS:** `~/.m2/repository/`
-    - **Windows:** `C:\Users\<User_Name>\.m2\repository\`
-4. Add `mavenLocal()` to your Gradle `repositories` block so Gradle can find the artifacts —
-   [`settings.gradle.kts`](./settings.gradle.kts) already declares it alongside the vendored
-   `./mavenLocal` repository.
-5. Repeat this process each time the SDK is updated, until Google officially publishes it to a Maven
-   repository.
-
-> **Warning:** the Home API is still evolving, so a newer version may introduce breaking changes —
-> check `lib` and anywhere else the Home API is used (search for `play.services.home` in the
-> source), and adjust as needed.
->
-
-### `/ios-matter` — vendored Matter Swift package
-
-[`/ios-matter`](./ios-matter) is a full Swift package — manifest and sources — checked directly into
-git, the Apple-side counterpart to the vendoring described above. It used to be resolved from
-`git@github.com:sylwester-zielinski/ios-matter.git` at an exact tag; it is now built in place.
-
-**It is not a SwiftPM dependency of the Kotlin build.** It is compiled to a static library and
-consumed through plain cinterop, so the Swift object code ends up *inside* the published artifact.
-Three Gradle tasks per iOS target do this, in [`build.gradle.kts`](./composeApp/build.gradle.kts):
-
-| Task | Does |
+| Requirement | Details |
 | --- | --- |
-| `compileIosMatterSwift<Target>` | runs `xcodebuild` on `/ios-matter` |
-| `iosMatterStaticLib<Target>` | `libtool`s the resulting objects into `libios-matter.a` and copies the Swift-generated ObjC header and module map beside it |
-| `cinteropIosMatter<Target>` | translates that module into the `iosMatter` Kotlin package and embeds the archive in the klib |
+| Same Wi-Fi network | The phone and the hub must be on the same Wi-Fi network. Credential and device discovery relies on local-network multicast (mDNS), which does not cross subnets or routers. |
+| User account signed in | The hub needs a user account signed in before it shares any credentials. A freshly unboxed hub with no account will not work. |
+| IPv6 enabled | Make sure the router on the network has IPv6 enabled. Without it, Thread commissioning can appear to succeed, but device control might fail afterward. |
 
-`./gradlew :composeApp:iosMatterStaticLibs` builds the library for every target. All three tasks run
-automatically as part of any iOS compile — there is nothing to invoke by hand.
+<details>
+<summary>Tip: How to share one hub between platforms</summary>
 
-Only the `@objc public` surface of ios-matter crosses the boundary; the Swift-generated
-Objective-C header is the contract, which is why the Kotlin-facing classes are annotated.
-Kotlin reaches them through the `iosMatter.*` package (`iosMatter.SwiftLogger`,
-`iosMatter.LocalMatterLightController`, …).
+Matter standardizes Thread credential sharing across ecosystems, so a single hub can plausibly serve both platforms. For example, a Google TV Streamer 4K set up once in Google Home has been observed working for both iOS and Android commissioning in this app, without a separate Apple-ecosystem hub.
+</details>
 
-**Why not `localSwiftPackage`.** A SwiftPM declaration is published as
-`SwiftPMDependency.Local` carrying an **absolute** path — inspect
-`matter-support-<version>-swiftpm-metadata.json` in any published artifact to see it. A consumer
-resolving `matter-support` from Maven therefore cannot find the Swift code at all, and the Swift
-sources are not in the klib either. Only the version-pinned `swiftPackage(url = ...)` form is
-publishable, and that means a second source of truth for the Swift code. Archiving the objects into
-the cinterop klib avoids both problems: `no.nordicsemi.nrf.matter:matter-support` is now
-self-contained, and Xcode needs no package graph — neither `iosApp` nor `nrfMatter` imports
-`ios_matter`, both reach it through Kotlin bridges such as `KeychainKt.prepareKeychain()`.
+---
 
-**Editing it.** Change a `.swift` file under `/ios-matter/ios-matter` and build — the task inputs
-cover the sources and the manifest, so the library is rebuilt and re-archived automatically. There
-is no tag to push, no version to bump, and no lockfile to realign.
+### Commissioning devices
 
-**It has no dependencies, deliberately.** Its compiled objects are archived into the cinterop klib
-and published inside `matter-support`, so anything linked here has to be redistributable and has to
-build for both iOS targets without a package graph at the consumer's end. `libios-matter.a`
-therefore holds exactly one object, `ios-matter.o`. Keeping it that way is also what lets
-[`/ios-matter/Package.swift`](./ios-matter/Package.swift) stay a dozen lines with no
-`Package.resolved`, no `unsafeFlags` and no `-enable-library-evolution`.
+Commissioning adds a Matter accessory to the app's fabric so it can be controlled. Before you start, make sure you have a [prepared Matter device](#preparing-a-matter-device) and, for Thread accessories, set up [Thread network credentials](#thread-network-credentials).
 
-**The manifest is a build entry point, not a distribution format.** Nothing consumes ios-matter as
-a Swift package — it is not a SwiftPM dependency of the Kotlin build, and `iosApp.xcodeproj`
-references the directory only as a folder to browse. It exists because `/ios-matter` holds no
-`.xcodeproj`, so the manifest is what lets `compileIosMatterSwift*` build the sources with
-`xcodebuild -scheme ios-matter`, and what gives Xcode a target to index them against while
-editing.
+If commissioning a Thread accessory, an active Thread Border Router (such as Google TV Streamer 4K) must be present on the
+local network and the Thread network credentials must be known to the phone.
 
-### Build and run the Android application
+For information about Matter commissioning stages, see [Matter network commissioning](https://nrfconnectdocs.nordicsemi.com/addons/ncs-matter/latest/matter/overview/commissioning.html#matter-network-commissioning) in the Matter add-on documentation.
 
-Use the run configuration from the run widget in your IDE's toolbar, or build it directly from the
-terminal:
+#### How commissioning with the app works
 
-- on macOS/Linux
-  ```shell
-  ./gradlew :androidApp:assembleDebug
-  ```
-- on Windows
-  ```shell
-  .\gradlew.bat :androidApp:assembleDebug
-  ```
+When you add a new device in the app on your phone and scan the device’s QR code or manually enter the setup payload (discriminator and PIN), the following happens:
 
-### Build and run the iOS application
+1. The app scans for the accessory's Bluetooth LE advertising signal to establish an initial secure connection.
+1. Once connected over Bluetooth LE, the app authenticates the accessory, provisions your local network credentials (Thread or Wi-Fi), and adds the device to your Matter fabric.
+1. Once network credentials are provisioned and the fabric is bound, the app reads the accessory's Descriptor (`0x001D`) and Basic Information (`0x0028`) clusters. This allows the app to determine the device type, render the correct UI controls, and extract hardware metadata like the Product Name and Vendor ID.
 
-Use the run configuration from the run widget in your IDE's toolbar, or open the [
-`/iosApp`](./iosApp)
-directory in Xcode and run it from there.
+The accessory is then added to the dashboard for further control or inspection as a functional Device Card.
 
-### Adding the commissioning extension to another iOS app
+**Note:** The pairing UI belongs to the operating system. Scanning the QR code, choosing the network, and naming the device are all handled by the operating system, not by this app.
 
-An app embedding `matter-support` needs a `MatterSupport` app extension, but almost none of one —
-the commissioning logic ships in the library as iOS-only entry points on `NordicMatters` and
-`Fabric`, declared in
-[`api/NordicMattersAppExtension.kt`](./lib/src/iosMain/kotlin/no/nordicsemi/nrf/matter/api/NordicMattersAppExtension.kt).
-The extension target just forwards system callbacks to them.
-[`iosApp/nrfMatter`](./iosApp/nrfMatter) is the worked example.
+#### How to commission on Android
 
-1. **App extension target** with the `com.apple.matter.support.extension.device-setup` extension
-   point, naming your own handler as its principal class. `$(PRODUCT_MODULE_NAME)` is required —
-   `MatterSupport` is Swift-only, so the handler must be compiled into the extension's own module,
-   never linked in from the Kotlin framework:
+To commission on Android:
 
-   ```xml
-   <key>NSExtension</key>
-   <dict>
-       <key>NSExtensionPointIdentifier</key>
-       <string>com.apple.matter.support.extension.device-setup</string>
-       <key>NSExtensionPrincipalClass</key>
-       <string>$(PRODUCT_MODULE_NAME).RequestHandler</string>
-   </dict>
-   ```
+1. Ensure your Android device is connected to the same network you plan to commission the Matter accessory onto and that Bluetooth is turned on.
+1. Start the nRF Matter for Mobile app on your Android device.
 
-2. **App groups.** Provision two under your own team, list both in the
-   `com.apple.security.application-groups` entitlement of *both* the app and the extension, and set
-   them in *both* targets' `Info.plist` (an extension never sees the host app's plist, so values
-   must match on both sides or the two processes silently land on different `UserDefaults` suites):
+   ![nRF Matter home screen on Android (empty)](assets/dashboard_empty_android.png "nRF Matter home screen on Android (empty)")
 
-   ```xml
-   <key>NordicMatterLocalAppGroup</key>
-   <string>group.example.matter.local</string>
-   <key>NordicMatterSharedAppGroup</key>
-   <string>group.example.matter.shared</string>
-   ```
+1. Tap **+ Add New Device** on the Getting Started screen (or the floating **+** button if devices are
+   already present).
+1. If you have not done so before, grant the app camera and Bluetooth permissions.
+1. Provide the required setup information using one of the following options:
 
-   Also set a keychain group for the NOC signing keypair, listed in `keychain-access-groups` on
-   both targets — a plain app group id works here too, which is the shorter path for a new app:
+   * Scan the accessory's Matter QR Code using the on-screen viewfinder
+   * Tap **Setup with Code** to manually enter the 11-digit or 21-digit setup payload (Discriminator and PIN
+   Code).
 
-   ```xml
-   <key>NordicMatterKeychainGroup</key>
-   <string>$(AppIdentifierPrefix)nordicsemi.nrf.matter</string>
-   ```
+The app initiates the Matter network commissioning stages. Once done, the device is added to the Matter fabric and the app is updated with the new device card. For example, the Matter Light Bulb in the following image.
 
-   A missing app-group key fails loudly with a `preconditionFailure`. A wrong/mismatched keychain
-   group doesn't: the extension generates a second keypair, falls back to a new fabric the app
-   can't see, and commissioning reports success onto it — check this first if devices commission
-   but never show up, and don't change the value once devices exist, or they orphan.
+![nRF Matter on Android (Matter Light Bulb added)](assets/device_card_light.png "nRF Matter on Android (Matter Light Bulb added)")
 
-3. **Linker flags.** `OTHER_LDFLAGS` on the extension target needs
-   `-ObjC -framework <YourKotlinFramework>` (`-ObjC -framework shared` here) — `-framework` because
-   Swift only auto-links a module it uses, and the Kotlin framework is static; `-ObjC` force-loads
-   its Objective-C classes.
+#### How to commission on iOS
 
-4. **The handler** — the extension's whole source:
+To commission on iOS:
 
-   ```swift
-   import MatterSupport
-   import shared
+1. Ensure your iOS device is connected to the same network you plan to commission the Matter accessory onto and that Bluetooth is turned on.
+1. Start the nRF Matter for Mobile app on your iOS device.
 
-   final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
+   ![nRF Matter home screen on iOS (empty)](assets/dashboard_empty_ios.png "nRF Matter home screen on iOS (empty)")
 
-       private let fabric: Fabric = {
-           NordicMatters.shared.initializeAppExtension()
-           return NordicMatters.shared.defaultFabric
-       }()
+1. Tap **+ Add New Device** on the Getting Started screen (or the floating **+** button if devices are
+   already present).
+1. If you have not done so before, grant the app camera and Bluetooth permissions.
+1. Scan the accessory's Matter QR Code using the on-screen viewfinder to provide the required setup information.
 
-       override func rooms(in home: MatterAddDeviceRequest.Home?) async -> [MatterAddDeviceRequest.Room] {
-           return NordicMatters.shared.appExtensionRooms()
-               .map { MatterAddDeviceRequest.Room(displayName: $0) }
-       }
+The app initiates the Matter network commissioning stages. Once done, the device is added to the Matter fabric and the app is updated with the new device card.
+For example, the `Test_Product` (Matter Light Bulb) in the following image.
 
-       override func commissionDevice(in home: MatterAddDeviceRequest.Home?, onboardingPayload: String, commissioningID: UUID) async throws {
-           try await fabric.commissionAppExtensionDevice(payload: onboardingPayload)
-       }
+![nRF Matter on iOS (Matter Test_Product added)](assets/device_card_ios.png "nRF Matter on iOS (Matter Test_Product added)")
 
-       override func configureDevice(named name: String, in room: MatterAddDeviceRequest.Room?) async {
-           fabric.configureAppExtensionDevice(name: name)
-       }
+#### What if commissioning fails
 
-       // ...plus validateDeviceCredential, selectWiFiNetwork and selectThreadNetwork
-   }
-   ```
+If the onboarding process encounters an error such as an invalid setup payload, timeout, or failed network authentication, the app halts the setup and displays a **Connection Failed** screen with suggested steps to troubleshoot the connection and the following information:
 
-   `initializeAppExtension()` sets up Kotlin-side logging for this process — the extension runs
-   separately from the app, so each has to do this once for itself. Keep at least this one source
-   file in the target: with none, Xcode skips linking and reports `BUILD SUCCEEDED` on an `.appex`
-   with no executable inside.
+| Field            | Description  |
+|------------------|--------------|
+| Commissioning ID | Identifier of the commissioning attempt, useful for correlating with the log. |
+| Error Code       | The error reported by the platform or the Matter stack. |
+| Stage            | Where the failure happened: during commissioning, while reading Basic Information, or while reading the Descriptor cluster. |
+| Message          | The underlying error message. |
 
-Set `NordicMatters.commissioningRooms` before commissioning to offer your own rooms in the system
-UI (falls back to a default list otherwise). The extension only pairs the device and records the
-chosen name in the shared app group — it never touches the app's own fabric — and
-`MatterCommissionerImpl.commission` reads that back and registers the device once the system flow
-returns.
+<details>
+<summary>Tip: How to commission an accessory that was paired before</summary>
 
-## Requirements
+An accessory only accepts commissioning while it is in commissioning mode, and it keeps the credentials of fabrics it has already joined. If a device was previously paired — including a device that was force-removed from this app — factory reset it before commissioning it again.
+</details>
 
-- Android: minSdk 27+, a device with Google Play Services (Home API is used for commissioning). The
-  vendored CHIP native libraries are `arm64-v8a` only, so a physical arm64 device is required — the
-  app won't run on an emulator.
-- iOS: iOS 26.0 or newer — both [`/ios-matter`](./ios-matter/Package.swift) and the Xcode targets set
-  that as their minimum, because Apple's `Matter`/`MatterSupport` APIs the app relies on are only
-  available there. Building needs an Xcode recent enough for `swift-tools-version: 6.3`
-  (Xcode 26+). Open [`/iosApp`](./iosApp) in Xcode to build/run.
+---
 
-## Firmware supported
+### Checking device information
 
-The vendored CHIP binaries (see
-[Native Matter (CHIP) SDK binaries](#native-matter-chip-sdk-binaries))
-are built against **Matter 1.5.0**, first introduced in **nRF Connect SDK v3.2.0**, so below listed
-Nordic DK running Matter firmware built with NCS v3.2.0 or
-newer should be compatible for testing commissioning/control with this app.
+Once commissioned, your accessory is added to the app dashboard as a dedicated device card. Tap the device card to display information about the device read from the device's Basic Information cluster (`0x0028`).
 
-| Development Kit | SoC       |
-|-----------------|-----------|
-| nRF52840 DK     | nRF52840  |
-| nRF5340 DK      | nRF5340   |
-| nRF54L15 DK     | nRF54L15  |
-| nRF54LM20 DK    | nRF54LM20 |
+![nRF Matter device card information](assets/device_information.png "nRF Matter device card information")
 
-For the authoritative, up-to-date list of supported hardware, see Nordic's
-[Matter hardware and memory requirements](https://nrfconnectdocs.nordicsemi.com/ncs/latest/nrf/protocols/matter/getting_started/hw_requirements.html)
-page — new DKs and SoCs are added there as they gain Matter support.
+This information is available for all commissioned accessories.
 
+| Field                 | Attribute |
+|-----------------------|-----------|
+| Product Name          | `0x0003`  |
+| Vendor ID             | `0x0002`  |
+| Product ID            | `0x0004`  |
+| Vendor Name           | `0x0001`  |
+| Software Version      | `0x0009`  |
+| Serial Number         | `0x000F`  |
+| Unique ID             | `0x0012`  |
+| Specification Version | `0x0013`  |
 
-## License
+---
 
-Copyright © Nordic Semiconductor. Licensed under a BSD-3-Clause style license — see the [LICENSE](LICENSE) for full terms.
+### Configuring bindings
 
+Bindings are used to assign a target or targets of a client cluster on the node, so that the device knows which remote device it should act upon.
+
+In the app, the Bindings screen configures the Binding Cluster (`0x001E`) to allow a source node, such as a light switch, to control a target node directly over the Matter fabric, without routing each command through the app. For example, once the binding is established, a light switch can communicate directly with and control a connected light bulb.
+
+**Note:** Only unicast binding is currently supported.
+
+![nRF Matter: Bindings screen](assets/bindings_form.png "nRF Matter Bindings screen")
+
+For more information about bindings and other Matter network concepts, see the [Matter add-on documentation](https://nrfconnectdocs.nordicsemi.com/addons/ncs-matter/latest/matter/overview/network_topologies.html#matter-network-topology-and-concepts).
+
+#### How to write a binding
+
+To write a binding, you need to fill in information in the **Write Matter Binding Cluster (0x001E)** section.
+
+**Note:** Binding is currently supported only for the On/Off Cluster `(0x0006)`.
+
+Complete the following steps:
+
+1. Make sure you have commissioned at least one accessory device before creating a binding.
+1. Open the **Bindings** screen.
+1. Under **Select Client / Source Node (Write Client)**, select the source node that will send commands (for example, a light switch). Nodes are listed by product name and Node ID.
+1. Under **Select Server / Target Node (Control Target)**, select the target node that you want to control. Only light bulbs that are not already bound to the selected source node are available for selection.
+1. Tap **Write Binding** to initiate binding operation between the selected source and target nodes.
+
+While the binding operation is in progress, keep the app open and avoid closing it. You can check the log for information about the binding operation and its progress.
+
+![nRF Matter: Binding in progress](assets/bindings_in_progress.png "nRF Matter: Binding in progress")
+
+Writing a binding involves operations on the following accessories:
+
+* An *operate* privilege is granted in the target node's Access Control List, so the switch is allowed to command it.
+* A binding entry is written into the source node's Binding Table.
+
+If the binding operation succeeds, the active bindings list is updated automatically. Otherwise, a **Binding Failed**
+dialog is displayed and you can troubleshoot and retry the operation.
+
+#### How to check active bindings
+
+The **Active Binding Table Entries** section displays a list of active bindings, including the source and target node IDs and the cluster associated with each binding.
+
+The binding entry is automatically updated when either of the referenced devices is decommissioned or
+removed from the network.
+
+![nRF Matter: Active Binding Table entry](assets/bindings_active_entry.png "nRF Matter: Active Binding Table entry")
+
+---
+
+### Viewing logs
+
+The Logs Panel shows a single combined log for the whole app.
+
+![nRF Matter: Logs Panel screen](assets/logs_panel.png "nRF Matter: Logs Panel screen")
+
+The logs cover commissioning, cluster reads and writes, and binding operations.
+
+The entries are persisted locally, ensuring they remain available after the application restart.
+
+* On Android, logs are saved to a local database.
+* On iOS, logging is managed via the [Pulse](https://github.com/kean/Pulse) library, which
+stores logs in a file configured using App Groups, making them available to both the main app and
+its app extension.
+
+#### Exporting logs
+
+The log cannot currently be cleared or exported from the app. To share a trace, capture it from the device using the platform tooling, such as `adb logcat` on Android or the Console app on macOS for iOS.
+
+---
+
+### Removing a device
+
+To remove an accessory device, tap the **Remove / Decommission Device** button on the dashboard. This removes the accessory from the app's fabric and clears all associated bindings.
+
+Once decommissioned, the device is ready to be re-commissioned at any time by scanning its QR code or entering the setup code.
+
+#### Removal and decommissioning on Android
+
+On Android only, since the device is commissioned through Android's Google Play services and Home API, the device is linked across all integrated fabrics. Decommissioning disassociates the device across these APIs, returning it to a factory-ready state.
+
+#### Forced removal
+
+If removing the fabric from the device fails (for example, if the device is offline), a prompt will give you the option to **Force Remove** it. Force-removing deletes the device from the app's repository immediately without waiting to unlink the fabric directly on the device.
+
+**Note:** Force-removing a device only clears the app's own records. The accessory keeps the fabric credentials it was given, so it may need to be factory reset before it can be commissioned again.
