@@ -302,7 +302,6 @@ private fun SharedSection(
             .padding(16.dp)
             .clip(RoundedCornerShape(16.dp))
             .clickable {
-                AppEvents.emit(AppEvent.MatterDeviceInformation)
                 onShowMatterDeviceInfoChange(true)
             },
         verticalArrangement = Arrangement.spacedBy(16.dp)

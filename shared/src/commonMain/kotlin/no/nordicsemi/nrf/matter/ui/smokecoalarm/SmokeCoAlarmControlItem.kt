@@ -1,5 +1,11 @@
 package no.nordicsemi.nrf.matter.ui.smokecoalarm
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,10 +20,15 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -91,27 +102,67 @@ fun SmokeCoAlarmControlItem(
     }
 }
 
+// Blink period: warning pulses at a calm pace, critical pulses noticeably faster to read as more urgent.
+private const val WARNING_BLINK_MILLIS = 900
+private const val CRITICAL_BLINK_MILLIS = 350
+
 @Composable
 private fun AlarmStatusRow(label: String, state: AlarmState) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(text = label, style = MaterialTheme.typography.labelMedium)
-        Text(
-            text = when (state) {
-                AlarmState.NORMAL -> "Normal"
-                AlarmState.WARNING -> "Warning"
-                AlarmState.CRITICAL -> "Critical"
-            },
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Bold,
-            color = when (state) {
-                AlarmState.NORMAL -> MaterialTheme.colorScheme.onSurfaceVariant
-                AlarmState.WARNING -> NordicFall
-                AlarmState.CRITICAL -> NordicRed
-            },
-        )
+    val blinkAlpha = when (state) {
+        AlarmState.NORMAL -> 1f
+        AlarmState.WARNING -> rememberBlinkAlpha(periodMillis = WARNING_BLINK_MILLIS)
+        AlarmState.CRITICAL -> rememberBlinkAlpha(periodMillis = CRITICAL_BLINK_MILLIS)
     }
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.alpha(0.6f),
+        )
+
+        SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            AlarmState.entries.forEachIndexed { index, option ->
+                val selected = option == state
+                val activeColor = when (option) {
+                    AlarmState.NORMAL -> MaterialTheme.colorScheme.primary
+                    AlarmState.WARNING -> NordicFall
+                    AlarmState.CRITICAL -> NordicRed
+                }
+                SegmentedButton(
+                    selected = selected,
+                    onClick = {},
+                    shape = SegmentedButtonDefaults.itemShape(index, AlarmState.entries.size),
+                    colors = SegmentedButtonDefaults.colors(
+                        activeContainerColor = activeColor.copy(alpha = 0.12f * blinkAlpha),
+                        activeContentColor = activeColor.copy(alpha = blinkAlpha),
+                    ),
+                    label = {
+                        Text(
+                            text = when (option) {
+                                AlarmState.NORMAL -> "Normal"
+                                AlarmState.WARNING -> "Warning"
+                                AlarmState.CRITICAL -> "Critical"
+                            },
+                        )
+                    },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun rememberBlinkAlpha(periodMillis: Int): Float {
+    val infiniteTransition = rememberInfiniteTransition(label = "alarm-blink")
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = 0.25f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = periodMillis, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "alarm-blink-alpha",
+    )
+    return alpha
 }
