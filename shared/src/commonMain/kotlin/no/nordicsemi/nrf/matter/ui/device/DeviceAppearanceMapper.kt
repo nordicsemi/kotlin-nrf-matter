@@ -58,5 +58,5 @@ private fun DeviceType.toSubtitle(): String = when (this) {
     SupportedDeviceType.TEMPERATURE_SENSOR.value -> "Measures temperature"
     SupportedDeviceType.ROBOTIC_VACUUM_CLEANER.value -> "Robot vacuum cleaner"
 
-    else -> "Unknown device type."
+    else -> "Unsupported device type."
 }
