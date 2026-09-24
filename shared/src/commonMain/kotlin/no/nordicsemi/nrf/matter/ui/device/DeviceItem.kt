@@ -1,6 +1,11 @@
 package no.nordicsemi.nrf.matter.ui.device
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -34,16 +39,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.skydoves.cloudy.cloudy
 import no.nordicsemi.nrf.matter.binding.isBindingSource
+import no.nordicsemi.nrf.matter.cluster.cleaningMode
 import no.nordicsemi.nrf.matter.commission.DecommissionDevice
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.LockDeviceState
+import no.nordicsemi.nrf.matter.model.RvcOperationalState
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
 import no.nordicsemi.nrf.matter.ui.UiState
@@ -59,6 +67,11 @@ import no.nordicsemi.nrf.matter.ui.lock.DoorLockController
 import no.nordicsemi.nrf.matter.ui.lock.LockActionItem
 import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecControlItem
 import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecController
+import no.nordicsemi.nrf.matter.ui.rvc.RvcActionItem
+import no.nordicsemi.nrf.matter.ui.rvc.RvcCleanModeController
+import no.nordicsemi.nrf.matter.ui.rvc.RvcControlPanel
+import no.nordicsemi.nrf.matter.ui.rvc.RvcOperationalStateController
+import no.nordicsemi.nrf.matter.ui.rvc.RvcRunModeController
 import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorActionItem
 import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorController
 
@@ -75,12 +88,17 @@ internal fun DeviceItem(
     val basicInfoExt = clusters.filterIsInstance<BasicInfoExtController>().firstOrNull()
     val contactSensor = clusters.filterIsInstance<ContactSensorController>().firstOrNull()
     val temperatureSensor = clusters.filterIsInstance<TemperatureSensorController>().firstOrNull()
+    val rvcOperationalState = clusters.filterIsInstance<RvcOperationalStateController>().firstOrNull()
+    val rvcRunMode = clusters.filterIsInstance<RvcRunModeController>().firstOrNull()
+    val rvcCleanMode = clusters.filterIsInstance<RvcCleanModeController>().firstOrNull()
 
     val onOffState = onOff?.state?.collectAsStateWithLifecycle()?.value
     val lockState = doorLock?.state?.collectAsStateWithLifecycle()?.value
     val manufacturerSpecState = manufacturerSpec?.state?.collectAsStateWithLifecycle()?.value
     val contactSensorState = contactSensor?.state?.collectAsStateWithLifecycle()?.value
     val temperatureSensorState = temperatureSensor?.state?.collectAsStateWithLifecycle()?.value
+    val rvcOperationalStateValue = rvcOperationalState?.state?.collectAsStateWithLifecycle()?.value
+    val rvcRunModeValue = rvcRunMode?.state?.collectAsStateWithLifecycle()?.value
 
     // The lock keeps its last known state while it is moving, so that the label does not flicker.
     var isLocked by remember { mutableStateOf(false) }
@@ -88,7 +106,10 @@ internal fun DeviceItem(
         (lockState as? UiState.Success)?.let { isLocked = it.data == LockDeviceState.LOCKED }
     }
 
-    val isActive = onOffState?.isOn == true || isLocked
+    val vacuumState = (rvcOperationalStateValue as? UiState.Success)?.data?.state
+    val isVacuumRunning = vacuumState == RvcOperationalState.RUNNING
+    val isVacuumPaused = vacuumState == RvcOperationalState.PAUSED
+    val isActive = onOffState?.isOn == true || isLocked || isVacuumRunning
     val isIconLit = isActive || contactSensorState?.isContactDetected == true
     var isExpanded by rememberSaveable { mutableStateOf(false) }
     var showMatterDeviceInfo by rememberSaveable { mutableStateOf(false) }
@@ -117,6 +138,7 @@ internal fun DeviceItem(
                 if (it.isContactDetected) "Contact detected" else "Contact not detected"
             } ?: device.toSubtitle(),
             bindingCapable = device.isBindingSource() != null,
+            spinning = isVacuumRunning,
         ) {
             when {
                 doorLock != null && lockState != null -> LockActionItem(
@@ -139,6 +161,19 @@ internal fun DeviceItem(
                     temperatureCelsius = temperatureSensorState.temperatureCelsius,
                 )
 
+                rvcOperationalState != null && rvcOperationalStateValue != null -> RvcActionItem(
+                    operationalState = rvcOperationalStateValue,
+                    onPlay = {
+                        if (isVacuumPaused) {
+                            rvcOperationalState.resume()
+                        } else {
+                            (rvcRunModeValue as? UiState.Success)?.data?.supportedModes?.cleaningMode()
+                                ?.let { rvcRunMode.changeToMode(it.mode) }
+                        }
+                    },
+                    onStop = rvcOperationalState::goHome,
+                )
+
                 else -> Icon(
                     imageVector = if (isExpanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
                     contentDescription = null,
@@ -157,6 +192,10 @@ internal fun DeviceItem(
                 levelControl?.let { BrightnessControl(it, device.deviceId) }
                 basicInfoExt?.let { RandomNumberControl(it) }
                 manufacturerSpec?.let { LedAndButtonControl(it) }
+
+                if (rvcOperationalState != null || rvcRunMode != null || rvcCleanMode != null) {
+                    RvcControlPanel(rvcOperationalState, rvcRunMode, rvcCleanMode)
+                }
 
                 SharedSection(device, showMatterDeviceInfo) { showMatterDeviceInfo = it }
 
@@ -271,6 +310,7 @@ private fun DeviceHeader(
     title: String,
     subtitle: String,
     bindingCapable: Boolean,
+    spinning: Boolean = false,
     mainAction: @Composable () -> Unit
 ) {
     Row(
@@ -283,6 +323,19 @@ private fun DeviceHeader(
         val boxColor = if (isOn)
             NordicSun
         else MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.1f)
+
+        // The one animated moment in this card: the icon spins while the device is actively
+        // doing the thing it exists to do (currently only wired up for a running vacuum).
+        val rotation = if (spinning) {
+            rememberInfiniteTransition(label = "device-icon-spin")
+                .animateFloat(
+                    initialValue = 0f,
+                    targetValue = 360f,
+                    animationSpec = infiniteRepeatable(tween(1400, easing = LinearEasing)),
+                    label = "angle",
+                ).value
+        } else 0f
+
         Box(
             modifier = Modifier
                 .size(48.dp)
@@ -298,7 +351,7 @@ private fun DeviceHeader(
                 tint = if (isOn)
                     MaterialTheme.colorScheme.primary else
                     MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f),
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(28.dp).rotate(rotation)
             )
         }
 

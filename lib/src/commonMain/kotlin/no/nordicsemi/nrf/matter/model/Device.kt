@@ -79,6 +79,7 @@ enum class StandardDeviceType(val value: DeviceType) {
     EXTENDED_COLOR_LIGHT(DeviceType(269L, "Extended Color Light")),
     CONTACT_SENSOR(DeviceType(21L, "Contact Sensor")),
     TEMPERATURE_SENSOR(DeviceType(770L, "Temperature Sensor")),
+    ROBOTIC_VACUUM_CLEANER(DeviceType(116L, "Robotic Vacuum Cleaner")),
 }
 
 @Serializable

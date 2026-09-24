@@ -1,7 +1,10 @@
 package no.nordicsemi.nrf.matter.ui.device
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CleaningServices
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
 import no.nordicsemi.nrf.matter.model.StandardDeviceType
@@ -27,6 +30,7 @@ fun Device.toIcon(isActive: Boolean): Painter = when (deviceType) {
     StandardDeviceType.LIGHT_SWITCH.value -> painterResource(Res.drawable.power_settings)
     StandardDeviceType.CONTACT_SENSOR.value -> painterResource(Res.drawable.contact_sensor)
     StandardDeviceType.TEMPERATURE_SENSOR.value -> painterResource(Res.drawable.temperature)
+    StandardDeviceType.ROBOTIC_VACUUM_CLEANER.value -> rememberVectorPainter(Icons.Outlined.CleaningServices)
     else -> painterResource(Res.drawable.light_bulb)
 }
 
@@ -52,6 +56,7 @@ private fun DeviceType.toSubtitle(): String = when (this) {
 
     StandardDeviceType.CONTACT_SENSOR.value -> "Indicates opening status."
     StandardDeviceType.TEMPERATURE_SENSOR.value -> "Measures temperature"
+    StandardDeviceType.ROBOTIC_VACUUM_CLEANER.value -> "Robot vacuum cleaner"
 
     else -> "Unknown device type."
 }

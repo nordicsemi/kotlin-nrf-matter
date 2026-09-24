@@ -74,6 +74,30 @@ private fun Any?.toCommonValue(): Any? = when (this) {
         mapOf(DescriptorClusterInfo.DeviceTypeStruct.DEVICE_TYPE to deviceType)
     )
 
+    is ChipStructs.RvcRunModeClusterModeOptionStruct -> MatterStruct(
+        mapOf(
+            ModeOptionStruct.LABEL to label,
+            ModeOptionStruct.MODE to mode,
+            ModeOptionStruct.MODE_TAGS to modeTags.toCommonValue()
+        )
+    )
+
+    is ChipStructs.RvcRunModeClusterModeTagStruct -> MatterStruct(
+        mapOf(ModeTagStruct.VALUE to value)
+    )
+
+    is ChipStructs.RvcCleanModeClusterModeOptionStruct -> MatterStruct(
+        mapOf(
+            ModeOptionStruct.LABEL to label,
+            ModeOptionStruct.MODE to mode,
+            ModeOptionStruct.MODE_TAGS to modeTags.toCommonValue()
+        )
+    )
+
+    is ChipStructs.RvcCleanModeClusterModeTagStruct -> MatterStruct(
+        mapOf(ModeTagStruct.VALUE to value)
+    )
+
     is Map<*, *> -> MatterStruct(
         entries.mapNotNull { (contextTag, value) ->
             val tag = when (contextTag) {
