@@ -114,14 +114,12 @@ internal fun DeviceItem(
         (lockState as? UiState.Success)?.let { isLocked = it.data == LockDeviceState.LOCKED }
     }
 
-    val isActive = onOffState?.isOn == true || isLocked
-    val isIconLit = isActive || contactSensorState?.isContactDetected == true ||
-        smokeCoAlarmState?.isAlarmActive == true
     val vacuumState = (rvcOperationalStateValue as? UiState.Success)?.data?.state
     val isVacuumRunning = vacuumState == RvcOperationalState.RUNNING
     val isVacuumPaused = vacuumState == RvcOperationalState.PAUSED
     val isActive = onOffState?.isOn == true || isLocked || isVacuumRunning
-    val isIconLit = isActive || contactSensorState?.isContactDetected == true
+    val isIconLit = isActive || contactSensorState?.isContactDetected == true ||
+            smokeCoAlarmState?.isAlarmActive == true
     var isExpanded by rememberSaveable { mutableStateOf(false) }
     var showMatterDeviceInfo by rememberSaveable { mutableStateOf(false) }
     var showDeviceInfo by rememberSaveable { mutableStateOf(false) }
