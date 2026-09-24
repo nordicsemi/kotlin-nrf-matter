@@ -67,8 +67,8 @@ data class Device(
         get() = endpoints.deviceType()
 }
 
-enum class StandardDeviceType(val value: DeviceType) {
-    UNSUPPORTED(DeviceType(-1, "Unsupported")),
+enum class SupportedDeviceType(val value: DeviceType) {
+    UNKNOWN(DeviceType(-1, "Unknown")),
     LIGHT_ON_OFF(DeviceType(256L, "Light On/Off")),
     DIMMABLE_LIGHT(DeviceType(257L, "Dimmable Light")),
     LIGHT_SWITCH(DeviceType(259L, "Light Switch")),
@@ -90,8 +90,9 @@ data class DeviceType(
 
     companion object {
         fun parse(matterDeviceType: Long): DeviceType {
-            return StandardDeviceType.entries.firstOrNull { it.value.id == matterDeviceType }?.value
-                ?: StandardDeviceType.UNSUPPORTED.value
+            return SupportedDeviceType.entries.firstOrNull { it.value.id == matterDeviceType }?.value
+                ?: StandardDeviceTypeNames.name(matterDeviceType)?.let { DeviceType(matterDeviceType, it) }
+                ?: SupportedDeviceType.UNKNOWN.value
         }
     }
 }

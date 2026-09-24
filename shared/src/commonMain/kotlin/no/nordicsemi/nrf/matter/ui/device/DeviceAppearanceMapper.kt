@@ -7,7 +7,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.DeviceType
-import no.nordicsemi.nrf.matter.model.StandardDeviceType
+import no.nordicsemi.nrf.matter.model.SupportedDeviceType
 import no.nordicsemi.nrf.matter.nordic.NordicDeviceType
 import no.nordicsemi.nrf.matter.nordic.isNordicManufacturerSpecific
 import no.nordicsemi.nrf.matter.shared.generated.resources.Res
@@ -22,15 +22,15 @@ import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun Device.toIcon(isActive: Boolean): Painter = when (deviceType) {
-    StandardDeviceType.DOOR_LOCK.value -> painterResource(
+    SupportedDeviceType.DOOR_LOCK.value -> painterResource(
         if (isActive) Res.drawable.door_lock else Res.drawable.door_lock_open_right
     )
 
-    StandardDeviceType.OUTLET.value -> painterResource(Res.drawable.smart_outlet)
-    StandardDeviceType.LIGHT_SWITCH.value -> painterResource(Res.drawable.power_settings)
-    StandardDeviceType.CONTACT_SENSOR.value -> painterResource(Res.drawable.contact_sensor)
-    StandardDeviceType.TEMPERATURE_SENSOR.value -> painterResource(Res.drawable.temperature)
-    StandardDeviceType.ROBOTIC_VACUUM_CLEANER.value -> rememberVectorPainter(Icons.Outlined.CleaningServices)
+    SupportedDeviceType.OUTLET.value -> painterResource(Res.drawable.smart_outlet)
+    SupportedDeviceType.LIGHT_SWITCH.value -> painterResource(Res.drawable.power_settings)
+    SupportedDeviceType.CONTACT_SENSOR.value -> painterResource(Res.drawable.contact_sensor)
+    SupportedDeviceType.TEMPERATURE_SENSOR.value -> painterResource(Res.drawable.temperature)
+    SupportedDeviceType.ROBOTIC_VACUUM_CLEANER.value -> rememberVectorPainter(Icons.Outlined.CleaningServices)
     else -> painterResource(Res.drawable.light_bulb)
 }
 
@@ -42,21 +42,21 @@ fun Device.toSubtitle(): String = when {
 }
 
 private fun DeviceType.toSubtitle(): String = when (this) {
-    StandardDeviceType.DOOR_LOCK.value -> "Smart Lock"
+    SupportedDeviceType.DOOR_LOCK.value -> "Smart Lock"
 
-    StandardDeviceType.OUTLET.value,
-    StandardDeviceType.DIMMER_SWITCH.value,
-    StandardDeviceType.LIGHT_SWITCH.value -> "Bind the switch with other devices"
+    SupportedDeviceType.OUTLET.value,
+    SupportedDeviceType.DIMMER_SWITCH.value,
+    SupportedDeviceType.LIGHT_SWITCH.value -> "Bind the switch with other devices"
 
     NordicDeviceType,
-    StandardDeviceType.LIGHT_ON_OFF.value,
-    StandardDeviceType.DIMMABLE_LIGHT.value,
-    StandardDeviceType.COLOR_TEMPERATURE_LIGHT.value,
-    StandardDeviceType.EXTENDED_COLOR_LIGHT.value -> "Turn light ON or OFF"
+    SupportedDeviceType.LIGHT_ON_OFF.value,
+    SupportedDeviceType.DIMMABLE_LIGHT.value,
+    SupportedDeviceType.COLOR_TEMPERATURE_LIGHT.value,
+    SupportedDeviceType.EXTENDED_COLOR_LIGHT.value -> "Turn light ON or OFF"
 
-    StandardDeviceType.CONTACT_SENSOR.value -> "Indicates opening status."
-    StandardDeviceType.TEMPERATURE_SENSOR.value -> "Measures temperature"
-    StandardDeviceType.ROBOTIC_VACUUM_CLEANER.value -> "Robot vacuum cleaner"
+    SupportedDeviceType.CONTACT_SENSOR.value -> "Indicates opening status."
+    SupportedDeviceType.TEMPERATURE_SENSOR.value -> "Measures temperature"
+    SupportedDeviceType.ROBOTIC_VACUUM_CLEANER.value -> "Robot vacuum cleaner"
 
-    else -> "Unknown device type."
+    else -> "Unsupported device type."
 }

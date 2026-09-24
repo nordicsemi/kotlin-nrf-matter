@@ -19,6 +19,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.outlined.List
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Info
@@ -54,6 +56,7 @@ import no.nordicsemi.nrf.matter.model.LockDeviceState
 import no.nordicsemi.nrf.matter.model.RvcOperationalState
 import no.nordicsemi.nrf.matter.theme.NordicSun
 import no.nordicsemi.nrf.matter.ui.BasicInformationBottomSheet
+import no.nordicsemi.nrf.matter.ui.DeviceInfoBottomSheet
 import no.nordicsemi.nrf.matter.ui.UiState
 import no.nordicsemi.nrf.matter.ui.contact.ContactSensorActionItem
 import no.nordicsemi.nrf.matter.ui.contact.ContactSensorController
@@ -113,6 +116,7 @@ internal fun DeviceItem(
     val isIconLit = isActive || contactSensorState?.isContactDetected == true
     var isExpanded by rememberSaveable { mutableStateOf(false) }
     var showMatterDeviceInfo by rememberSaveable { mutableStateOf(false) }
+    var showDeviceInfo by rememberSaveable { mutableStateOf(false) }
 
     OutlinedCard(
         shape = RoundedCornerShape(16.dp),
@@ -127,7 +131,7 @@ internal fun DeviceItem(
             .clickable {
                 isExpanded = !isExpanded
             }
-            .then(if (showMatterDeviceInfo) Modifier.cloudy() else Modifier)
+            .then(if (showMatterDeviceInfo || showDeviceInfo) Modifier.cloudy() else Modifier)
     ) {
 
         DeviceHeader(
@@ -198,6 +202,7 @@ internal fun DeviceItem(
                 }
 
                 SharedSection(device, showMatterDeviceInfo) { showMatterDeviceInfo = it }
+                EndpointsClustersRow(onClick = { showDeviceInfo = true })
 
                 // Decommission device
                 DecommissionDevice(device.deviceId, onDecommission)
@@ -207,6 +212,11 @@ internal fun DeviceItem(
         // Basic Information Bottom Sheet Dialog
         if (showMatterDeviceInfo) {
             BasicInformationBottomSheet(device, onDismiss = { showMatterDeviceInfo = false })
+        }
+
+        // Endpoints & Clusters Bottom Sheet Dialog
+        if (showDeviceInfo) {
+            DeviceInfoBottomSheet(device, onDismiss = { showDeviceInfo = false })
         }
     }
 }
@@ -280,7 +290,7 @@ private fun SharedSection(
                 modifier = Modifier.weight(1f)
             )
             Icon(
-                imageVector = if (showMatterDeviceInfo) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                 contentDescription = "Info",
             )
         }
@@ -300,6 +310,34 @@ private fun SharedSection(
                 modifier = Modifier.weight(1f)
             )
         }
+    }
+}
+
+@Composable
+private fun EndpointsClustersRow(onClick: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Icon(
+            imageVector = Icons.AutoMirrored.Outlined.List,
+            contentDescription = "Endpoints & Clusters",
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Text(
+            text = "Endpoints & Clusters",
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(1f)
+        )
+        Icon(
+            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = null,
+        )
     }
 }
 

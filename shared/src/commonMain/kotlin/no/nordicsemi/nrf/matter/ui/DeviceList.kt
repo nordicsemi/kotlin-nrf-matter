@@ -16,7 +16,7 @@ import no.nordicsemi.nrf.matter.commission.DecommissionState
 import no.nordicsemi.nrf.matter.model.BasicInformation
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.Endpoint
-import no.nordicsemi.nrf.matter.model.StandardDeviceType
+import no.nordicsemi.nrf.matter.model.SupportedDeviceType
 import no.nordicsemi.nrf.matter.model.toDeviceId
 import no.nordicsemi.nrf.matter.ui.device.DeviceItem
 
@@ -90,5 +90,5 @@ internal val DeviceTest_LIGHT =
             productName = "My Light",
             vendorName = "MyVendor",
         ),
-        endpoints = listOf(Endpoint(id = 1, types = listOf(StandardDeviceType.LIGHT_ON_OFF.value.id))),
+        endpoints = listOf(Endpoint(id = 1, types = listOf(SupportedDeviceType.LIGHT_ON_OFF.value.id))),
     )
