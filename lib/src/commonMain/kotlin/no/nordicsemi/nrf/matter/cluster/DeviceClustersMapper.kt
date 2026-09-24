@@ -23,7 +23,7 @@ fun Device.toClusters(): List<Cluster> {
                 else -> NordicMatters.getCustomClusters()[clusterId]?.let { factory ->
                     factory.first?.let { customDeviceType ->
                         factory.second
-                            .takeIf { customDeviceType != SupportedDeviceType.UNSUPPORTED.value }
+                            .takeIf { customDeviceType != SupportedDeviceType.UNKNOWN.value }
                             .takeIf { device.deviceType == customDeviceType }
                             ?.invoke(deviceId, endpoint.id, client)
                     }
