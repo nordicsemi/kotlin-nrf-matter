@@ -214,7 +214,7 @@ internal fun DeviceItem(
                     RvcControlPanel(rvcOperationalState, rvcRunMode, rvcCleanMode)
                 }
 
-                SharedSection(device, showMatterDeviceInfo) { showMatterDeviceInfo = it }
+                SharedSection(device) { showMatterDeviceInfo = it }
                 EndpointsClustersRow(onClick = { showDeviceInfo = true })
 
                 // Decommission device
@@ -287,7 +287,6 @@ private fun RandomNumberControl(controller: BasicInfoExtController) {
 @Composable
 private fun SharedSection(
     device: Device,
-    showMatterDeviceInfo: Boolean,
     onShowMatterDeviceInfoChange: (Boolean) -> Unit,
 ) {
     Column(
