@@ -39,7 +39,6 @@ import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.model.DeviceId
 import java.security.SecureRandom
 import java.util.Optional
-import java.util.concurrent.atomic.AtomicReference
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
@@ -549,7 +548,6 @@ class ChipClient(
     ): Flow<Any?> = callbackFlow {
         val devicePtr = getConnectedDevicePointer(deviceId.longValue)
 
-        val subscriptionId = AtomicReference<Long?>(null)
         val reportCallback = object : ReportCallback {
             override fun onError(
                 attributePath: ChipAttributePath?,
@@ -582,17 +580,30 @@ class ChipClient(
             minIntervalS = minIntervalS,
             maxIntervalS = maxIntervalS,
             timeoutMs = timeoutMs,
-            onSubscriptionEstablished = { subscriptionId.set(it) },
+            onResubscriptionAttempt = { terminationCause, _ ->
+                // The native SDK schedules its own automatic retry here. We don't want that —
+                // once a subscription drops, give up instead of retrying forever with a growing
+                // backoff. Closing the flow drives the awaitClose block below, which tears the
+                // native ReadClient down for good.
+                close(
+                    IllegalStateException(
+                        "Subscription for attribute $attributeId terminated with error " +
+                                "$terminationCause; not resubscribing"
+                    )
+                )
+            },
         )
 
         awaitClose {
-            subscriptionId.get()?.let {
-                chipDeviceController.shutdownSubscriptions(
-                    chipDeviceController.fabricIndex,
-                    deviceId.longValue,
-                    it,
-                )
-            }
+            // Unconditional and node-scoped: a subscription ID learned via
+            // onSubscriptionEstablished can be stale (a new one is issued on every automatic
+            // resubscription) or may never have been observed if the subscription never
+            // established, so it isn't a reliable handle to shut down by. This kills every
+            // subscription for the node instead, established or still retrying.
+            chipDeviceController.shutdownSubscriptions(
+                chipDeviceController.fabricIndex,
+                deviceId.longValue,
+            )
             NordicLogger.debug("Stopped observing attribute $attributeId", tag = TAG)
         }
     }
@@ -680,7 +691,11 @@ class ChipClient(
      *   automatic resubscription.
      * @param onResubscriptionAttempt Invoked when the subscription drops and the SDK schedules an
      *   automatic retry, with the CHIP error that terminated the subscription and the delay in
-     *   milliseconds until the next attempt.
+     *   milliseconds until the next attempt. Merely observing this callback does not stop the
+     *   retry: the native `ReadClient` will keep resubscribing on its own, with a growing backoff,
+     *   for as long as this subscription exists. To give up instead of retrying forever, the
+     *   callback must itself tear the subscription down, e.g. via
+     *   [ChipDeviceController.shutdownSubscriptions].
      *
      * A non-null [ResubscriptionAttemptCallback] must always be supplied. The native
      * `ReportCallback::OnResubscriptionNeeded` fails with `CHIP_ERROR_INCORRECT_STATE` (0x03) when
