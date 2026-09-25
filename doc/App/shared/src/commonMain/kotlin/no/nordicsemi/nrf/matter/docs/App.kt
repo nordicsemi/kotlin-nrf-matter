@@ -57,13 +57,14 @@ import no.nordicsemi.nrf.matter.docs.docs.LinkTarget
 import no.nordicsemi.nrf.matter.docs.platform.openUrl
 import no.nordicsemi.nrf.matter.docs.screens.DocsBrowserScreen
 import no.nordicsemi.nrf.matter.theme.NordicTheme
+import no.nordicsemi.nrf.matter.ui.PHONE_BORDER_WIDTH
+import no.nordicsemi.nrf.matter.ui.PHONE_MARGIN
+import no.nordicsemi.nrf.matter.ui.PHONE_WIDTH
 import no.nordicsemi.nrf.matter.webdemo.WebDemoEvents
 import org.koin.compose.viewmodel.koinViewModel
 import no.nordicsemi.nrf.matter.App as RealApp
 
-private val PHONE_WIDTH = 412.dp
 private val PANEL_WIDTH = 400.dp
-private val PHONE_MARGIN = 16.dp
 
 private const val COMMISSIONING_GATE_ACTION_LABEL = "Done, add the device"
 
@@ -263,7 +264,7 @@ private fun PhoneFrame(
             .clip(RoundedCornerShape(36.dp)),
         shape = RoundedCornerShape(36.dp),
         shadowElevation = 24.dp,
-        border = BorderStroke(8.dp, Color(0xFF10151A)),
+        border = BorderStroke(PHONE_BORDER_WIDTH, Color(0xFF10151A)),
     ) {
         Box(modifier = Modifier.fillMaxSize(), content = content)
     }

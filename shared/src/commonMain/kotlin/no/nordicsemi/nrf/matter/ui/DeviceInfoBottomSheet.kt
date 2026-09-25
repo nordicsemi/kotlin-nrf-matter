@@ -74,6 +74,8 @@ internal fun DeviceInfoBottomSheet(
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismiss,
+        modifier = Modifier.matterPhoneWidth(),
+        shape = matterPhoneSheetShape(),
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ) {
         DeviceInfoContent(device = device, onDismiss = onDismiss)
