@@ -77,28 +77,41 @@ card provides quick access to essential device details and controls:
 | Card header                    | Device icon, title, subtitle, and the primary control for the device type, for example the on/off switch of a light. Tap to expand or collapse the card.                                                                           |
 | Device-specific controls       | Shown when the card is expanded. The available controls depend on the Matter device type — see [Supported device types](#supported-device-types).                                                                                  |
 | **Matter Device information**  | An expandable preview row displays the Vendor and Firmware version. Tapping this row opens the [Matter Device Information](#matter-device-information) sheet, where you can view the complete set of Basic Information attributes. |
+| **Endpoints & Clusters**       | A row below the device controls opens the [Endpoints & Clusters](#endpoints-clusters) sheet, listing every endpoint the accessory reports, together with its device types and server/client clusters.                              |
 | **Remove/Decommission Device** | Decommissions / Removes the matter accessory from the app's fabric — see [Removing a device](#removing-a-device).                                                                                                                  |
 
 ## Supported device types
 
 The app includes dedicated control interfaces for standard Matter device types, including
-Dimmable Lights, Light Switches, and Door Locks. Additionally, the app supports Nordic
-Manufacturer-Specific Clusters, allowing developers to interact with custom attributes and commands
-on proprietary accessories. Any device type not explicitly implemented by the app is categorized as
-an Unsupported Device Type, where essential metadata (such as Product Name, Vendor ID, and Product
+Dimmable and Color Lights, Outlets, Light Switches, Door Locks, Contact Sensors, Temperature
+Sensors, and Robotic Vacuum Cleaners. Additionally, the app supports Nordic Manufacturer-Specific
+Clusters, allowing developers to interact with custom attributes and commands on proprietary
+accessories. Any device type not explicitly implemented by the app is categorized as an
+Unsupported Device Type, where essential metadata (such as Product Name, Vendor ID, and Product
 ID) can still be inspected and the accessory can be decommissioned as needed.
+
+Which controls a card shows is driven by the clusters the accessory actually exposes, not by its
+declared device type — for example, any device that exposes the On/Off cluster gets the on/off
+toggle, regardless of its device type.
 
 | Device type                  | Matter device type ID | Controls available in the app                                                   |
 |------------------------------|-----------------------|---------------------------------------------------------------------------------|
-| On/off light                 | `0x0100`              | On/off switch, **Brightness Control** slider                                    |
+| On/off light                 | `0x0100`              | On/off switch, **Brightness Control** slider (if Level Control is also present) |
 | Dimmable light               | `0x0101`              | On/off switch, **Brightness Control** slider                                    |
+| Color temperature light      | `0x010C`              | On/off switch, **Brightness Control** slider (color control not implemented)    |
+| Extended color light         | `0x010D`              | On/off switch, **Brightness Control** slider (color control not implemented)    |
+| Outlet                       | `0x010A`              | On/off switch                                                                    |
 | Door lock                    | `0x000A`              | Lock/unlock control                                                             |
 | Light switch                 | `0x0103`              | None — the switch is a client node and is configured on the **Bindings** screen | 
+| Dimmer switch                | `0x0104`              | None — the switch is a client node and is configured on the **Bindings** screen | 
+| Contact sensor               | `0x0015`              | Read-only **Contact detected** / **Contact not detected** indicator             |
+| Temperature sensor           | `0x0302`              | Read-only temperature reading                                                   |
+| Robotic vacuum cleaner       | `0x0074`              | Pause/resume, **Go home**, and **Run mode** / **Clean mode** pickers            |
 | Manufacturer-specific device | `0xFFF10001`          | **Generate number** button, **LED** switch, button state indicator              | 
 | Any other device type        | —                     | None — reported as unsupported                                                  |
 
-Regardless of the device type, every card provides the **Matter Device information** sheet and the
-**Remove/Decommission Device** button.
+Regardless of the device type, every card provides the **Matter Device information** and
+**Endpoints & Clusters** sheets, and the **Remove/Decommission Device** button.
 
 ### Light bulbs
 
@@ -157,6 +170,51 @@ controllable states within the app.
 | `Cluster 0x001D (Descriptor Device Map)` | Explains that the node operates as a Matter client whose Binding Table must be configured to link it with target lights. |
 | Binding hint                             | Directs you to manage the switch's targets on the **Bindings** screen.                                                   |
 
+### Outlets and dimmer switches
+
+An Outlet exposes the same On/Off cluster as a light bulb, so it gets the same on/off toggle on its
+card. A Dimmer switch, like a Light switch, is a client node and exposes no controls of its own —
+it is configured on the **Bindings** screen instead.
+
+### Contact sensors
+
+Once a Contact Sensor is commissioned, its card shows a read-only lock/lock-open icon reflecting
+whether contact is currently detected, and the subtitle switches between **Contact detected** and
+**Contact not detected**. The app subscribes to the sensor's state, so the indicator follows changes
+made externally.
+
+* Contact state — The app subscribes to the Boolean State cluster (`0x0045`) on the accessory.
+
+### Temperature sensors
+
+Once a Temperature Sensor is commissioned, its card shows a read-only badge with the current
+temperature in Celsius, rounded to one decimal place. The app subscribes to the measurement, so the
+value updates live as the accessory reports new readings.
+
+* Temperature reading — The app subscribes to the Temperature Measurement cluster (`0x0402`) on the
+  accessory.
+
+### Robotic vacuum cleaners
+
+Once a Robotic Vacuum Cleaner is commissioned, its card shows the current operational state (for
+example **Running**, **Paused**, or **Docked**) together with the current phase and any remaining
+countdown time the accessory reports. Expanding the card reveals **Run mode** and **Clean mode**
+pickers — shown as a segmented control for a handful of options, or a dropdown once there are more
+than five.
+
+### Robotic vacuum cleaner controls
+
+* Pause / Resume — The app writes the RVC Operational State cluster (`0x0061`) **Pause** or
+  **Resume** command, depending on the current state.
+* Go home — The app writes the RVC Operational State cluster (`0x0061`) **Go Home** command.
+* Run mode — The app writes the RVC Run Mode cluster (`0x0054`) **Change To Mode** command with the
+  selected mode.
+* Clean mode — The app writes the RVC Clean Mode cluster (`0x0055`) **Change To Mode** command with
+  the selected mode.
+
+The card's quick action also offers a shortcut: tapping the play icon while docked starts the first
+supported cleaning mode, and tapping it while paused resumes the current run.
+
 ### Manufacturer-specific device
 
 A Manufacturer-Specific Cluster (also called a Vendor-Specific Cluster) is a non-standardized
@@ -207,9 +265,11 @@ accessory's Basic Information cluster (`0x0028`). It displays key operational de
 
 * Vendor & Identity: Product Name, Vendor Name, Vendor ID (VID), and Product ID (PID).
 
-* Firmware & Build: Software Version, Software Version String, and Serial Number.
+* Firmware & Build: Software Version and Serial Number.
 
 This information is available for all commissioned accessories, including Unsupported Device Types.
+A field is only shown once the accessory has reported it; attributes it does not implement are
+omitted from the sheet rather than shown blank.
 
 | Field                 | Attribute |
 |-----------------------|-----------|
@@ -217,10 +277,20 @@ This information is available for all commissioned accessories, including Unsupp
 | Vendor ID             | `0x0002`  |
 | Product ID            | `0x0004`  |
 | Vendor Name           | `0x0001`  |
-| Software Version      | `0x0009`  |
+| Software Version      | `0x000A`  |
 | Serial Number         | `0x000F`  |
 | Unique ID             | `0x0012`  |
-| Specification Version | `0x0013`  |
+| Specification Version | `0x0015`  |
+
+## Endpoints & Clusters
+
+The **Endpoints & Clusters** sheet lists the raw data the app read from the accessory's Descriptor
+cluster (`0x001D`) during commissioning: every endpoint the device reports, and for each one its
+device types, server clusters, and client clusters, each shown by name next to its hex cluster or
+device type ID. It is the same data the app uses internally to decide which controls to show on the
+device card, made visible for inspection.
+
+This information is available for all commissioned accessories, including Unsupported Device Types.
 
 ## Removing a device
 

@@ -11,7 +11,7 @@ meet the following hardware and software requirements:
 
 #### Minimum Android Operating System & APIs
 
-- Android OS: Android 8.0 (API level 27) or higher.
+- Android OS: Android 8.1 (API level 27) or higher.
 - Google Play Services: Required, specifically with access to Google's Home API (used for local
   fabric and ecosystem device commissioning).
 
@@ -101,8 +101,15 @@ other device type can still be commissioned and inspected, but not controlled.
 |------------------------------|-----------------------|
 | On/off light                 | `0x0100`              |
 | Dimmable light               | `0x0101`              |
+| Color temperature light      | `0x010C`              |
+| Extended color light         | `0x010D`              |
+| Outlet                       | `0x010A`              |
 | Door lock                    | `0x000A`              |
 | Light switch                 | `0x0103`              |
+| Dimmer switch                | `0x0104`              |
+| Contact sensor               | `0x0015`              |
+| Temperature sensor           | `0x0302`              |
+| Robotic vacuum cleaner       | `0x0074`              |
 | Manufacturer-specific device | `0xFFF10001`          |
 
 See [Overview and user interface](overview.md#supported-device-types) for the controls offered for

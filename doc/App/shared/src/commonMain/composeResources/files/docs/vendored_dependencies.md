@@ -13,14 +13,14 @@ This page explains what each one is and what to do if you need to update it.
 
 ## Native Matter (CHIP) SDK binaries
 
-[`/androidDeps/libs`](https://github.com/nordicsemi/kotlin-nrf-matter/tree/main/androidDeps/libs)
+[`/lib/libs`](https://github.com/nordicsemi/kotlin-nrf-matter/tree/main/lib/libs)
 contains prebuilt binaries checked directly into git. They are prebuild binaries and imported into
 this project.
 
 | Kind             | Files                                                                                                                                                                                   |
 |------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Jars             | `AndroidPlatform.jar`, `CHIPClusterID.jar`, `CHIPClusters.jar`, `CHIPController.jar`, `CHIPInteractionModel.jar`, `OnboardingPayload.jar`, `libMatterJson.jar`, `libMatterTlv.jar`      |
-| Native libraries | `libCHIPController.so` and `libc++_shared.so`, in [`/androidDeps/libs/jniLibs/arm64-v8a`](https://github.com/nordicsemi/kotlin-nrf-matter/tree/main/androidDeps/libs/jniLibs/arm64-v8a) |
+| Native libraries | `libCHIPController.so` and `libc++_shared.so`, in [`/lib/libs/jniLibs/arm64-v8a`](https://github.com/nordicsemi/kotlin-nrf-matter/tree/main/lib/libs/jniLibs/arm64-v8a) |
 
 !!! note "Note"
 
@@ -101,6 +101,6 @@ integration steps:
 !!! Caution "Breaking changes"
 
     The Home API is still evolving, so a newer version may introduce breaking changes. Check
-    `androidDeps` and anywhere else the Home API is used — search for `play.services.home` in the
+    `lib` and anywhere else the Home API is used — search for `play.services.home` in the
     source — and adjust as needed.
 
