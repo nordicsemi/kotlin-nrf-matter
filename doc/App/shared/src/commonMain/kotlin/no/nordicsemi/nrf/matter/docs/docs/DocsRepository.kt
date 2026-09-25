@@ -6,6 +6,31 @@ import no.nordicsemi.nrf.matter.docs.markdown.MdBlock
 
 data class DocSection(val id: String, val title: String, val blocks: List<MdBlock>)
 
+data class DocStepPage(val title: String, val blocks: List<MdBlock>)
+
+fun buildStepPages(blocks: List<MdBlock>, fallbackTitle: String): List<DocStepPage> {
+    val pages = mutableListOf<DocStepPage>()
+    var current = mutableListOf<MdBlock>()
+    var currentTitle = fallbackTitle
+
+    fun flush() {
+        if (current.isNotEmpty()) pages += DocStepPage(currentTitle, current)
+        current = mutableListOf()
+    }
+
+    for (block in blocks) {
+        if (block is MdBlock.Heading && block.level <= 2) {
+            flush()
+            currentTitle = block.text
+        } else {
+            current += block
+        }
+        if (block is MdBlock.ImageGallery) flush()
+    }
+    flush()
+    return pages
+}
+
 sealed class LinkTarget {
     data class Internal(val anchor: DocAnchor) : LinkTarget()
     data class External(val url: String) : LinkTarget()

@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -38,6 +39,7 @@ import docs.shared.generated.resources.allDrawableResources
 import org.jetbrains.compose.resources.painterResource
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.ui.layout.ContentScale
 
@@ -223,11 +225,13 @@ private fun AdmonitionView(admonition: MdBlock.Admonition, onLinkClick: (String)
     }
 }
 
+private val MAX_SCREENSHOT_HEIGHT = 380.dp
+
 @Composable
 private fun ImageGalleryView(gallery: MdBlock.ImageGallery) {
     Row(
-        modifier = Modifier.horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp, alignment = Alignment.CenterHorizontally),
     ) {
         gallery.images.forEach { name ->
             val resource = Res.allDrawableResources[name]
@@ -237,7 +241,8 @@ private fun ImageGalleryView(gallery: MdBlock.ImageGallery) {
                     contentDescription = name,
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
-                        .height(360.dp)
+                        .weight(1f, fill = false)
+                        .heightIn(max = MAX_SCREENSHOT_HEIGHT)
                         .clip(RoundedCornerShape(16.dp)),
                 )
             }
