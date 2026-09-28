@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter.docs.markdown
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -23,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
@@ -37,11 +40,6 @@ import androidx.compose.ui.unit.dp
 import docs.shared.generated.resources.Res
 import docs.shared.generated.resources.allDrawableResources
 import org.jetbrains.compose.resources.painterResource
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.ui.layout.ContentScale
 
 @Composable
 fun MarkdownContent(
@@ -231,7 +229,7 @@ private val MAX_SCREENSHOT_HEIGHT = 380.dp
 private fun ImageGalleryView(gallery: MdBlock.ImageGallery) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp, alignment = Alignment.CenterHorizontally),
+        horizontalArrangement = Arrangement.spacedBy(12.dp, alignment = Alignment.Start),
     ) {
         gallery.images.forEach { name ->
             val resource = Res.allDrawableResources[name]
