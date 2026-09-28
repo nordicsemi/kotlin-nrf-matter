@@ -49,7 +49,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.nrf.matter.HomeViewModel
 import no.nordicsemi.nrf.matter.docs.components.DocPanel
-import no.nordicsemi.nrf.matter.docs.components.ObserveWebDemoEvents
+import no.nordicsemi.nrf.matter.docs.components.ObserveAppEvents
 import no.nordicsemi.nrf.matter.docs.docs.DocAnchor
 import no.nordicsemi.nrf.matter.docs.docs.DocLinks
 import no.nordicsemi.nrf.matter.docs.docs.DocPage
@@ -60,7 +60,7 @@ import no.nordicsemi.nrf.matter.theme.NordicTheme
 import no.nordicsemi.nrf.matter.ui.PHONE_BORDER_WIDTH
 import no.nordicsemi.nrf.matter.ui.PHONE_MARGIN
 import no.nordicsemi.nrf.matter.ui.PHONE_WIDTH
-import no.nordicsemi.nrf.matter.webdemo.WebDemoEvents
+import no.nordicsemi.nrf.matter.events.AppEvents
 import org.koin.compose.viewmodel.koinViewModel
 import no.nordicsemi.nrf.matter.App as RealApp
 
@@ -174,7 +174,7 @@ private fun BoxScope.PhoneFrameContent(
 ) {
     RealApp(homeViewModel = koinViewModel<HomeViewModel>())
 
-    ObserveWebDemoEvents(onReveal)
+    ObserveAppEvents(onReveal)
 
     if (!panelBesideFrame && revealedAnchor != null) {
         Box(
@@ -203,7 +203,7 @@ private fun BoxScope.PhoneFrameContent(
                     showFullPage = anchor.isCommissioningGate,
                     primaryActionLabel = if (anchor.isCommissioningGate) COMMISSIONING_GATE_ACTION_LABEL else null,
                     onPrimaryAction = if (anchor.isCommissioningGate) {
-                        { onDismissReveal(); WebDemoEvents.acknowledgeCommissioning() }
+                        { onDismissReveal(); AppEvents.acknowledgeCommissioning() }
                     } else null,
                     modifier = Modifier.fillMaxWidth().heightIn(max = maxHeight * 0.75f),
                 )
@@ -237,7 +237,7 @@ private fun SidePanel(
                     showFullPage = anchor.isCommissioningGate,
                     primaryActionLabel = if (anchor.isCommissioningGate) COMMISSIONING_GATE_ACTION_LABEL else null,
                     onPrimaryAction = if (anchor.isCommissioningGate) {
-                        { onDismiss(); WebDemoEvents.acknowledgeCommissioning() }
+                        { onDismiss(); AppEvents.acknowledgeCommissioning() }
                     } else null,
                     modifier = Modifier.fillMaxSize(),
                 )

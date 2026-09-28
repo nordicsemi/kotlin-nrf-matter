@@ -12,8 +12,8 @@ import no.nordicsemi.nrf.matter.api.Fabric
 import no.nordicsemi.nrf.matter.api.NordicMatters
 import no.nordicsemi.nrf.matter.cluster.WebMatterClient
 import no.nordicsemi.nrf.matter.model.DeviceId
-import no.nordicsemi.nrf.matter.webdemo.WebDemoAction
-import no.nordicsemi.nrf.matter.webdemo.WebDemoEvents
+import no.nordicsemi.nrf.matter.events.AppEvent
+import no.nordicsemi.nrf.matter.events.AppEvents
 import no.nordicsemi.nrf.matter.webdemo.WebDeviceCatalog
 import no.nordicsemi.nrf.matter.webdemo.seedDevice
 import kotlin.random.Random
@@ -58,13 +58,13 @@ private class WebCommissioningTask(
         isRunning = true
 
         scope.launch {
-            WebDemoEvents.publish(WebDemoAction.CommissioningStarted)
-            WebDemoEvents.awaitCommissioningAcknowledged()
+            AppEvents.publish(AppEvent.CommissioningStarted)
+            AppEvents.awaitCommissioningAcknowledged()
             delay(1200)
 
             if (Random.nextInt(100) < FAILURE_CHANCE_PERCENT) {
                 isRunning = false
-                WebDemoEvents.publish(WebDemoAction.CommissioningFailed)
+                AppEvents.publish(AppEvent.CommissioningFailed)
                 onError(
                     CommissioningException(
                         deviceId = null,
@@ -82,7 +82,7 @@ private class WebCommissioningTask(
             client.seedDevice(deviceId, profile)
 
             isRunning = false
-            WebDemoEvents.publish(WebDemoAction.CommissioningSucceeded(deviceId))
+            AppEvents.publish(AppEvent.CommissioningSucceeded(deviceId))
             onSuccess(deviceId)
         }
     }

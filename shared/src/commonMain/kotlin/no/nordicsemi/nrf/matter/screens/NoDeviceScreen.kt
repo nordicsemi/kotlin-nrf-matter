@@ -48,7 +48,9 @@ import no.nordicsemi.nrf.matter.platform.getAppVersion
 import no.nordicsemi.nrf.matter.shared.generated.resources.Res
 import no.nordicsemi.nrf.matter.shared.generated.resources.no_matter_devices
 import no.nordicsemi.nrf.matter.theme.NordicTheme
-import no.nordicsemi.nrf.matter.webdemo.notifyWebDemoInteraction
+import no.nordicsemi.nrf.matter.events.AppEvent
+import no.nordicsemi.nrf.matter.events.AppEvents
+import no.nordicsemi.nrf.matter.events.AppInteraction
 import org.jetbrains.compose.resources.painterResource
 
 /*
@@ -129,7 +131,10 @@ fun NoDevicesScreen(
 
             // Action Button
             Button(
-                onClick = { notifyWebDemoInteraction("add-new-device"); onAddDeviceClick() },
+                onClick = {
+                    AppEvents.publish(AppEvent.NamedInteraction(AppInteraction.AddNewDevice))
+                    onAddDeviceClick()
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
@@ -152,7 +157,10 @@ fun NoDevicesScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TextButton(onClick = { notifyWebDemoInteraction("what-is-matter"); onMatterUrlClick() }) {
+            TextButton(onClick = {
+                AppEvents.publish(AppEvent.NamedInteraction(AppInteraction.WhatIsMatter))
+                onMatterUrlClick()
+            }) {
                 Text(
                     "What is Matter?",
                     style = MaterialTheme.typography.labelLarge,
@@ -183,7 +191,10 @@ fun NoDevicesScreen(
                 text = "Source Code",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.clickable { notifyWebDemoInteraction("source-code"); onSourceCodeClick() }
+                modifier = Modifier.clickable {
+                    AppEvents.publish(AppEvent.NamedInteraction(AppInteraction.SourceCode))
+                    onSourceCodeClick()
+                }
             )
         }
     }

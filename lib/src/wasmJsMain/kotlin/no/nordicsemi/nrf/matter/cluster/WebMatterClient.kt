@@ -3,8 +3,8 @@ package no.nordicsemi.nrf.matter.cluster
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import no.nordicsemi.nrf.matter.model.DeviceId
-import no.nordicsemi.nrf.matter.webdemo.WebDemoAction
-import no.nordicsemi.nrf.matter.webdemo.WebDemoEvents
+import no.nordicsemi.nrf.matter.events.AppEvent
+import no.nordicsemi.nrf.matter.events.AppEvents
 import kotlin.random.Random
 
 private data class AttributeKey(
@@ -55,7 +55,7 @@ internal class WebMatterClient : MatterClient() {
         // Fires the moment a real cluster controller subscribes -- i.e. the moment a device
         // card expands -- so simply looking at a device reveals its control docs, not just
         // touching its controls.
-        WebDemoEvents.publish(WebDemoAction.ClusterAttributeObserved(deviceId, endpoint, clusterId, attributeId))
+        AppEvents.publish(AppEvent.ClusterAttributeObserved(deviceId, endpoint, clusterId, attributeId))
         return flowFor(deviceId, endpoint, clusterId, attributeId) as Flow<T>
     }
 
@@ -97,7 +97,7 @@ internal class WebMatterClient : MatterClient() {
                     Random.nextLong(0, 100_000)
             }
         }
-        WebDemoEvents.publish(WebDemoAction.ClusterCommandExecuted(deviceId, endpoint, clusterId, commandId))
+        AppEvents.publish(AppEvent.ClusterCommandExecuted(deviceId, endpoint, clusterId, commandId))
     }
 }
 

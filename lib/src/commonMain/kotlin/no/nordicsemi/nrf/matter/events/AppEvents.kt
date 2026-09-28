@@ -1,13 +1,14 @@
-package no.nordicsemi.nrf.matter.webdemo
+package no.nordicsemi.nrf.matter.events
 
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import no.nordicsemi.nrf.matter.model.DeviceId
 
 /**
  * The seam a docs/demo host observes to know what the visitor just did, so it can reveal the
- * matching documentation snippet. This exists only in the wasmJs target -- it has no effect on
- * and no visibility from the Android/iOS apps.
+ * matching documentation snippet. `:shared` publishes unconditionally on every platform; only
+ * the wasmJs docs host actually collects [events], so publishing has no effect on Android/iOS.
  *
  * [WebMatterClient] is the single choke point every real cluster controller in `:shared` reads
  * and writes through, so [ClusterAttributeObserved]/[ClusterCommandExecuted] cover on/off, lock,
@@ -15,13 +16,12 @@ import no.nordicsemi.nrf.matter.model.DeviceId
  * them to a doc anchor by (device kind, clusterId), not by re-deriving which specific control
  * fired.
  */
-object WebDemoEvents {
-    val lastAction = MutableStateFlow<WebDemoAction?>(null)
+object AppEvents {
+    val events = MutableSharedFlow<AppEvent>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
     private val commissioningAcknowledgement = Channel<Unit>(Channel.CONFLATED)
 
-    /** Public (not internal): `:shared`'s wasmJs actuals publish named interactions too, see [WebDemoAction.NamedInteraction]. */
-    fun publish(action: WebDemoAction) {
-        lastAction.value = action
+    fun publish(event: AppEvent) {
+        events.tryEmit(event)
     }
 
     suspend fun awaitCommissioningAcknowledged() {
@@ -33,29 +33,29 @@ object WebDemoEvents {
     }
 }
 
-sealed class WebDemoAction {
+sealed class AppEvent {
     /** A real cluster controller started observing this attribute -- fires the moment a device card expands. */
     data class ClusterAttributeObserved(
         val deviceId: DeviceId,
         val endpoint: Int,
         val clusterId: Long,
         val attributeId: Long,
-    ) : WebDemoAction()
+    ) : AppEvent()
 
     data class ClusterCommandExecuted(
         val deviceId: DeviceId,
         val endpoint: Int,
         val clusterId: Long,
         val commandId: Long,
-    ) : WebDemoAction()
+    ) : AppEvent()
 
-    data object BindingStarted : WebDemoAction()
-    data class BindingCompleted(val sourceNodeId: DeviceId, val targetNodeId: DeviceId) : WebDemoAction()
-    data class DeviceDecommissioned(val deviceId: DeviceId) : WebDemoAction()
-    data object CommissioningStarted : WebDemoAction()
-    data class CommissioningSucceeded(val deviceId: DeviceId) : WebDemoAction()
-    data object CommissioningFailed : WebDemoAction()
+    data object BindingStarted : AppEvent()
+    data class BindingCompleted(val sourceNodeId: DeviceId, val targetNodeId: DeviceId) : AppEvent()
+    data class DeviceDecommissioned(val deviceId: DeviceId) : AppEvent()
+    data object CommissioningStarted : AppEvent()
+    data class CommissioningSucceeded(val deviceId: DeviceId) : AppEvent()
+    data object CommissioningFailed : AppEvent()
 
     /** A UI element with no natural cluster-level signal was tapped -- published from `:shared`. */
-    data class NamedInteraction(val key: String) : WebDemoAction()
+    data class NamedInteraction(val interaction: AppInteraction) : AppEvent()
 }

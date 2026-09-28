@@ -4,7 +4,8 @@ import no.nordicsemi.nrf.matter.cluster.BasicInfoClusterInfo
 import no.nordicsemi.nrf.matter.cluster.DoorLockClusterInfo
 import no.nordicsemi.nrf.matter.cluster.LevelControlClusterInfo
 import no.nordicsemi.nrf.matter.cluster.OnOffClusterInfo
-import no.nordicsemi.nrf.matter.webdemo.WebDemoAction
+import no.nordicsemi.nrf.matter.events.AppEvent
+import no.nordicsemi.nrf.matter.events.AppInteraction
 
 /**
  * Hand-authored wiring between a specific UI element in the demo shell and the doc section
@@ -62,31 +63,34 @@ object DocLinks {
         else -> null
     }
 
-    private fun forNamedInteraction(key: String): DocAnchor? = when (key) {
-        "device-card-expand" -> SupportedDeviceTypes
-        "matter-device-information" -> MatterDeviceInformation
-        "what-is-matter" -> AppIntro
-        "source-code" -> SourceCode
-        "nav-tab-Dashboard" -> Dashboard
-        "nav-tab-Bindings" -> BindingsIntro
-        "nav-tab-Logs Panel" -> LogsIntro
-        else -> null
+    private fun forNamedInteraction(interaction: AppInteraction): DocAnchor? = when (interaction) {
+        AppInteraction.AddNewDevice -> GettingStartedScreen
+        AppInteraction.DeviceCardExpand -> SupportedDeviceTypes
+        AppInteraction.MatterDeviceInformation -> MatterDeviceInformation
+        AppInteraction.WhatIsMatter -> AppIntro
+        AppInteraction.SourceCode -> SourceCode
+        is AppInteraction.NavTabSelected -> when (interaction.tabTitle) {
+            "Dashboard" -> Dashboard
+            "Bindings" -> BindingsIntro
+            "Logs Panel" -> LogsIntro
+            else -> null
+        }
     }
 
     /**
-     * Maps a live [WebDemoAction] published by the real `:lib`/`:shared` web fakes to the doc
+     * Maps a live [AppEvent] published by the real `:lib`/`:shared` web fakes to the doc
      * section that explains it -- the seam that lets interacting with the *real* app shell reveal
      * documentation instead of just doing the real thing.
      */
-    fun forWebDemoAction(action: WebDemoAction): DocAnchor? = when (action) {
-        is WebDemoAction.ClusterCommandExecuted -> forClusterId(action.clusterId)
-        is WebDemoAction.ClusterAttributeObserved -> forClusterId(action.clusterId)
-        is WebDemoAction.NamedInteraction -> forNamedInteraction(action.key)
-        WebDemoAction.BindingStarted -> WritingABinding
-        is WebDemoAction.BindingCompleted -> ActiveBindingTableEntries
-        is WebDemoAction.DeviceDecommissioned -> RemovingADevice
-        WebDemoAction.CommissioningStarted -> OnboardingWalkthrough
-        is WebDemoAction.CommissioningSucceeded -> DeviceCards
-        WebDemoAction.CommissioningFailed -> IfCommissioningFails
+    fun forAppEvent(action: AppEvent): DocAnchor? = when (action) {
+        is AppEvent.ClusterCommandExecuted -> forClusterId(action.clusterId)
+        is AppEvent.ClusterAttributeObserved -> forClusterId(action.clusterId)
+        is AppEvent.NamedInteraction -> forNamedInteraction(action.interaction)
+        AppEvent.BindingStarted -> WritingABinding
+        is AppEvent.BindingCompleted -> ActiveBindingTableEntries
+        is AppEvent.DeviceDecommissioned -> RemovingADevice
+        AppEvent.CommissioningStarted -> OnboardingWalkthrough
+        is AppEvent.CommissioningSucceeded -> DeviceCards
+        AppEvent.CommissioningFailed -> IfCommissioningFails
     }
 }
