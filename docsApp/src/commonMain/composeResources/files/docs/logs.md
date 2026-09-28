@@ -5,9 +5,8 @@ and writes, and binding operations. It is the first place to look when an access
 respond.
 
 Log entries are persisted locally, ensuring they remain available across application restarts. On
-Android, logs are saved to a local database. On iOS, logging is managed via the [Pulse](https://github.com/kean/Pulse) library, which
-stores logs in a file configured using App Groups, making them available to both the main app and
-its app extension.
+Android, logs are saved to a local database. On iOS, stored to a file that uses App Groups, making 
+them available to both the main app and its app extension.
 
 <div align="center">
   <img src="./screenshots/logs_panel.png" alt="Logs Panel" />

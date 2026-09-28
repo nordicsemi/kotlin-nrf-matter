@@ -33,9 +33,6 @@ Commissioning goes through Google Play Services and the Android Home API:
 1. Launch the nRF Matter Android App:
    Open the **nRF Matter** app on your Android device. Tap **+ Add New Device** on the Getting Started screen (or the floating **+** button if devices are
    already present) to launch the Android system commissioning interface.
-   !!! note "Prerequisite"
-
-   App has camera & Bluetooth permissions.
 
 2. Scan Payload or Enter Code:
    Scan the accessory's Matter **QR Code** using the on-screen camera viewfinder, or tap **Setup
@@ -60,8 +57,7 @@ Commissioning goes through Google Play Services and the Android Home API:
    After successful fabric join, the app queries Endpoint 0 clusters over IP:
    * Reads **Descriptor Cluster (`0x001D`)** to identify endpoints and Device Type IDs.
    * Reads **Basic Information Cluster (`0x0028`)** for basic matter device metadata such as Vendor ID,
-     Product ID, Product Name, and Serial
-     Number.
+     Product ID, Product Name, and Serial Number.
 
 7. Dashboard Rendering:
    The onboarding window closes and redirects to the main view, replacing or appending a new
@@ -126,5 +122,5 @@ technical investigation.
 !!! tip "Commissioning an accessory that was paired before"
 
     An accessory only accepts commissioning while it is in commissioning mode, and it keeps the
-    credentials of fabrics it has already joined. If a device was previously paired — including a
-    device that was force-removed from this app — factory reset it before commissioning it again.
+    credentials of fabrics it has already joined. If a device was previously paired, including a
+    device that was force-removed from this app, factory reset it before commissioning it again.

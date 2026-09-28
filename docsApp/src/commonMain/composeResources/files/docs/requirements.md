@@ -36,9 +36,6 @@ meet the following hardware and software requirements:
 
 - Google Account: An active Google account signed in on the phone (required for Google Home API/Play
   Services authentication during commissioning).
-- Thread Border Router (if using Thread devices): A border router (such as a Nest Hub or Google TV
-  Streamer 4K) set up on the same network via the Google Home app so local Thread network
-  credentials can be shared with the nRF Matter app.
 
 ### iOS
 
@@ -49,8 +46,7 @@ software must meet the following requirements:
 
 - iOS / iPadOS: **iOS 26.0** or higher. Both the vendored `ios-matter` package and the Xcode targets
   set that as their minimum, because the Apple `Matter` and `MatterSupport` APIs the app relies on
-  are only available
-  there.
+  are only available there.
 
 #### Hardware & Architecture
 
@@ -62,10 +58,8 @@ software must meet the following requirements:
 
 #### Permissions & Device Profiles
 
-- Local Network & Bluetooth Permissions: The app requires explicit user permission for *Local
-  Network* (to discover mDNS nodes) and *Bluetooth* (for initial BLE commissioning).
-- iCloud Account: An active Apple ID/iCloud account signed in to the iPhone is required to sync
-  and manage local Matter fabric keys securely.
+- Local Network: The app requires explicit user permission for *Local Network* so it can communicate
+  with Matter device over Wi-Fi.
 
 #### Thread & Network Prerequisites
 

@@ -12,7 +12,7 @@ the iOS-specific implementation written in Swift.
 
 ## Overview
 
-The app acts as a Matter **controller and administrator** on its own local fabric. It commissions
+The app acts as a **Matter controller** on its own local fabric. It commissions
 accessories, keeps their node IDs and credentials, reads and writes their clusters, and writes
 Access Control List and Binding Cluster entries on them.
 
@@ -22,13 +22,10 @@ The application supports the following features:
     - Android — through the Android Home API and Google Play Services, provisioning the device onto
       both the Google Home fabric and the app's local fabric.
     - iOS — through Apple's `MatterSupport` framework (`MatterAddDeviceRequest`), onto a local
-      fabric
-      managed directly by the app itself (using `Matter.framework` and `MTRDeviceController`), with
-      a
-      bundled app extension providing the system QR-code scanning UI.
+      fabric managed directly by the app itself (using `Matter.framework` and `MTRDeviceController`), with
+      a bundled app extension providing the system QR-code scanning UI.
 - **Controlling** commissioned devices — door locks, light bulbs (dimmable light bulb), switches,
-  and manufacturer-specific
-  clusters.
+  and manufacturer-specific clusters.
 - **Managing bindings** between devices, for example a light switch controlling a light bulb
   directly.
 - **Viewing logs** for diagnosing commissioning and cluster interactions.

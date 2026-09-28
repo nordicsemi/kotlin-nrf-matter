@@ -20,6 +20,9 @@ Matter Virtual Device application:
 
 - Dimmable Light
 - Door Lock
+- Contact Sensor
+- Temperature Sensor
+- Robotic Vacuum Cleaner
 
 To explore and test additional device types, a compatible Nordic development kit is required.
 

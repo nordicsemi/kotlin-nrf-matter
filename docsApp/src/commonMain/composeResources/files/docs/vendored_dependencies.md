@@ -6,8 +6,7 @@
 
 Two dependencies are checked directly into the repository rather than resolved from a remote
 repository: the native Matter (CHIP) binaries, and the Google Home API Maven artifacts. Cloning the
-repository and building is enough — none of them require
-manual setup.
+repository and building is enough — none of them require manual setup.
 
 This page explains what each one is and what to do if you need to update it.
 
@@ -89,13 +88,14 @@ integration steps:
    account.
 2. Access the Home APIs early-access program and download the ZIP archive containing the SDK
    artifacts.
-3. Extract the SDK into your system's local Maven repository, the `.m2/repository` directory:
-    - **Linux:** `~/.m2/repository/`
-    - **macOS:** `~/.m2/repository/`
-    - **Windows:** `C:\Users\<User_Name>\.m2\repository\`
-4. Add `mavenLocal()` to your Gradle `repositories` block so Gradle can find the artifacts.
-   `settings.gradle.kts` already declares it alongside the vendored `./mavenLocal` repository.
-5. Repeat this process each time the SDK is updated, until Google officially publishes it to a Maven
+3. Extract the ZIP. It already has the shape of a Maven repository, rooted at
+   `com/google/android/gms/`.
+4. Copy the updated `com/google/android/gms/play-services-home` and
+   `com/google/android/gms/play-services-home-types` directories  into this repository's `/mavenLocal`
+   directory, replacing the existing ones.
+5. Update the version numbers if needed in the file `lib/build.gradle.kts`. Replace 
+   **libs.play.services.home** and **libs.play.services.types** with a correct artifact.
+6. Repeat this process each time the SDK is updated, until Google officially publishes it to a Maven
    repository.
 
 !!! Caution "Breaking changes"

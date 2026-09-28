@@ -3,8 +3,6 @@
 A guided first run of nRF Matter, using a simulated accessory instead of real hardware, so no
 development kit and no Thread Border Router are required.
 
-[Download nRF Matter on the App Store](https://apps.apple.com/ng/app/nrf-matter/id6786253679)
-
 The onboarding flow can be a little tricky, especially for those who have never worked with Matter
 devices before. This walkthrough goes through it end to end, screen by screen.
 

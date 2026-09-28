@@ -1,6 +1,6 @@
 # Building the application
 
-The application is built from source; it is not distributed through the app stores from this
+The application is built from source. It is not distributed through the app stores from this
 repository. Check the [requirements](requirements.md) before you start.
 
 Clone the repository first:

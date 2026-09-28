@@ -41,14 +41,13 @@ credentials.
 
 Set up a Thread Border Router, such as a Nest Hub (2nd generation) or a Google TV Streamer 4K,
 through the Google Home app. Google Play Services, by way of the Home API, then makes the
-credentials
-available to this app in the same way.
+credentials available to this app in the same way.
 
 Keep the following in mind:
 
 - The phone and the hub **must be on the same Wi-Fi network**. Credential and device discovery
   relies on local-network multicast (mDNS), which does not cross subnets or routers.
-- The hub needs a **user account signed in** — A Google account added through the Google Home app —
+- The hub needs a **user account signed in** — A Google account added through the Google Home app,
   before it shares any credentials. A freshly unboxed hub with no account will not work.
 - Make sure the router on the network has **IPv6 enabled**. Without it, Thread commissioning can
   appear to succeed, but device control might fail afterward.

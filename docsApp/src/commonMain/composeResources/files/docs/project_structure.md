@@ -11,8 +11,7 @@ hosts this documentation. It consists of the following Gradle modules, declared 
 | [`/androidApp`](https://github.com/nordicsemi/kotlin-nrf-matter/tree/main/androidApp)                | The Android application entry point.                                                                                                                      |
 | [`/iosApp`](https://github.com/nordicsemi/kotlin-nrf-matter/tree/main/iosApp)                        | The iOS application entry point (SwiftUI host for the shared Compose UI) and the `nrfMatter` target (`MatterSupport` app extension for system commissioning/QR UI).                                                                                        |
 | [`/ios-matter`](https://github.com/nordicsemi/kotlin-nrf-matter/tree/main/ios-matter)                | The Swift package wrapping Apple's `Matter` and `MatterSupport` frameworks, compiled to a static library and linked via Cinterop into Kotlin. Not a Gradle module — see [below](#ios-matter).                                                             |
-| [`/doc/App/shared`](https://github.com/nordicsemi/kotlin-nrf-matter/tree/main/doc/App/shared)        | The Markdown content and rendering for this documentation (including this page), packaged as Compose resources.                                                                                                                                          |
-| [`/doc/App/webApp`](https://github.com/nordicsemi/kotlin-nrf-matter/tree/main/doc/App/webApp)        | The Wasm/JS browser app that hosts the documentation and, for the onboarding walkthrough, embeds the real `:shared` UI for the side-by-side live preview.                                                                                                  |
+| [`/docsApp`](https://github.com/nordicsemi/kotlin-nrf-matter/tree/main/docsApp)                      | This documentation (including this page): the Markdown content and rendering in `commonMain`, packaged as Compose resources, plus the Wasm/JS browser entry point in `wasmJsMain` that hosts it and, for the onboarding walkthrough, embeds the real `:shared` UI for the side-by-side live preview.                                                     |
 
 ## lib
 
@@ -36,7 +35,7 @@ library, published as `no.nordicsemi.nrf.matter:matter-support`, in the usual so
 Multiplatform UI: screens for the dashboard, commissioning, bindings, and logs, per-device-type
 controllers (locks, lights, switches, contact and temperature sensors, the robotic vacuum cleaner
 controls), the theme, navigation, and the view models and Koin bindings behind them. It
-`api`-exports `:lib`, so it is also the iOS framework the Xcode project consumes — Swift needs a
+`api` exports `:lib`, so it is also the iOS framework the Xcode project consumes. Swift needs a
 single `import shared` to reach the whole Kotlin surface. Both Xcode targets build it through a
 run-script phase calling `./gradlew :shared:embedAndSignAppleFrameworkForXcode`.
 
@@ -48,7 +47,7 @@ application entry point.
 ## iosApp
 
 [`/iosApp`](https://github.com/nordicsemi/kotlin-nrf-matter/tree/main/iosApp/iosApp) is the iOS
-application entry point — a SwiftUI host for the shared Compose UI — plus the `nrfMatter` target,
+application entry point, a SwiftUI host for the shared Compose UI, plus the `nrfMatter` target,
 which is the `MatterSupport` app extension that provides the system commissioning and QR-code UI.
 
 Even though the UI is shared, this project is required as the entry point for the iOS app, and is
@@ -57,11 +56,10 @@ where you would add any additional SwiftUI code.
 ## ios-matter
 
 [`/ios-matter`](https://github.com/nordicsemi/kotlin-nrf-matter/tree/main/ios-matter) is a full Swift
-package — manifest and sources — checked directly into git, the Apple-side counterpart to the
-vendoring described in [Vendored dependencies](vendored_dependencies.md). It used to be resolved
-from a git remote at an exact tag; it is now built in place.
+package, manifest and sources, checked directly into git, the Apple-side counterpart to the
+vendoring described in [Vendored dependencies](vendored_dependencies.md)..
 
-**It is not a SwiftPM dependency of the Kotlin build.** It is compiled to a static library and
+It is compiled to a static library and
 consumed through plain cinterop, so the Swift object code ends up *inside* the published artifact.
 Three Gradle tasks per iOS target do this, in `shared/build.gradle.kts`:
 
@@ -72,9 +70,9 @@ Three Gradle tasks per iOS target do this, in `shared/build.gradle.kts`:
 | `cinteropIosMatter<Target>`     | Translates that module into the `iosMatter` Kotlin package and embeds the archive in the klib.                                                   |
 
 `./gradlew :shared:iosMatterStaticLibs` builds the library for every target. All three tasks run
-automatically as part of any iOS compile — there is nothing to invoke by hand.
+automatically as part of any iOS compile.
 
-Only the `@objc public` surface of `ios-matter` crosses the boundary; the Swift-generated
+Only the `@objc public` surface of `ios-matter` crosses the boundary. The Swift-generated
 Objective-C header is the contract, which is why the Kotlin-facing classes are annotated. Kotlin
 reaches them through the `iosMatter.*` package, for example `iosMatter.SwiftLogger` and
 `iosMatter.MatterCommissionerImpl`.
@@ -92,16 +90,15 @@ One consequence of `/ios-matter` staying a local package: SwiftPM refuses `unsaf
 consumed as a dependency, but exempts local ones. That is what lets `/ios-matter/Package.swift` keep
 `-enable-library-evolution`. Its comment explains why that flag is needed.
 
-## doc/App
+## docsApp
 
-[`/doc/App`](https://github.com/nordicsemi/kotlin-nrf-matter/tree/main/doc/App) is itself a small
-Kotlin Multiplatform Compose project — the documentation you are reading now:
+[`/docsApp`](https://github.com/nordicsemi/kotlin-nrf-matter/tree/main/docsApp) is itself a small
+Kotlin Multiplatform Compose project, the documentation you are reading now:
 
-- `doc/App/shared` packages the Markdown pages (under
-  `composeResources/files/docs`) and the screens that render them.
-- `doc/App/webApp` is the Wasm/JS entry point that runs in the browser. For the onboarding
-  walkthrough, it depends directly on `:shared` so the documentation can embed the real app UI as a
-  live, interactive preview alongside the written steps, instead of static screenshots.
+- `commonMain` packages the Markdown pages (under `composeResources/files/docs`) and the screens
+  that render them. It depends directly on `:shared` so the documentation can embed the real app UI
+  as a live, interactive preview alongside the written steps, instead of static screenshots.
+- `wasmJsMain` is the Wasm/JS entry point that runs in the browser.
 
-Neither module ships as part of the mobile app; they exist purely to author and serve this
-documentation site.
+It doesn't ship as part of the mobile app. It exists purely to author and serve this documentation
+site.

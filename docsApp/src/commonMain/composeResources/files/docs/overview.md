@@ -4,8 +4,7 @@ The app is build in Compose Multiplatform, the user interface provides identical
 and controls across both Android and iOS. The app automatically adapts to the system theme on both
 platforms. The only platform-specific behavior occurs during commissioning, where execution is
 handed off to the native operating system — `Google Play Services` on Android and Apple’s
-`MatterSupport`
-on iOS.
+`MatterSupport` on iOS.
 
 Upon launch, the app opens to the Dashboard. If no accessories have been commissioned, a
 Getting Started screen appears with options to begin setup, access Matter documentation, and view
@@ -27,16 +26,6 @@ The following elements are present on every screen.
 | Bottom navigation bar | The bottom navigation bar allows to switch between the three main screens: **Dashboard**, **Bindings**, and **Logs Panel**.                                                           |
 | Add device button     | A floating **+** button in the bottom-right corner allows the user to commission other matter devices. This button appears once at least one device has been commissioned to the app. |
 | Back navigation       | The system back gesture or button closes the current screen. From **Bindings** or **Logs Panel** it returns to the Dashboard; from the Dashboard it leaves the app.                   |
-
-The top app bar title depends on the current screen.
-
-| Screen                                      | Bottom navigation label          | Top app bar title |
-|---------------------------------------------|----------------------------------|-------------------|
-| Dashboard, no devices commissioned          | Dashboard                        | `nRF Matter`      |
-| Dashboard, at least one device commissioned | Dashboard                        | `Dashboard`       |
-| Bindings                                    | Bindings                         | `Bindings`        |
-| Logs                                        | Logs Panel                       | `Logs`            |
-| Commissioning                               | *(not in the bottom navigation)* | `Commissioning`   |
 
 ## Dashboard
 
