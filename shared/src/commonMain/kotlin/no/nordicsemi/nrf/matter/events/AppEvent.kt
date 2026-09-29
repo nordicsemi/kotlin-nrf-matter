@@ -1,27 +1,6 @@
-package no.nordicsemi.nrf.matter.docs.demo
+package no.nordicsemi.nrf.matter.events
 
-import kotlinx.coroutines.channels.BufferOverflow
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.MutableSharedFlow
-import no.nordicsemi.nrf.matter.events.AppInteraction
 import no.nordicsemi.nrf.matter.model.DeviceId
-
-object AppEvents {
-    val events = MutableSharedFlow<AppEvent>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
-    private val commissioningAcknowledgement = Channel<Unit>(Channel.CONFLATED)
-
-    fun publish(event: AppEvent) {
-        events.tryEmit(event)
-    }
-
-    suspend fun awaitCommissioningAcknowledged() {
-        commissioningAcknowledgement.receive()
-    }
-
-    fun acknowledgeCommissioning() {
-        commissioningAcknowledgement.trySend(Unit)
-    }
-}
 
 sealed class AppEvent {
     data class ClusterAttributeObserved(
@@ -45,5 +24,11 @@ sealed class AppEvent {
     data class CommissioningSucceeded(val deviceId: DeviceId) : AppEvent()
     data object CommissioningFailed : AppEvent()
 
-    data class NamedInteraction(val interaction: AppInteraction) : AppEvent()
+    data object AddNewDevice : AppEvent()
+    data object WhatIsMatter : AppEvent()
+    data object SourceCode : AppEvent()
+    data class NavTabSelected(val tabTitle: String) : AppEvent()
+    data object DeviceCardExpand : AppEvent()
+    data object MatterDeviceInformation : AppEvent()
+    data object EndpointsClusters : AppEvent()
 }

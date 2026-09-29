@@ -56,10 +56,9 @@ import no.nordicsemi.nrf.matter.docs.docs.DocPage
 import no.nordicsemi.nrf.matter.docs.docs.LinkTarget
 import no.nordicsemi.nrf.matter.docs.platform.openUrl
 import no.nordicsemi.nrf.matter.docs.screens.DocsBrowserScreen
+import no.nordicsemi.nrf.matter.events.AppEvents
 import no.nordicsemi.nrf.matter.theme.NordicTheme
 import no.nordicsemi.nrf.matter.ui.MatterOverlayHostState
-import no.nordicsemi.nrf.matter.docs.demo.AppEvent
-import no.nordicsemi.nrf.matter.docs.demo.AppEvents
 import no.nordicsemi.nrf.matter.platform.AppEnvironment
 import no.nordicsemi.nrf.matter.platform.PlatformType
 import androidx.compose.ui.draw.blur
@@ -178,7 +177,6 @@ private fun BoxScope.PhoneFrameContent(
             appVersion = "web-demo",
             blur = { blur(16.dp) },
             overlayHost = overlayHost,
-            onInteraction = { AppEvents.publish(AppEvent.NamedInteraction(it)) },
         )
     }
 

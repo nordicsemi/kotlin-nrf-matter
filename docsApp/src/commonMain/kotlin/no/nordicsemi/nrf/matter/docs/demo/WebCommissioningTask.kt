@@ -7,6 +7,8 @@ import no.nordicsemi.nrf.matter.api.Fabric
 import no.nordicsemi.nrf.matter.commission.CommissioningException
 import no.nordicsemi.nrf.matter.commission.CommissioningTask
 import no.nordicsemi.nrf.matter.commission.Stage
+import no.nordicsemi.nrf.matter.events.AppEvent
+import no.nordicsemi.nrf.matter.events.AppEvents
 import no.nordicsemi.nrf.matter.model.DeviceId
 import kotlin.random.Random
 

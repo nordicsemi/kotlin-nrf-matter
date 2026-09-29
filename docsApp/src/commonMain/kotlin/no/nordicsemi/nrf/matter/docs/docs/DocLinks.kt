@@ -4,8 +4,7 @@ import no.nordicsemi.nrf.matter.cluster.BasicInfoClusterInfo
 import no.nordicsemi.nrf.matter.cluster.DoorLockClusterInfo
 import no.nordicsemi.nrf.matter.cluster.LevelControlClusterInfo
 import no.nordicsemi.nrf.matter.cluster.OnOffClusterInfo
-import no.nordicsemi.nrf.matter.docs.demo.AppEvent
-import no.nordicsemi.nrf.matter.events.AppInteraction
+import no.nordicsemi.nrf.matter.events.AppEvent
 
 object DocLinks {
     val AppIntro = DocAnchor(DocPage.INDEX)
@@ -59,30 +58,26 @@ object DocLinks {
         else -> null
     }
 
-    private fun forNamedInteraction(interaction: AppInteraction): DocAnchor? = when (interaction) {
-        AppInteraction.AddNewDevice -> GettingStartedScreen
-        AppInteraction.DeviceCardExpand -> SupportedDeviceTypes
-        AppInteraction.MatterDeviceInformation -> MatterDeviceInformation
-        AppInteraction.EndpointsClusters -> EndpointsClusters
-        AppInteraction.WhatIsMatter -> AppIntro
-        AppInteraction.SourceCode -> SourceCode
-        is AppInteraction.NavTabSelected -> when (interaction.tabTitle) {
-            "Dashboard" -> Dashboard
-            "Bindings" -> BindingsIntro
-            "Logs Panel" -> LogsIntro
-            else -> null
-        }
-    }
-
     fun forAppEvent(action: AppEvent): DocAnchor? = when (action) {
         is AppEvent.ClusterCommandExecuted -> forClusterId(action.clusterId)
         is AppEvent.ClusterAttributeObserved -> forClusterId(action.clusterId)
-        is AppEvent.NamedInteraction -> forNamedInteraction(action.interaction)
         AppEvent.BindingStarted -> WritingABinding
         is AppEvent.BindingCompleted -> ActiveBindingTableEntries
         is AppEvent.DeviceDecommissioned -> RemovingADevice
         AppEvent.CommissioningStarted -> OnboardingWalkthrough
         is AppEvent.CommissioningSucceeded -> DeviceCards
         AppEvent.CommissioningFailed -> IfCommissioningFails
+        AppEvent.AddNewDevice -> GettingStartedScreen
+        AppEvent.DeviceCardExpand -> SupportedDeviceTypes
+        AppEvent.MatterDeviceInformation -> MatterDeviceInformation
+        AppEvent.EndpointsClusters -> EndpointsClusters
+        AppEvent.WhatIsMatter -> AppIntro
+        AppEvent.SourceCode -> SourceCode
+        is AppEvent.NavTabSelected -> when (action.tabTitle) {
+            "Dashboard" -> Dashboard
+            "Bindings" -> BindingsIntro
+            "Logs Panel" -> LogsIntro
+            else -> null
+        }
     }
 }

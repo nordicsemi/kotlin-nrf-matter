@@ -7,6 +7,8 @@ import no.nordicsemi.nrf.matter.cluster.DoorLockClusterInfo
 import no.nordicsemi.nrf.matter.cluster.LevelControlClusterInfo
 import no.nordicsemi.nrf.matter.cluster.MatterClient
 import no.nordicsemi.nrf.matter.cluster.OnOffClusterInfo
+import no.nordicsemi.nrf.matter.events.AppEvent
+import no.nordicsemi.nrf.matter.events.AppEvents
 import no.nordicsemi.nrf.matter.model.DeviceId
 import kotlin.random.Random
 

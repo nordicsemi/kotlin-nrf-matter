@@ -50,7 +50,8 @@ import no.nordicsemi.nrf.matter.navigation.icon
 import no.nordicsemi.nrf.matter.navigation.title
 import no.nordicsemi.nrf.matter.screens.HomeScreen
 import no.nordicsemi.nrf.matter.theme.NordicTheme
-import no.nordicsemi.nrf.matter.events.AppInteraction
+import no.nordicsemi.nrf.matter.events.AppEvent
+import no.nordicsemi.nrf.matter.events.AppEvents
 import no.nordicsemi.nrf.matter.platform.AppEnvironment
 import no.nordicsemi.nrf.matter.platform.LocalAppEnvironment
 import no.nordicsemi.nrf.matter.ui.LocalMatterOverlayHost
@@ -100,7 +101,6 @@ fun App(homeViewModel: HomeViewModel, environment: AppEnvironment) {
 @Composable
 private fun AppContent(homeViewModel: HomeViewModel) {
 
-    val onInteraction = LocalAppEnvironment.current.onInteraction
     val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
     val backStack: NavBackStack<NavKey> = rememberNavBackStack(config, HomeRoute)
 
@@ -163,7 +163,7 @@ private fun AppContent(homeViewModel: HomeViewModel) {
                                 modifier = Modifier.testTag(tabRoute.title),
                                 selected = isSelected,
                                 onClick = {
-                                    onInteraction(AppInteraction.NavTabSelected(tabRoute.title))
+                                    AppEvents.publish(AppEvent.NavTabSelected(tabRoute.title))
                                     if (!isSelected) {
                                         navigateToTab(tabRoute)
                                     }

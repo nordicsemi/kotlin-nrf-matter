@@ -48,7 +48,8 @@ import no.nordicsemi.nrf.matter.platform.LocalAppEnvironment
 import no.nordicsemi.nrf.matter.shared.generated.resources.Res
 import no.nordicsemi.nrf.matter.shared.generated.resources.no_matter_devices
 import no.nordicsemi.nrf.matter.theme.NordicTheme
-import no.nordicsemi.nrf.matter.events.AppInteraction
+import no.nordicsemi.nrf.matter.events.AppEvent
+import no.nordicsemi.nrf.matter.events.AppEvents
 import org.jetbrains.compose.resources.painterResource
 
 /*
@@ -89,7 +90,6 @@ fun NoDevicesScreen(
     onSourceCodeClick: () -> Unit = {}
 ) {
     val version = LocalAppEnvironment.current.appVersion
-    val onInteraction = LocalAppEnvironment.current.onInteraction
 
     Box(
         modifier = Modifier
@@ -131,7 +131,7 @@ fun NoDevicesScreen(
             // Action Button
             Button(
                 onClick = {
-                    onInteraction(AppInteraction.AddNewDevice)
+                    AppEvents.publish(AppEvent.AddNewDevice)
                     onAddDeviceClick()
                 },
                 modifier = Modifier
@@ -157,7 +157,7 @@ fun NoDevicesScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(onClick = {
-                onInteraction(AppInteraction.WhatIsMatter)
+                AppEvents.publish(AppEvent.WhatIsMatter)
                 onMatterUrlClick()
             }) {
                 Text(
@@ -191,7 +191,7 @@ fun NoDevicesScreen(
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.clickable {
-                    onInteraction(AppInteraction.SourceCode)
+                    AppEvents.publish(AppEvent.SourceCode)
                     onSourceCodeClick()
                 }
             )
