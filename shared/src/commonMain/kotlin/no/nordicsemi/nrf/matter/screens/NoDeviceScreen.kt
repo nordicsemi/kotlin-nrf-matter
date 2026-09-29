@@ -44,13 +44,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import no.nordicsemi.nrf.matter.platform.LocalAppEnvironment
 import no.nordicsemi.nrf.matter.shared.generated.resources.Res
 import no.nordicsemi.nrf.matter.shared.generated.resources.no_matter_devices
 import no.nordicsemi.nrf.matter.theme.NordicTheme
 import no.nordicsemi.nrf.matter.events.AppEvent
 import no.nordicsemi.nrf.matter.events.AppEvents
+import no.nordicsemi.nrf.matter.platform.AppEnvironment
 import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.koinInject
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -89,7 +90,7 @@ fun NoDevicesScreen(
     onMatterUrlClick: () -> Unit = {},
     onSourceCodeClick: () -> Unit = {}
 ) {
-    val version = LocalAppEnvironment.current.appVersion
+    val version = koinInject<AppEnvironment>().appVersion
 
     Box(
         modifier = Modifier

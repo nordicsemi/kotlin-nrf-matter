@@ -3,13 +3,11 @@ package no.nordicsemi.nrf.matter
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.ComposeUIViewController
 import no.nordicsemi.nrf.matter.api.NordicMatters
 import no.nordicsemi.nrf.matter.api.initializePlatform
 import no.nordicsemi.nrf.matter.nordic.registerNordicClusters
-import no.nordicsemi.nrf.matter.platform.iosAppEnvironment
 import org.koin.compose.viewmodel.koinViewModel
 import platform.UIKit.UIViewController
 
@@ -25,7 +23,7 @@ fun MainViewController(): UIViewController {
             modifier = Modifier.fillMaxSize(),
             color = MaterialTheme.colorScheme.background
         ) {
-            App(koinViewModel(), remember { iosAppEnvironment() })
+            App(koinViewModel())
         }
     }
 }

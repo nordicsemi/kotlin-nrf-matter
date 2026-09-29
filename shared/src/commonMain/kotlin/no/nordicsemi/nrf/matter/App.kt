@@ -52,10 +52,6 @@ import no.nordicsemi.nrf.matter.screens.HomeScreen
 import no.nordicsemi.nrf.matter.theme.NordicTheme
 import no.nordicsemi.nrf.matter.events.AppEvent
 import no.nordicsemi.nrf.matter.events.AppEvents
-import no.nordicsemi.nrf.matter.platform.AppEnvironment
-import no.nordicsemi.nrf.matter.platform.LocalAppEnvironment
-import no.nordicsemi.nrf.matter.ui.LocalMatterOverlayHost
-import androidx.compose.runtime.CompositionLocalProvider
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -89,17 +85,7 @@ import androidx.compose.runtime.CompositionLocalProvider
  */
 
 @Composable
-fun App(homeViewModel: HomeViewModel, environment: AppEnvironment) {
-    CompositionLocalProvider(
-        LocalAppEnvironment provides environment,
-        LocalMatterOverlayHost provides environment.overlayHost,
-    ) {
-        AppContent(homeViewModel)
-    }
-}
-
-@Composable
-private fun AppContent(homeViewModel: HomeViewModel) {
+fun App(homeViewModel: HomeViewModel) {
 
     val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
     val backStack: NavBackStack<NavKey> = rememberNavBackStack(config, HomeRoute)

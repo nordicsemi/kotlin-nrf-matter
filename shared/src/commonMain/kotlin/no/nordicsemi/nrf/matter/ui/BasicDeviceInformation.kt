@@ -30,6 +30,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.nrf.matter.model.Device
+import no.nordicsemi.nrf.matter.platform.AppEnvironment
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,7 +39,7 @@ internal fun BasicInformationBottomSheet(
     device: Device,
     onDismiss: () -> Unit,
 ) {
-    val host = LocalMatterOverlayHost.current
+    val host = koinInject<AppEnvironment>().overlayHost
     if (host != null) {
         SideEffect { host.showSheet(onDismissRequest = onDismiss) { BasicDeviceInformation(device = device, onDismiss = onDismiss) } }
         DisposableEffect(Unit) { onDispose { host.clearSheet() } }

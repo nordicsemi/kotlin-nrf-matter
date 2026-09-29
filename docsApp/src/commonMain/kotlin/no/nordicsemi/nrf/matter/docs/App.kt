@@ -58,10 +58,8 @@ import no.nordicsemi.nrf.matter.docs.platform.openUrl
 import no.nordicsemi.nrf.matter.docs.screens.DocsBrowserScreen
 import no.nordicsemi.nrf.matter.events.AppEvents
 import no.nordicsemi.nrf.matter.theme.NordicTheme
-import no.nordicsemi.nrf.matter.ui.MatterOverlayHostState
+import org.koin.compose.koinInject
 import no.nordicsemi.nrf.matter.platform.AppEnvironment
-import no.nordicsemi.nrf.matter.platform.PlatformType
-import androidx.compose.ui.draw.blur
 import org.koin.compose.viewmodel.koinViewModel
 import no.nordicsemi.nrf.matter.App as RealApp
 
@@ -170,17 +168,9 @@ private fun BoxScope.PhoneFrameContent(
     maxHeight: Dp,
     onLink: (LinkTarget) -> Unit,
 ) {
-    val overlayHost = remember { MatterOverlayHostState() }
-    val environment = remember(overlayHost) {
-        AppEnvironment(
-            platformType = PlatformType.IOS,
-            appVersion = "web-demo",
-            blur = { blur(16.dp) },
-            overlayHost = overlayHost,
-        )
-    }
+    val overlayHost = requireNotNull(koinInject<AppEnvironment>().overlayHost)
 
-    RealApp(homeViewModel = koinViewModel<HomeViewModel>(), environment = environment)
+    RealApp(homeViewModel = koinViewModel<HomeViewModel>())
 
     ObserveAppEvents(onReveal)
 

@@ -1,7 +1,6 @@
 package no.nordicsemi.nrf.matter.ui
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -32,5 +31,3 @@ class MatterOverlayHostState {
         dialog = null
     }
 }
-
-internal val LocalMatterOverlayHost = compositionLocalOf<MatterOverlayHostState?> { null }

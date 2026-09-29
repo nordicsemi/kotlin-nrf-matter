@@ -7,9 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.remember
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import no.nordicsemi.nrf.matter.platform.androidAppEnvironment
 import org.koin.compose.viewmodel.koinViewModel
 
 class NordicActivity : ComponentActivity() {
@@ -39,7 +37,7 @@ class NordicActivity : ComponentActivity() {
         // Initialize CMP Toast.
         multiplatform.network.cmptoast.AppContext.apply { set(applicationContext) }
         setContent {
-            App(homeViewModel = koinViewModel(), environment = remember { androidAppEnvironment() })
+            App(homeViewModel = koinViewModel())
         }
     }
 }

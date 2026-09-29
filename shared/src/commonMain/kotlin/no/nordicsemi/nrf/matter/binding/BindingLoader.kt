@@ -41,12 +41,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import no.nordicsemi.nrf.matter.platform.AppEnvironment
 import no.nordicsemi.nrf.matter.shared.generated.resources.Res
 import no.nordicsemi.nrf.matter.shared.generated.resources.binding_links_only
 import no.nordicsemi.nrf.matter.theme.NordicBlue
 import no.nordicsemi.nrf.matter.theme.NordicTheme
-import no.nordicsemi.nrf.matter.ui.LocalMatterOverlayHost
 import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.koinInject
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -227,7 +228,7 @@ internal fun BindingLoaderDialog(
         }
     }
 
-    val host = LocalMatterOverlayHost.current
+    val host = koinInject<AppEnvironment>().overlayHost
     if (host != null) {
         SideEffect { host.showDialog(content) }
         DisposableEffect(Unit) { onDispose { host.clearDialog() } }

@@ -36,6 +36,8 @@ import no.nordicsemi.nrf.matter.api.NordicMatters
 import no.nordicsemi.nrf.matter.model.ClusterType
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.Endpoint
+import no.nordicsemi.nrf.matter.platform.AppEnvironment
+import org.koin.compose.koinInject
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -74,7 +76,7 @@ internal fun DeviceInfoBottomSheet(
     device: Device,
     onDismiss: () -> Unit,
 ) {
-    val host = LocalMatterOverlayHost.current
+    val host = koinInject<AppEnvironment>().overlayHost
     if (host != null) {
         SideEffect { host.showSheet(onDismissRequest = onDismiss) { DeviceInfoContent(device = device, onDismiss = onDismiss) } }
         DisposableEffect(Unit) { onDispose { host.clearSheet() } }

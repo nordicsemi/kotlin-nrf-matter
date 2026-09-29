@@ -77,7 +77,6 @@ import no.nordicsemi.nrf.matter.ui.rvc.RvcOperationalStateController
 import no.nordicsemi.nrf.matter.ui.rvc.RvcRunModeController
 import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorActionItem
 import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorController
-import no.nordicsemi.nrf.matter.platform.LocalAppEnvironment
 import no.nordicsemi.nrf.matter.events.AppEvent
 import no.nordicsemi.nrf.matter.events.AppEvents
 
