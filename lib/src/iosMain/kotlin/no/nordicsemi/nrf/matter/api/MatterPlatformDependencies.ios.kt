@@ -27,10 +27,10 @@ import no.nordicsemi.nrf.matter.repository.IosDevicesStateDataSource
 
 fun NordicMatters.initializePlatform() {
     initializeLogger()
-    configure(MatterPlatformDependencies())
+    configure(IosPlatformDependencies())
 }
 
-internal class MatterPlatformDependencies : MatterPlatform {
+internal class IosPlatformDependencies : MatterPlatformDependencies {
 
     val matterCommissioner: MatterCommissioner by lazy { MatterCommissionerImpl() }
 

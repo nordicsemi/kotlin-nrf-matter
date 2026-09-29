@@ -10,7 +10,7 @@ import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 
-internal class MatterDependencies(val platform: MatterPlatform) {
+internal class MatterDependencies(val platform: MatterPlatformDependencies) {
 
     val devicesRepository = DevicesRepository(platform.devicesDataSource)
     val devicesStateRepository = DevicesStateRepository(platform.deviceStateDataSource)

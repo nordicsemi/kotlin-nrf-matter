@@ -2,7 +2,7 @@ package no.nordicsemi.nrf.matter.docs.demo
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
-import no.nordicsemi.nrf.matter.api.MatterPlatform
+import no.nordicsemi.nrf.matter.api.MatterPlatformDependencies
 import no.nordicsemi.nrf.matter.binding.BindingDataSource
 import no.nordicsemi.nrf.matter.cluster.MatterClient
 import no.nordicsemi.nrf.matter.commission.CommissioningTaskProvider
@@ -13,7 +13,7 @@ import no.nordicsemi.nrf.matter.controller.MatterDecommissioner
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 
-internal object WebMatterPlatform : MatterPlatform {
+internal object WebMatterPlatformDependencies : MatterPlatformDependencies {
 
     private val webMatterClient = WebMatterClient()
     private val webBindingLogsProvider = WebBindingLogsProvider()

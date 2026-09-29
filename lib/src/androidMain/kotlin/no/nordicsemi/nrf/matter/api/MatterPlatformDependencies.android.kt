@@ -29,10 +29,10 @@ import no.nordicsemi.nrf.matter.repository.AndroidDevicesDataSource
 fun NordicMatters.initialize(context: Context) {
     ContextHolder.initialise(context)
     NordicLogger.setBackend(AndroidLoggerBackend)
-    configure(MatterPlatformDependencies())
+    configure(AndroidPlatformDependencies())
 }
 
-internal class MatterPlatformDependencies : MatterPlatform {
+internal class AndroidPlatformDependencies : MatterPlatformDependencies {
 
     private val context = ContextHolder.getContext()
 

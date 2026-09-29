@@ -11,7 +11,7 @@ import no.nordicsemi.nrf.matter.controller.MatterDecommissioner
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 
-interface MatterPlatform {
+interface MatterPlatformDependencies {
     val devicesDataSource: DevicesDataSource
     val deviceStateDataSource: DeviceStateDataSource
     val bindingDataSource: BindingDataSource
