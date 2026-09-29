@@ -149,7 +149,7 @@ fun App(homeViewModel: HomeViewModel) {
                                 modifier = Modifier.testTag(tabRoute.title),
                                 selected = isSelected,
                                 onClick = {
-                                    AppEvents.publish(AppEvent.NavTabSelected(tabRoute.title))
+                                    AppEvents.emit(AppEvent.NavTabSelected(tabRoute.title))
                                     if (!isSelected) {
                                         navigateToTab(tabRoute)
                                     }

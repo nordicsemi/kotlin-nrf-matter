@@ -27,13 +27,13 @@ internal class WebCommissioningTask(
         isRunning = true
 
         scope.launch {
-            AppEvents.publish(AppEvent.CommissioningStarted)
+            AppEvents.emit(AppEvent.CommissioningStarted)
             AppEvents.awaitCommissioningAcknowledged()
             delay(1200)
 
             if (Random.nextInt(100) < FAILURE_CHANCE_PERCENT) {
                 isRunning = false
-                AppEvents.publish(AppEvent.CommissioningFailed)
+                AppEvents.emit(AppEvent.CommissioningFailed)
                 onError(
                     CommissioningException(
                         deviceId = null,
@@ -49,7 +49,7 @@ internal class WebCommissioningTask(
             client.seedDevice(deviceId, WebDeviceCatalog.next())
 
             isRunning = false
-            AppEvents.publish(AppEvent.CommissioningSucceeded(deviceId))
+            AppEvents.emit(AppEvent.CommissioningSucceeded(deviceId))
             onSuccess(deviceId)
         }
     }

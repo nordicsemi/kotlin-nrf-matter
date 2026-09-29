@@ -49,7 +49,7 @@ internal class WebMatterClient : MatterClient() {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T> observeAttribute(deviceId: DeviceId, endpoint: Int, clusterId: Long, attributeId: Long): Flow<T> {
-        AppEvents.publish(AppEvent.ClusterAttributeObserved(deviceId, endpoint, clusterId, attributeId))
+        AppEvents.emit(AppEvent.ClusterAttributeObserved(deviceId, endpoint, clusterId, attributeId))
         return flowFor(deviceId, endpoint, clusterId, attributeId) as Flow<T>
     }
 
@@ -88,7 +88,7 @@ internal class WebMatterClient : MatterClient() {
                     Random.nextLong(0, 100_000)
             }
         }
-        AppEvents.publish(AppEvent.ClusterCommandExecuted(deviceId, endpoint, clusterId, commandId))
+        AppEvents.emit(AppEvent.ClusterCommandExecuted(deviceId, endpoint, clusterId, commandId))
     }
 }
 

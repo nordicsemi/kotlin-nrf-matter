@@ -131,7 +131,7 @@ internal fun DeviceItem(
             .padding(8.dp)
             .clip(RoundedCornerShape(16.dp))
             .clickable {
-                if (!isExpanded) AppEvents.publish(AppEvent.DeviceCardExpand)
+                if (!isExpanded) AppEvents.emit(AppEvent.DeviceCardExpand)
                 isExpanded = !isExpanded
             }
             .then(if (showMatterDeviceInfo || showDeviceInfo) Modifier.matterBlur() else Modifier)
@@ -206,7 +206,7 @@ internal fun DeviceItem(
 
                 SharedSection(device, showMatterDeviceInfo) { showMatterDeviceInfo = it }
                 EndpointsClustersRow(onClick = {
-                    AppEvents.publish(AppEvent.EndpointsClusters)
+                    AppEvents.emit(AppEvent.EndpointsClusters)
                     showDeviceInfo = true
                 })
 
@@ -276,7 +276,7 @@ private fun SharedSection(
             .padding(16.dp)
             .clip(RoundedCornerShape(16.dp))
             .clickable {
-                AppEvents.publish(AppEvent.MatterDeviceInformation)
+                AppEvents.emit(AppEvent.MatterDeviceInformation)
                 onShowMatterDeviceInfoChange(true)
             },
         verticalArrangement = Arrangement.spacedBy(16.dp)

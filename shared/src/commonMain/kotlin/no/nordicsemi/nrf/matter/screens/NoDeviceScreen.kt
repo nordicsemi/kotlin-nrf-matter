@@ -132,7 +132,7 @@ fun NoDevicesScreen(
             // Action Button
             Button(
                 onClick = {
-                    AppEvents.publish(AppEvent.AddNewDevice)
+                    AppEvents.emit(AppEvent.AddNewDevice)
                     onAddDeviceClick()
                 },
                 modifier = Modifier
@@ -158,7 +158,7 @@ fun NoDevicesScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(onClick = {
-                AppEvents.publish(AppEvent.WhatIsMatter)
+                AppEvents.emit(AppEvent.WhatIsMatter)
                 onMatterUrlClick()
             }) {
                 Text(
@@ -192,7 +192,7 @@ fun NoDevicesScreen(
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.clickable {
-                    AppEvents.publish(AppEvent.SourceCode)
+                    AppEvents.emit(AppEvent.SourceCode)
                     onSourceCodeClick()
                 }
             )
