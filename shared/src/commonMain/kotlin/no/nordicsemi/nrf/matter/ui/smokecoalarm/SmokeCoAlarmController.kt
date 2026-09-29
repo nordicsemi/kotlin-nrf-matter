@@ -10,10 +10,12 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import no.nordicsemi.nrf.matter.cluster.SmokeCoAlarmCluster
 import no.nordicsemi.nrf.matter.model.AlarmState
+import no.nordicsemi.nrf.matter.model.ExpressedState
 import no.nordicsemi.nrf.matter.ui.UiState
 import no.nordicsemi.nrf.matter.ui.device.ClusterController
 
 data class SmokeCoAlarmState(
+    val expressedState: ExpressedState = ExpressedState.NORMAL,
     val smokeState: AlarmState = AlarmState.NORMAL,
     val coState: AlarmState = AlarmState.NORMAL,
     val batteryAlert: AlarmState = AlarmState.NORMAL,
@@ -43,6 +45,7 @@ class SmokeCoAlarmController(
     val selfTestState = _selfTestState.asStateFlow()
 
     init {
+        observe(cluster.observeExpressedState()) { state, value -> state.copy(expressedState = value.toExpressedState()) }
         observe(cluster.observeSmokeState()) { state, value -> state.copy(smokeState = value.toAlarmState()) }
         observe(cluster.observeCOState()) { state, value -> state.copy(coState = value.toAlarmState()) }
         observe(cluster.observeBatteryAlert()) { state, value -> state.copy(batteryAlert = value.toAlarmState()) }

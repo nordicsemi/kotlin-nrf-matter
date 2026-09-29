@@ -30,7 +30,7 @@ class SmokeCoAlarmCluster(
 
     override val id: Long = SmokeCoAlarmClusterInfo.ID
 
-    /** Emits the raw ExpressedState value, see [no.nordicsemi.nrf.matter.model.AlarmState]. */
+    /** Emits the raw ExpressedState value, see [no.nordicsemi.nrf.matter.model.ExpressedState]. */
     fun observeExpressedState(): Flow<Number> = observeAttribute(SmokeCoAlarmClusterInfo.Attribute.EXPRESSED_STATE)
 
     /** Emits the raw SmokeState value. Not supported by CO-only alarms. */

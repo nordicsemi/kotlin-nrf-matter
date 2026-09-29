@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeOff
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.material.icons.outlined.Error
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -30,9 +32,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.nrf.matter.model.AlarmState
+import no.nordicsemi.nrf.matter.model.ExpressedState
 import no.nordicsemi.nrf.matter.theme.NordicFall
 import no.nordicsemi.nrf.matter.theme.NordicRed
 import no.nordicsemi.nrf.matter.ui.UiState
@@ -52,28 +56,8 @@ fun SmokeCoAlarmControlItem(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        DeviceStatusSection(state)
         AlarmStatusRow("Smoke", state.smokeState)
-        AlarmStatusRow("Carbon monoxide", state.coState)
-        AlarmStatusRow("Battery", state.batteryAlert)
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text(
-                text = if (state.isMuted) "Alarm muted" else "Alarm not muted",
-                style = MaterialTheme.typography.labelMedium,
-            )
-            if (state.hasHardwareFault || state.isEndOfService) {
-                Text(
-                    text = if (state.hasHardwareFault) "Hardware fault" else "End of service",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.error,
-                )
-            }
-        }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -132,6 +116,7 @@ private fun AlarmStatusRow(label: String, state: AlarmState) {
                 SegmentedButton(
                     selected = selected,
                     onClick = {},
+                    modifier = Modifier.testTag("${label.replace(" ", "_")}_${option.name}"),
                     shape = SegmentedButtonDefaults.itemShape(index, AlarmState.entries.size),
                     colors = SegmentedButtonDefaults.colors(
                         activeContainerColor = activeColor.copy(alpha = 0.12f * blinkAlpha),
@@ -149,6 +134,87 @@ private fun AlarmStatusRow(label: String, state: AlarmState) {
                 )
             }
         }
+    }
+}
+
+/** Current ExpressedState of the device, with a highlighted pill showing whether the alarm is muted. */
+@Composable
+private fun DeviceStatusSection(state: SmokeCoAlarmState) {
+    val expressedState = state.expressedState
+    val tint = expressedState.toColor()
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            text = "Device status",
+            style = MaterialTheme.typography.labelMedium,
+            modifier = Modifier.alpha(0.6f),
+        )
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Icon(
+                imageVector = expressedState.toIcon(),
+                contentDescription = null,
+                tint = tint,
+                modifier = Modifier.size(20.dp),
+            )
+            Text(
+                text = expressedState.toLabel(),
+                style = MaterialTheme.typography.titleMedium,
+                color = tint,
+                modifier = Modifier
+                    .weight(1f)
+                    .testTag("device_status"),
+            )
+            MuteStatusPill(isMuted = state.isMuted)
+        }
+
+        // A higher priority state (e.g. a smoke alarm) can hide a fault from the device status,
+        // so surface it separately unless the status is already showing it.
+        val fault = when {
+            state.hasHardwareFault && expressedState != ExpressedState.HARDWARE_FAULT -> "Hardware fault"
+            state.isEndOfService && expressedState != ExpressedState.END_OF_SERVICE -> "End of service"
+            else -> null
+        }
+        fault?.let {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.error,
+            )
+        }
+    }
+}
+
+@Composable
+private fun MuteStatusPill(isMuted: Boolean) {
+    // A muted alarm won't sound during an emergency, so call it out in the warning color.
+    val tint = if (isMuted) NordicFall else MaterialTheme.colorScheme.primary
+
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(50))
+            .background(tint.copy(alpha = 0.15f))
+            .padding(horizontal = 10.dp, vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        Icon(
+            imageVector = if (isMuted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
+            contentDescription = null,
+            tint = tint,
+            modifier = Modifier.size(16.dp),
+        )
+        Text(
+            text = if (isMuted) "Muted" else "Sound on",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Medium,
+            color = tint,
+            modifier = Modifier.testTag("mute_status"),
+        )
     }
 }
 
