@@ -273,13 +273,9 @@ omitted from the sheet rather than shown blank.
 
 ## Endpoints & Clusters
 
-The **Endpoints & Clusters** sheet lists the raw data the app read from the accessory's Descriptor
-cluster (`0x001D`) during commissioning: every endpoint the device reports, and for each one its
-device types, server clusters, and client clusters, each shown by name next to its hex cluster or
-device type ID. It is the same data the app uses internally to decide which controls to show on the
-device card, made visible for inspection.
-
-This information is available for all commissioned accessories, including Unsupported Device Types.
+The **Endpoints & Clusters** sheet lists every endpoint the accessory reports in its Descriptor
+cluster (`0x001D`), with its device types, server clusters, and client clusters. See
+[Endpoints & Clusters](endpoints_clusters.md) for details.
 
 ## Removing a device
 

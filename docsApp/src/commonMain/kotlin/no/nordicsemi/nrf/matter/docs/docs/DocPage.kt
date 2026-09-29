@@ -17,6 +17,7 @@ enum class DocPage(val resourceFile: String, val displayTitle: String, val group
 
     OVERVIEW("overview.md", "Overview and user interface", DocGroup.USER_GUIDE),
     COMMISSIONING("commissioning.md", "Commissioning devices", DocGroup.USER_GUIDE),
+    ENDPOINTS_CLUSTERS("endpoints_clusters.md", "Endpoints & Clusters", DocGroup.USER_GUIDE),
     BINDINGS("bindings.md", "Configuring bindings", DocGroup.USER_GUIDE),
     LOGS("logs.md", "Viewing logs", DocGroup.USER_GUIDE),
 

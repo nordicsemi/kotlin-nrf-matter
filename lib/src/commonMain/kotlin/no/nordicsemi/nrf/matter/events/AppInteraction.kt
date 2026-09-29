@@ -7,4 +7,5 @@ sealed class AppInteraction {
     data class NavTabSelected(val tabTitle: String) : AppInteraction()
     data object DeviceCardExpand : AppInteraction()
     data object MatterDeviceInformation : AppInteraction()
+    data object EndpointsClusters : AppInteraction()
 }

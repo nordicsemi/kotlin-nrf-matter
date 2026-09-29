@@ -26,6 +26,7 @@ object DocLinks {
     val ManufacturerSpecificControls = DocAnchor(DocPage.OVERVIEW, "manufacturer-specific-device-controls")
     val UnsupportedDeviceTypes = DocAnchor(DocPage.OVERVIEW, "unsupported-device-types")
     val MatterDeviceInformation = DocAnchor(DocPage.OVERVIEW, "matter-device-information")
+    val EndpointsClusters = DocAnchor(DocPage.ENDPOINTS_CLUSTERS)
     val RemovingADevice = DocAnchor(DocPage.OVERVIEW, "removing-a-device")
 
     val BindingsIntro = DocAnchor(DocPage.BINDINGS)
@@ -67,6 +68,7 @@ object DocLinks {
         AppInteraction.AddNewDevice -> GettingStartedScreen
         AppInteraction.DeviceCardExpand -> SupportedDeviceTypes
         AppInteraction.MatterDeviceInformation -> MatterDeviceInformation
+        AppInteraction.EndpointsClusters -> EndpointsClusters
         AppInteraction.WhatIsMatter -> AppIntro
         AppInteraction.SourceCode -> SourceCode
         is AppInteraction.NavTabSelected -> when (interaction.tabTitle) {

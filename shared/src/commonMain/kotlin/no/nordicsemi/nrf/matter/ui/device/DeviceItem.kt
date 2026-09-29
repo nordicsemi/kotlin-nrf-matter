@@ -206,7 +206,10 @@ internal fun DeviceItem(
                 }
 
                 SharedSection(device, showMatterDeviceInfo) { showMatterDeviceInfo = it }
-                EndpointsClustersRow(onClick = { showDeviceInfo = true })
+                EndpointsClustersRow(onClick = {
+                    AppEvents.publish(AppEvent.NamedInteraction(AppInteraction.EndpointsClusters))
+                    showDeviceInfo = true
+                })
 
                 // Decommission device
                 DecommissionDevice(device.deviceId, onDecommission)
