@@ -122,7 +122,6 @@ fun App() {
                     panelBesideFrame = panelBesideFrame,
                     maxHeight = capturedMaxHeight,
                     onLink = ::handleLink,
-                    onOpenFullPage = { target -> revealedAnchor = null; showDocsBrowser = target },
                 )
             }
 
@@ -131,7 +130,6 @@ fun App() {
                 anchor = revealedAnchor,
                 onLink = ::handleLink,
                 onDismiss = { revealedAnchor = null },
-                onOpenFullPage = { target -> revealedAnchor = null; showDocsBrowser = target },
                 modifier = Modifier.align(Alignment.CenterEnd).padding(end = 24.dp),
             )
 
@@ -173,7 +171,6 @@ private fun BoxScope.PhoneFrameContent(
     panelBesideFrame: Boolean,
     maxHeight: Dp,
     onLink: (LinkTarget) -> Unit,
-    onOpenFullPage: (DocAnchor) -> Unit,
 ) {
     val overlayHost = remember { MatterOverlayHostState() }
 
@@ -237,9 +234,7 @@ private fun BoxScope.PhoneFrameContent(
                     anchor = anchor,
                     onLink = onLink,
                     onDismiss = onDismissReveal,
-                    onOpenFullPage = onOpenFullPage,
                     dismissible = !anchor.isCommissioningGate,
-                    showFullPage = anchor.isCommissioningGate,
                     primaryActionLabel = if (anchor.isCommissioningGate) COMMISSIONING_GATE_ACTION_LABEL else null,
                     onPrimaryAction = if (anchor.isCommissioningGate) {
                         { onDismissReveal(); AppEvents.acknowledgeCommissioning() }
@@ -257,7 +252,6 @@ private fun SidePanel(
     anchor: DocAnchor?,
     onLink: (LinkTarget) -> Unit,
     onDismiss: () -> Unit,
-    onOpenFullPage: (DocAnchor) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     AnimatedVisibility(visible = visible, modifier = modifier, enter = fadeIn(), exit = fadeOut()) {
@@ -271,9 +265,7 @@ private fun SidePanel(
                     anchor = anchor,
                     onLink = onLink,
                     onDismiss = onDismiss,
-                    onOpenFullPage = onOpenFullPage,
                     dismissible = !anchor.isCommissioningGate,
-                    showFullPage = anchor.isCommissioningGate,
                     primaryActionLabel = if (anchor.isCommissioningGate) COMMISSIONING_GATE_ACTION_LABEL else null,
                     onPrimaryAction = if (anchor.isCommissioningGate) {
                         { onDismiss(); AppEvents.acknowledgeCommissioning() }

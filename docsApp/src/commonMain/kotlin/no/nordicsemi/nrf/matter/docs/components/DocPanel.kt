@@ -33,35 +33,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.nrf.matter.docs.docs.DocAnchor
-import no.nordicsemi.nrf.matter.docs.docs.DocSection
 import no.nordicsemi.nrf.matter.docs.docs.DocStepPage
 import no.nordicsemi.nrf.matter.docs.docs.DocsRepository
 import no.nordicsemi.nrf.matter.docs.docs.LinkTarget
 import no.nordicsemi.nrf.matter.docs.docs.buildStepPages
 import no.nordicsemi.nrf.matter.docs.markdown.MarkdownContent
+import no.nordicsemi.nrf.matter.docs.markdown.MdBlock
+import no.nordicsemi.nrf.matter.docs.markdown.slugify
 
 @Composable
 fun DocPanel(
     anchor: DocAnchor,
     onLink: (LinkTarget) -> Unit,
     onDismiss: () -> Unit,
-    onOpenFullPage: (DocAnchor) -> Unit,
     modifier: Modifier = Modifier,
     dismissible: Boolean = true,
-    showFullPage: Boolean = false,
     primaryActionLabel: String? = null,
     onPrimaryAction: (() -> Unit)? = null,
 ) {
-    var section by remember { mutableStateOf<DocSection?>(null) }
     var stepPages by remember { mutableStateOf<List<DocStepPage>>(emptyList()) }
     var pageIndex by remember { mutableStateOf(0) }
-    LaunchedEffect(anchor, showFullPage) {
-        pageIndex = 0
-        if (showFullPage) {
-            stepPages = buildStepPages(DocsRepository.blocksOf(anchor.page), anchor.page.displayTitle)
-        } else {
-            section = DocsRepository.section(anchor)
-        }
+    LaunchedEffect(anchor) {
+        val pages = buildStepPages(DocsRepository.blocksOf(anchor.page), anchor.page.displayTitle)
+        stepPages = pages
+        pageIndex = pages.indexOfSection(anchor.sectionId)
     }
 
     Surface(
@@ -80,13 +75,8 @@ fun DocPanel(
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.primary,
                     )
-                    val title = if (showFullPage) {
-                        stepPages.getOrNull(pageIndex)?.title ?: anchor.page.displayTitle
-                    } else {
-                        section?.title ?: anchor.page.displayTitle
-                    }
                     Text(
-                        text = title,
+                        text = stepPages.getOrNull(pageIndex)?.title ?: anchor.page.displayTitle,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                     )
@@ -95,7 +85,7 @@ fun DocPanel(
                     IconButton(onClick = onDismiss) {
                         Icon(Icons.Filled.Close, contentDescription = "Close")
                     }
-                } else if (showFullPage && primaryActionLabel != null && onPrimaryAction != null) {
+                } else if (primaryActionLabel != null && onPrimaryAction != null) {
                     TextButton(onClick = onPrimaryAction) {
                         Text("Skip")
                     }
@@ -104,9 +94,9 @@ fun DocPanel(
             HorizontalDivider()
 
             Box(modifier = Modifier.weight(1f)) {
-                val blocks = if (showFullPage) stepPages.getOrNull(pageIndex)?.blocks else section?.blocks
+                val blocks = stepPages.getOrNull(pageIndex)?.blocks
                 if (blocks != null) {
-                    key(if (showFullPage) pageIndex else section?.id) {
+                    key(pageIndex) {
                         MarkdownContent(
                             blocks = blocks,
                             onLinkClick = { target -> onLink(DocsRepository.resolveLink(target, anchor.page)) },
@@ -125,48 +115,39 @@ fun DocPanel(
                 modifier = Modifier.fillMaxWidth().padding(12.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                if (showFullPage) {
-                    if (stepPages.size > 1) {
-                        Text(
-                            text = "${pageIndex + 1} / ${stepPages.size}",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                if (stepPages.size > 1) {
+                    Text(
+                        text = "${pageIndex + 1} / ${stepPages.size}",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Spacer(modifier = Modifier.weight(1f))
+                if (pageIndex > 0) {
+                    OutlinedButton(onClick = { pageIndex-- }) {
+                        Text("Back")
                     }
-                    Spacer(modifier = Modifier.weight(1f))
-                    if (pageIndex > 0) {
-                        OutlinedButton(onClick = { pageIndex-- }) {
-                            Text("Back")
-                        }
+                }
+                val isLastPage = stepPages.isEmpty() || pageIndex >= stepPages.lastIndex
+                if (!isLastPage) {
+                    Button(onClick = { pageIndex++ }) {
+                        Text("Next")
                     }
-                    val isLastPage = stepPages.isEmpty() || pageIndex >= stepPages.lastIndex
-                    if (!isLastPage) {
-                        Button(onClick = { pageIndex++ }) {
-                            Text("Next")
-                        }
-                    } else if (primaryActionLabel != null && onPrimaryAction != null) {
-                        Button(onClick = onPrimaryAction) {
-                            Text(primaryActionLabel)
-                        }
-                    }
-                } else {
-                    Spacer(modifier = Modifier.weight(1f))
-                    if (primaryActionLabel != null && onPrimaryAction != null) {
-                        OutlinedButton(onClick = { onOpenFullPage(anchor) }) {
-                            Text("View full page: ${anchor.page.displayTitle}")
-                        }
-                    } else {
-                        Button(onClick = { onOpenFullPage(anchor) }) {
-                            Text("View full page: ${anchor.page.displayTitle}")
-                        }
-                    }
-                    if (primaryActionLabel != null && onPrimaryAction != null) {
-                        Button(onClick = onPrimaryAction) {
-                            Text(primaryActionLabel)
-                        }
+                } else if (primaryActionLabel != null && onPrimaryAction != null) {
+                    Button(onClick = onPrimaryAction) {
+                        Text(primaryActionLabel)
                     }
                 }
             }
         }
     }
+}
+
+private fun List<DocStepPage>.indexOfSection(sectionId: String?): Int {
+    if (sectionId == null) return 0
+    val index = indexOfFirst { page ->
+        slugify(page.title) == sectionId ||
+            page.blocks.any { it is MdBlock.Heading && it.slug == sectionId }
+    }
+    return index.coerceAtLeast(0)
 }
