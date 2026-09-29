@@ -50,9 +50,11 @@ import no.nordicsemi.nrf.matter.navigation.icon
 import no.nordicsemi.nrf.matter.navigation.title
 import no.nordicsemi.nrf.matter.screens.HomeScreen
 import no.nordicsemi.nrf.matter.theme.NordicTheme
-import no.nordicsemi.nrf.matter.events.AppEvent
-import no.nordicsemi.nrf.matter.events.AppEvents
 import no.nordicsemi.nrf.matter.events.AppInteraction
+import no.nordicsemi.nrf.matter.platform.AppEnvironment
+import no.nordicsemi.nrf.matter.platform.LocalAppEnvironment
+import no.nordicsemi.nrf.matter.ui.LocalMatterOverlayHost
+import androidx.compose.runtime.CompositionLocalProvider
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -86,8 +88,19 @@ import no.nordicsemi.nrf.matter.events.AppInteraction
  */
 
 @Composable
-fun App(homeViewModel: HomeViewModel) {
+fun App(homeViewModel: HomeViewModel, environment: AppEnvironment) {
+    CompositionLocalProvider(
+        LocalAppEnvironment provides environment,
+        LocalMatterOverlayHost provides environment.overlayHost,
+    ) {
+        AppContent(homeViewModel)
+    }
+}
 
+@Composable
+private fun AppContent(homeViewModel: HomeViewModel) {
+
+    val onInteraction = LocalAppEnvironment.current.onInteraction
     val devicesUiModel by homeViewModel.devicesUiModelFlow.collectAsState()
     val backStack: NavBackStack<NavKey> = rememberNavBackStack(config, HomeRoute)
 
@@ -150,7 +163,7 @@ fun App(homeViewModel: HomeViewModel) {
                                 modifier = Modifier.testTag(tabRoute.title),
                                 selected = isSelected,
                                 onClick = {
-                                    AppEvents.publish(AppEvent.NamedInteraction(AppInteraction.NavTabSelected(tabRoute.title)))
+                                    onInteraction(AppInteraction.NavTabSelected(tabRoute.title))
                                     if (!isSelected) {
                                         navigateToTab(tabRoute)
                                     }

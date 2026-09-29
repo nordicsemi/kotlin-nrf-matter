@@ -77,8 +77,7 @@ import no.nordicsemi.nrf.matter.ui.rvc.RvcOperationalStateController
 import no.nordicsemi.nrf.matter.ui.rvc.RvcRunModeController
 import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorActionItem
 import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorController
-import no.nordicsemi.nrf.matter.events.AppEvent
-import no.nordicsemi.nrf.matter.events.AppEvents
+import no.nordicsemi.nrf.matter.platform.LocalAppEnvironment
 import no.nordicsemi.nrf.matter.events.AppInteraction
 
 @Composable
@@ -87,6 +86,7 @@ internal fun DeviceItem(
     clusters: List<ClusterController>,
     onDecommission: (DeviceId) -> Unit,
 ) {
+    val onInteraction = LocalAppEnvironment.current.onInteraction
     val onOff = clusters.filterIsInstance<OnOffController>().firstOrNull()
     val doorLock = clusters.filterIsInstance<DoorLockController>().firstOrNull()
     val levelControl = clusters.filterIsInstance<LevelControlController>().firstOrNull()
@@ -132,7 +132,7 @@ internal fun DeviceItem(
             .padding(8.dp)
             .clip(RoundedCornerShape(16.dp))
             .clickable {
-                if (!isExpanded) AppEvents.publish(AppEvent.NamedInteraction(AppInteraction.DeviceCardExpand))
+                if (!isExpanded) onInteraction(AppInteraction.DeviceCardExpand)
                 isExpanded = !isExpanded
             }
             .then(if (showMatterDeviceInfo || showDeviceInfo) Modifier.matterBlur() else Modifier)
@@ -207,7 +207,7 @@ internal fun DeviceItem(
 
                 SharedSection(device, showMatterDeviceInfo) { showMatterDeviceInfo = it }
                 EndpointsClustersRow(onClick = {
-                    AppEvents.publish(AppEvent.NamedInteraction(AppInteraction.EndpointsClusters))
+                    onInteraction(AppInteraction.EndpointsClusters)
                     showDeviceInfo = true
                 })
 
@@ -271,13 +271,14 @@ private fun SharedSection(
     showMatterDeviceInfo: Boolean,
     onShowMatterDeviceInfoChange: (Boolean) -> Unit,
 ) {
+    val onInteraction = LocalAppEnvironment.current.onInteraction
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp)
             .clip(RoundedCornerShape(16.dp))
             .clickable {
-                AppEvents.publish(AppEvent.NamedInteraction(AppInteraction.MatterDeviceInformation))
+                onInteraction(AppInteraction.MatterDeviceInformation)
                 onShowMatterDeviceInfoChange(true)
             },
         verticalArrangement = Arrangement.spacedBy(16.dp)

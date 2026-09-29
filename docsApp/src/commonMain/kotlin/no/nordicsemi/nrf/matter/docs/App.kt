@@ -34,7 +34,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -58,16 +57,19 @@ import no.nordicsemi.nrf.matter.docs.docs.LinkTarget
 import no.nordicsemi.nrf.matter.docs.platform.openUrl
 import no.nordicsemi.nrf.matter.docs.screens.DocsBrowserScreen
 import no.nordicsemi.nrf.matter.theme.NordicTheme
-import no.nordicsemi.nrf.matter.ui.LocalMatterOverlayHost
 import no.nordicsemi.nrf.matter.ui.MatterOverlayHostState
-import no.nordicsemi.nrf.matter.ui.PHONE_BORDER_WIDTH
-import no.nordicsemi.nrf.matter.ui.PHONE_MARGIN
-import no.nordicsemi.nrf.matter.ui.PHONE_WIDTH
-import no.nordicsemi.nrf.matter.events.AppEvents
+import no.nordicsemi.nrf.matter.docs.demo.AppEvent
+import no.nordicsemi.nrf.matter.docs.demo.AppEvents
+import no.nordicsemi.nrf.matter.platform.AppEnvironment
+import no.nordicsemi.nrf.matter.platform.PlatformType
+import androidx.compose.ui.draw.blur
 import org.koin.compose.viewmodel.koinViewModel
 import no.nordicsemi.nrf.matter.App as RealApp
 
 private val PANEL_WIDTH = 400.dp
+private val PHONE_WIDTH = 412.dp
+private val PHONE_BORDER_WIDTH = 8.dp
+private val PHONE_MARGIN = 16.dp
 
 private const val COMMISSIONING_GATE_ACTION_LABEL = "Done, add the device"
 
@@ -170,10 +172,17 @@ private fun BoxScope.PhoneFrameContent(
     onLink: (LinkTarget) -> Unit,
 ) {
     val overlayHost = remember { MatterOverlayHostState() }
-
-    CompositionLocalProvider(LocalMatterOverlayHost provides overlayHost) {
-        RealApp(homeViewModel = koinViewModel<HomeViewModel>())
+    val environment = remember(overlayHost) {
+        AppEnvironment(
+            platformType = PlatformType.IOS,
+            appVersion = "web-demo",
+            blur = { blur(16.dp) },
+            overlayHost = overlayHost,
+            onInteraction = { AppEvents.publish(AppEvent.NamedInteraction(it)) },
+        )
     }
+
+    RealApp(homeViewModel = koinViewModel<HomeViewModel>(), environment = environment)
 
     ObserveAppEvents(onReveal)
 

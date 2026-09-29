@@ -12,6 +12,7 @@ import kotlin.time.Clock
 
 internal class FinaliseCommissioningUseCase(
     private val client: MatterClient,
+    private val errorCodeOf: (Throwable) -> Int?,
 ) {
 
     private val namesFromCommissioning = mutableMapOf<DeviceId, String>()
@@ -54,7 +55,7 @@ internal class FinaliseCommissioningUseCase(
         throw CommissioningException(
             deviceId = deviceId,
             stage = stage,
-            errorCode = t.toMatterErrorCode(),
+            errorCode = errorCodeOf(t),
             displayMessage = t.message ?: "",
         )
     }

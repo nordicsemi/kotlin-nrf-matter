@@ -1,8 +1,7 @@
 package no.nordicsemi.nrf.matter.binding
 
-import kotlinx.coroutines.flow.Flow
-import no.nordicsemi.nrf.matter.model.DeviceBinding
-import no.nordicsemi.nrf.matter.model.DeviceId
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -35,13 +34,8 @@ import no.nordicsemi.nrf.matter.model.DeviceId
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface BindingDataSource {
-    suspend fun save(binding: DeviceBinding)
+const val bindingDataStoreFileName = "BindingStore"
 
-    fun getBindingsForDevice(deviceId: DeviceId): Flow<List<DeviceBinding>>
-
-    fun getAll(): Flow<List<DeviceBinding>>
-
-    suspend fun delete(binding: DeviceBinding)
-
+expect class DataStoreProvider {
+    fun createDataStore(): DataStore<Preferences>
 }

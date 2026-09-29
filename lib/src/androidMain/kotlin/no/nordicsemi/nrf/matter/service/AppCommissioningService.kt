@@ -12,6 +12,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import no.nordicsemi.nrf.matter.api.MatterPlatformDependencies
 import no.nordicsemi.nrf.matter.api.NordicMatters
 
 /*
@@ -52,7 +53,7 @@ class AppCommissioningService : Service(), CommissioningService.Callback {
     private val dependencies by lazy { NordicMatters.matterDependencies }
     private val devicesRepository by lazy { dependencies.devicesRepository }
     private val devicesStateRepository by lazy { dependencies.devicesStateRepository }
-    private val chipClient by lazy { dependencies.platformDependencies.chipClient }
+    private val chipClient by lazy { (dependencies.platform as MatterPlatformDependencies).chipClient }
 
     private lateinit var commissioningServiceDelegate: CommissioningService
 

@@ -12,6 +12,7 @@ import no.nordicsemi.nrf.matter.adapters.IOSLoggerImpl
 import no.nordicsemi.nrf.matter.adapters.handleResult
 import no.nordicsemi.nrf.matter.commission.CommissioningException
 import no.nordicsemi.nrf.matter.logger.NordicLogger
+import no.nordicsemi.nrf.matter.logger.setLogger
 
 private const val TAG = "AppExtension"
 

@@ -44,12 +44,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import no.nordicsemi.nrf.matter.platform.getAppVersion
+import no.nordicsemi.nrf.matter.platform.LocalAppEnvironment
 import no.nordicsemi.nrf.matter.shared.generated.resources.Res
 import no.nordicsemi.nrf.matter.shared.generated.resources.no_matter_devices
 import no.nordicsemi.nrf.matter.theme.NordicTheme
-import no.nordicsemi.nrf.matter.events.AppEvent
-import no.nordicsemi.nrf.matter.events.AppEvents
 import no.nordicsemi.nrf.matter.events.AppInteraction
 import org.jetbrains.compose.resources.painterResource
 
@@ -90,7 +88,8 @@ fun NoDevicesScreen(
     onMatterUrlClick: () -> Unit = {},
     onSourceCodeClick: () -> Unit = {}
 ) {
-    val version = getAppVersion()
+    val version = LocalAppEnvironment.current.appVersion
+    val onInteraction = LocalAppEnvironment.current.onInteraction
 
     Box(
         modifier = Modifier
@@ -132,7 +131,7 @@ fun NoDevicesScreen(
             // Action Button
             Button(
                 onClick = {
-                    AppEvents.publish(AppEvent.NamedInteraction(AppInteraction.AddNewDevice))
+                    onInteraction(AppInteraction.AddNewDevice)
                     onAddDeviceClick()
                 },
                 modifier = Modifier
@@ -158,7 +157,7 @@ fun NoDevicesScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             TextButton(onClick = {
-                AppEvents.publish(AppEvent.NamedInteraction(AppInteraction.WhatIsMatter))
+                onInteraction(AppInteraction.WhatIsMatter)
                 onMatterUrlClick()
             }) {
                 Text(
@@ -192,7 +191,7 @@ fun NoDevicesScreen(
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.clickable {
-                    AppEvents.publish(AppEvent.NamedInteraction(AppInteraction.SourceCode))
+                    onInteraction(AppInteraction.SourceCode)
                     onSourceCodeClick()
                 }
             )

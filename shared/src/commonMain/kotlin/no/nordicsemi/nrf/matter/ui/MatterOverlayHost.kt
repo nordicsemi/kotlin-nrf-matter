@@ -33,4 +33,4 @@ class MatterOverlayHostState {
     }
 }
 
-val LocalMatterOverlayHost = compositionLocalOf<MatterOverlayHostState?> { null }
+internal val LocalMatterOverlayHost = compositionLocalOf<MatterOverlayHostState?> { null }

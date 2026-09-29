@@ -4,7 +4,7 @@ import no.nordicsemi.nrf.matter.cluster.BasicInfoClusterInfo
 import no.nordicsemi.nrf.matter.cluster.DoorLockClusterInfo
 import no.nordicsemi.nrf.matter.cluster.LevelControlClusterInfo
 import no.nordicsemi.nrf.matter.cluster.OnOffClusterInfo
-import no.nordicsemi.nrf.matter.events.AppEvent
+import no.nordicsemi.nrf.matter.docs.demo.AppEvent
 import no.nordicsemi.nrf.matter.events.AppInteraction
 
 object DocLinks {

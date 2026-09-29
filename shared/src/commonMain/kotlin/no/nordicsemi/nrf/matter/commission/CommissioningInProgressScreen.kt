@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,7 +24,7 @@ import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
 import no.nordicsemi.nrf.matter.shared.generated.resources.Res
 import no.nordicsemi.nrf.matter.platform.PlatformType
-import no.nordicsemi.nrf.matter.platform.currentType
+import no.nordicsemi.nrf.matter.platform.LocalAppEnvironment
 import no.nordicsemi.nrf.matter.theme.NordicDarkGray
 
 @OptIn(ExperimentalCompottieApi::class)
@@ -34,7 +32,7 @@ import no.nordicsemi.nrf.matter.theme.NordicDarkGray
 fun CommissioningInProgressScreen() {
     Box(
         Modifier.fillMaxSize().background(Color.White),
-        contentAlignment = if (currentType == PlatformType.ANDROID) Alignment.Center else Alignment.TopCenter,
+        contentAlignment = if (LocalAppEnvironment.current.platformType == PlatformType.ANDROID) Alignment.Center else Alignment.TopCenter,
     ) {
         val composition by rememberLottieComposition {
             LottieCompositionSpec.JsonString(
@@ -46,10 +44,7 @@ fun CommissioningInProgressScreen() {
             iterations = Compottie.IterateForever
         )
 
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.verticalScroll(rememberScrollState()),
-        ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Image(
                 painter = rememberLottiePainter(
                     composition = composition,

@@ -1,5 +1,6 @@
 package no.nordicsemi.nrf.matter.api
 
+import kotlinx.coroutines.CoroutineDispatcher
 import no.nordicsemi.nrf.matter.cluster.MatterClient
 import no.nordicsemi.nrf.matter.commission.FinaliseCommissioningUseCase
 import no.nordicsemi.nrf.matter.controller.BindingController
@@ -9,18 +10,16 @@ import no.nordicsemi.nrf.matter.repository.BindingRepository
 import no.nordicsemi.nrf.matter.repository.DevicesRepository
 import no.nordicsemi.nrf.matter.repository.DevicesStateRepository
 
-internal class MatterDependencies(val platformDependencies: MatterPlatformDependencies) {
+internal class MatterDependencies(val platform: MatterPlatform) {
 
-    val devicesRepository = DevicesRepository(platformDependencies.devicesDataSource)
-    val devicesStateRepository = DevicesStateRepository(platformDependencies.deviceStateDataSource)
-    val bindingRepository = BindingRepository(platformDependencies.bindingDataSource)
+    val devicesRepository = DevicesRepository(platform.devicesDataSource)
+    val devicesStateRepository = DevicesStateRepository(platform.deviceStateDataSource)
+    val bindingRepository = BindingRepository(platform.bindingDataSource)
+    val finaliseCommissioningUseCase = FinaliseCommissioningUseCase(platform.matterClient, platform::errorCodeOf)
 
-    val matterClient: MatterClient get() = platformDependencies.matterClient
-    val bindingController: BindingController get() = platformDependencies.bindingController
-    val bindingLogsProvider: BindingLogsProvider
-        get() = platformDependencies.bindingLogsProvider
-    val matterDecommissioner: MatterDecommissioner
-        get() = platformDependencies.matterDecommissioner
-    val finaliseCommissioningUseCase: FinaliseCommissioningUseCase
-        get() = platformDependencies.finaliseCommissioningUseCase
+    val matterClient: MatterClient get() = platform.matterClient
+    val bindingController: BindingController get() = platform.bindingController
+    val bindingLogsProvider: BindingLogsProvider get() = platform.bindingLogsProvider
+    val matterDecommissioner: MatterDecommissioner get() = platform.matterDecommissioner
+    val ioDispatcher: CoroutineDispatcher get() = platform.ioDispatcher
 }

@@ -29,8 +29,17 @@ object NordicMatters {
             }
         }
 
+    private var configuredPlatform: MatterPlatform? = null
+
+    fun configure(platform: MatterPlatform) {
+        configuredPlatform = platform
+    }
+
+    internal val platform: MatterPlatform
+        get() = checkNotNull(configuredPlatform) { "NordicMatters.configure() must be called before use." }
+
     internal val matterDependencies: MatterDependencies by lazy {
-        MatterDependenciesProvider.createMatterDependencies()
+        MatterDependencies(platform)
     }
 
     val matterClient: MatterClient

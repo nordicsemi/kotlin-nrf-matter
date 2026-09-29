@@ -11,7 +11,7 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
     private let fabric: Fabric
     
     override init() {
-        NordicMatters.shared.initializeLogger()
+        NordicMatters.shared.initializePlatform()
         fabric = NordicMatters.shared.defaultFabric
     }
 
