@@ -6,9 +6,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.ComposeViewport
 import no.nordicsemi.nrf.matter.api.NordicMatters
 import no.nordicsemi.nrf.matter.di.uiModule
-import no.nordicsemi.nrf.matter.docs.demo.InMemoryLoggerBackend
-import no.nordicsemi.nrf.matter.docs.demo.WebMatterPlatformDependencies
-import no.nordicsemi.nrf.matter.logger.NordicLogger
+import no.nordicsemi.nrf.matter.docs.demo.initializePlatform
 import no.nordicsemi.nrf.matter.nordic.registerNordicClusters
 import no.nordicsemi.nrf.matter.platform.AppEnvironment
 import no.nordicsemi.nrf.matter.platform.PlatformType
@@ -18,8 +16,7 @@ import org.koin.dsl.module
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun main() {
-    NordicLogger.setBackend(InMemoryLoggerBackend)
-    NordicMatters.configure(WebMatterPlatformDependencies)
+    NordicMatters.initializePlatform()
     registerNordicClusters()
     startKoin {
         modules(

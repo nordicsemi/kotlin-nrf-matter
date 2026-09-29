@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import no.nordicsemi.nrf.matter.MatterCommissioner
 import no.nordicsemi.nrf.matter.adapters.BindingControllerImpl
+import no.nordicsemi.nrf.matter.adapters.IOSLoggerImpl
 import no.nordicsemi.nrf.matter.adapters.MatterCommissionerImpl
 import no.nordicsemi.nrf.matter.adapters.MatterDecommissionerImpl
 import no.nordicsemi.nrf.matter.binding.BaseBindingDataSource
@@ -22,12 +23,13 @@ import no.nordicsemi.nrf.matter.controller.BindingLogsProvider
 import no.nordicsemi.nrf.matter.controller.MatterDecommissioner
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
+import no.nordicsemi.nrf.matter.logger.IosLoggerBackend
 import no.nordicsemi.nrf.matter.repository.IosDevicesDataSource
 import no.nordicsemi.nrf.matter.repository.IosDevicesStateDataSource
 
 fun NordicMatters.initializePlatform() {
-    initializeLogger()
-    configure(IosPlatformDependencies())
+    IosLoggerBackend.logger = IOSLoggerImpl()
+    initialize(IosPlatformDependencies(), IosLoggerBackend)
 }
 
 internal class IosPlatformDependencies : MatterPlatformDependencies {

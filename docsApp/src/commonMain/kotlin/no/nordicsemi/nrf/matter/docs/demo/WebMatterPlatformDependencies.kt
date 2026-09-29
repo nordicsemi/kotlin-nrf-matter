@@ -3,6 +3,7 @@ package no.nordicsemi.nrf.matter.docs.demo
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import no.nordicsemi.nrf.matter.api.MatterPlatformDependencies
+import no.nordicsemi.nrf.matter.api.NordicMatters
 import no.nordicsemi.nrf.matter.binding.BindingDataSource
 import no.nordicsemi.nrf.matter.cluster.MatterClient
 import no.nordicsemi.nrf.matter.commission.CommissioningTaskProvider
@@ -29,4 +30,8 @@ internal object WebMatterPlatformDependencies : MatterPlatformDependencies {
 
     override val errorCodeMapper = MatterErrorCodeMapper { null }
     override val commissioningTaskProvider: CommissioningTaskProvider = WebCommissioningTaskProvider(webMatterClient)
+}
+
+fun NordicMatters.initializePlatform() {
+    initialize(WebMatterPlatformDependencies, InMemoryLoggerBackend)
 }

@@ -22,14 +22,12 @@ import no.nordicsemi.nrf.matter.controller.MatterDecommissioner
 import no.nordicsemi.nrf.matter.datasource.DeviceStateDataSource
 import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.logger.AndroidLoggerBackend
-import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.repository.AndroidDeviceStateDataSource
 import no.nordicsemi.nrf.matter.repository.AndroidDevicesDataSource
 
-fun NordicMatters.initialize(context: Context) {
+fun NordicMatters.initializePlatform(context: Context) {
     ContextHolder.initialise(context)
-    NordicLogger.setBackend(AndroidLoggerBackend)
-    configure(AndroidPlatformDependencies())
+    initialize(AndroidPlatformDependencies(), AndroidLoggerBackend)
 }
 
 internal class AndroidPlatformDependencies : MatterPlatformDependencies {
