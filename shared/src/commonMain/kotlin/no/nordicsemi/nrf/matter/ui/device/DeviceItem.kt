@@ -43,6 +43,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -136,6 +137,7 @@ internal fun DeviceItem(
             .fillMaxWidth()
             .padding(8.dp)
             .clip(RoundedCornerShape(16.dp))
+            .testTag("device_item_${device.deviceId.stringValue}")
             .clickable {
                 if (!isExpanded) AppEvents.emit(AppEvent.DeviceCardExpand)
                 isExpanded = !isExpanded

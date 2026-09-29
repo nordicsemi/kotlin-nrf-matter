@@ -8,6 +8,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -18,6 +19,6 @@ fun SmokeCoAlarmActionItem(
         imageVector = if (isAlarmActive) Icons.Outlined.Warning else Icons.Outlined.CheckCircle,
         contentDescription = if (isAlarmActive) "Alarm active" else "No alarm",
         tint = if (isAlarmActive) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.size(28.dp),
+        modifier = Modifier.size(28.dp).testTag("smoke_co_alarm_icon"),
     )
 }
