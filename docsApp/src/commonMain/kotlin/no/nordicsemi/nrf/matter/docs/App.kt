@@ -41,6 +41,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
@@ -170,7 +171,13 @@ private fun BoxScope.PhoneFrameContent(
 ) {
     val overlayHost = requireNotNull(koinInject<AppEnvironment>().overlayHost)
 
-    RealApp(homeViewModel = koinViewModel<HomeViewModel>())
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .then(if (overlayHost.sheet != null) Modifier.blur(16.dp) else Modifier),
+    ) {
+        RealApp(homeViewModel = koinViewModel<HomeViewModel>())
+    }
 
     ObserveAppEvents(onReveal)
 
