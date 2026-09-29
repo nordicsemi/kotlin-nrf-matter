@@ -20,6 +20,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +37,13 @@ internal fun BasicInformationBottomSheet(
     device: Device,
     onDismiss: () -> Unit,
 ) {
+    val host = LocalMatterOverlayHost.current
+    if (host != null) {
+        SideEffect { host.showSheet(onDismissRequest = onDismiss) { BasicDeviceInformation(device = device, onDismiss = onDismiss) } }
+        DisposableEffect(Unit) { onDispose { host.clearSheet() } }
+        return
+    }
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         modifier = Modifier.matterPhoneWidth(),

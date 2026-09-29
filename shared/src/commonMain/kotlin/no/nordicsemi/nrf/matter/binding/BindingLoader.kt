@@ -28,7 +28,9 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Matrix
@@ -44,6 +46,7 @@ import no.nordicsemi.nrf.matter.shared.generated.resources.Res
 import no.nordicsemi.nrf.matter.shared.generated.resources.binding_links_only
 import no.nordicsemi.nrf.matter.theme.NordicBlue
 import no.nordicsemi.nrf.matter.theme.NordicTheme
+import no.nordicsemi.nrf.matter.ui.LocalMatterOverlayHost
 import no.nordicsemi.nrf.matter.ui.matterPhoneWidth
 import org.jetbrains.compose.resources.painterResource
 
@@ -165,14 +168,7 @@ internal fun BindingLoaderDialog(
         }
     }
 
-    Dialog(
-        onDismissRequest = { /* Do nothing */ },
-        properties = DialogProperties(
-            dismissOnBackPress = false,
-            dismissOnClickOutside = false,
-            usePlatformDefaultWidth = false
-        )
-    ) {
+    val content: @Composable () -> Unit = {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(modifier = Modifier.fillMaxHeight().matterPhoneWidth()) {
                 Column(
@@ -234,4 +230,21 @@ internal fun BindingLoaderDialog(
             }
         }
     }
+
+    val host = LocalMatterOverlayHost.current
+    if (host != null) {
+        SideEffect { host.showDialog(content) }
+        DisposableEffect(Unit) { onDispose { host.clearDialog() } }
+        return
+    }
+
+    Dialog(
+        onDismissRequest = { /* Do nothing */ },
+        properties = DialogProperties(
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false,
+            usePlatformDefaultWidth = false
+        ),
+        content = content,
+    )
 }

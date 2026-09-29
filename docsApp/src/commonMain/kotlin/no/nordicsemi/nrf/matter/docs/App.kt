@@ -34,6 +34,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,6 +58,8 @@ import no.nordicsemi.nrf.matter.docs.docs.LinkTarget
 import no.nordicsemi.nrf.matter.docs.platform.openUrl
 import no.nordicsemi.nrf.matter.docs.screens.DocsBrowserScreen
 import no.nordicsemi.nrf.matter.theme.NordicTheme
+import no.nordicsemi.nrf.matter.ui.LocalMatterOverlayHost
+import no.nordicsemi.nrf.matter.ui.MatterOverlayHostState
 import no.nordicsemi.nrf.matter.ui.PHONE_BORDER_WIDTH
 import no.nordicsemi.nrf.matter.ui.PHONE_MARGIN
 import no.nordicsemi.nrf.matter.ui.PHONE_WIDTH
@@ -172,9 +175,45 @@ private fun BoxScope.PhoneFrameContent(
     onLink: (LinkTarget) -> Unit,
     onOpenFullPage: (DocAnchor) -> Unit,
 ) {
-    RealApp(homeViewModel = koinViewModel<HomeViewModel>())
+    val overlayHost = remember { MatterOverlayHostState() }
+
+    CompositionLocalProvider(LocalMatterOverlayHost provides overlayHost) {
+        RealApp(homeViewModel = koinViewModel<HomeViewModel>())
+    }
 
     ObserveAppEvents(onReveal)
+
+    val sheetContent = overlayHost.sheet
+    if (sheetContent != null) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.32f))
+                .clickable { overlayHost.onSheetDismissRequest?.invoke() },
+        )
+        Surface(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
+                .heightIn(max = maxHeight * 0.85f),
+            shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+            shadowElevation = 8.dp,
+        ) {
+            sheetContent()
+        }
+    }
+
+    val dialogContent = overlayHost.dialog
+    if (dialogContent != null) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.6f))
+                .clickable(interactionSource = null, indication = null) {},
+        ) {
+            dialogContent()
+        }
+    }
 
     if (!panelBesideFrame && revealedAnchor != null) {
         Box(
