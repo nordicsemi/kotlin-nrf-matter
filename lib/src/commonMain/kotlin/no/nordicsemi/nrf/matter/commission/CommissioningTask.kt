@@ -15,4 +15,4 @@ fun rememberCommissioningTask(
     fabric: Fabric = NordicMatters.defaultFabric,
     onSuccess: suspend (DeviceId) -> Unit,
     onError: (CommissioningException) -> Unit,
-): CommissioningTask = NordicMatters.platform.rememberCommissioningTask(fabric, onSuccess, onError)
+): CommissioningTask = NordicMatters.platform.commissioningTaskProvider.rememberCommissioningTask(fabric, onSuccess, onError)

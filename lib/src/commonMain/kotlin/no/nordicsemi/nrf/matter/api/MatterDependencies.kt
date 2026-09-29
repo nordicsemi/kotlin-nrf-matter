@@ -15,7 +15,7 @@ internal class MatterDependencies(val platform: MatterPlatform) {
     val devicesRepository = DevicesRepository(platform.devicesDataSource)
     val devicesStateRepository = DevicesStateRepository(platform.deviceStateDataSource)
     val bindingRepository = BindingRepository(platform.bindingDataSource)
-    val finaliseCommissioningUseCase = FinaliseCommissioningUseCase(platform.matterClient, platform::errorCodeOf)
+    val finaliseCommissioningUseCase = FinaliseCommissioningUseCase(platform.matterClient, platform.errorCodeMapper::errorCodeOf)
 
     val matterClient: MatterClient get() = platform.matterClient
     val bindingController: BindingController get() = platform.bindingController
