@@ -1,9 +1,5 @@
 package no.nordicsemi.nrf.matter.binding
 
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.edit
-import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
@@ -43,23 +39,21 @@ import no.nordicsemi.nrf.matter.model.DeviceId
  */
 
 internal class BaseBindingDataSource(
-    private val dataStore: DataStore<Preferences>,
+    private val storage: BindingsStorage,
 ) : BindingDataSource {
 
-    private val BINDINGS_KEY = stringPreferencesKey("bindings_json")
-
     override suspend fun save(binding: DeviceBinding) {
-        dataStore.edit { prefs ->
-            val current = prefs[BINDINGS_KEY]?.let { decode(it) } ?: emptyList()
+        storage.update { json ->
+            val current = json?.let { decode(it) } ?: emptyList()
             val updated = current.filterNot { it.id == binding.id } + binding
             NordicLogger.info("updated binding table: $updated", tag = "Bindings")
-            prefs[BINDINGS_KEY] = encode(updated)
+            encode(updated)
         }
     }
 
     override fun getBindingsForDevice(deviceId: DeviceId): Flow<List<DeviceBinding>> {
-        return dataStore.data.map { prefs ->
-            val bindings = prefs[BINDINGS_KEY]?.let { decode(it) } ?: emptyList()
+        return storage.data.map { json ->
+            val bindings = json?.let { decode(it) } ?: emptyList()
 
             bindings.filter {
                 it.sourceNodeId == deviceId || it.targetNodeId == deviceId
@@ -68,19 +62,18 @@ internal class BaseBindingDataSource(
     }
 
     override fun getAll(): Flow<List<DeviceBinding>> =
-        dataStore.data.map { prefs ->
-            prefs[BINDINGS_KEY]?.let { decode(it) } ?: emptyList()
+        storage.data.map { json ->
+            json?.let { decode(it) } ?: emptyList()
         }
 
     override suspend fun delete(binding: DeviceBinding) {
-        dataStore.edit { prefs ->
-            val current = prefs[BINDINGS_KEY]?.let { decode(it) } ?: emptyList()
+        storage.update { json ->
+            val current = json?.let { decode(it) } ?: emptyList()
             val updated = current.filterNot { it.id == binding.id }
             NordicLogger.info("updated binding table: $updated", tag = "Bindings")
-            prefs[BINDINGS_KEY] = encode(updated)
+            encode(updated)
         }
     }
-
 
     private fun encode(list: List<DeviceBinding>): String = Json.encodeToString(list)
     private fun decode(json: String): List<DeviceBinding> = Json.decodeFromString(json)

@@ -2,7 +2,6 @@
 
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
-import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.konan.target.HostManager
 
 plugins {
@@ -160,17 +159,6 @@ kotlin {
         browser()
     }
 
-    applyDefaultHierarchyTemplate {
-        common {
-            group("mobile") {
-                withCompilations { it.platformType == KotlinPlatformType.androidJvm }
-                group("ios") {
-                    withIos()
-                }
-            }
-        }
-    }
-
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -278,9 +266,10 @@ kotlin {
             implementation(libs.room.runtime)
             implementation(libs.room.ktx)
             implementation(libs.androidx.startup)
+            implementation(libs.androidx.dataStore.preferences)
+            implementation(libs.androidx.dataStore.core)
         }
-        getByName("mobileMain").dependencies {
-            // data store
+        iosMain.dependencies {
             implementation(libs.androidx.dataStore.preferences)
             implementation(libs.androidx.dataStore.core)
         }

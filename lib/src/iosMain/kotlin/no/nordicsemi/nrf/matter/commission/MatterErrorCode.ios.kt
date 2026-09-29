@@ -2,7 +2,7 @@ package no.nordicsemi.nrf.matter.commission
 
 import no.nordicsemi.nrf.matter.adapters.IOSException
 
-internal actual fun Throwable.toMatterErrorCode(): Int? {
+internal fun Throwable.toMatterErrorCode(): Int? {
     var cause: Throwable? = this
 
     while (cause != null) {

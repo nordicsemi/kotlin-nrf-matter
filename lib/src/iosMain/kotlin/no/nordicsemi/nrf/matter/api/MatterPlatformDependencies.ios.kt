@@ -44,7 +44,7 @@ internal class MatterPlatformDependencies : MatterPlatform {
     override val bindingLogsProvider: BindingLogsProvider by lazy { BindingLogsProviderImpl() }
 
     override val bindingDataSource: BindingDataSource by lazy {
-        BaseBindingDataSource(DataStoreProvider().createDataStore())
+        BaseBindingDataSource(DataStoreProvider().createStorage())
     }
 
     override val ioDispatcher: CoroutineDispatcher = Dispatchers.IO

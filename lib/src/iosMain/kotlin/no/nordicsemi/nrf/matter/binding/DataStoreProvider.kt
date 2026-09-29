@@ -5,7 +5,11 @@ import androidx.datastore.core.DataStoreFactory
 import androidx.datastore.core.okio.OkioStorage
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.PreferencesSerializer
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import kotlinx.cinterop.ExperimentalForeignApi
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import okio.FileSystem
 import okio.Path.Companion.toPath
 import platform.Foundation.NSDocumentDirectory
@@ -44,14 +48,17 @@ import platform.Foundation.NSUserDomainMask
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-actual class DataStoreProvider {
+private const val bindingDataStoreFileName = "BindingStore"
 
-    actual fun createDataStore(): DataStore<Preferences> {
-        return DataStoreFactory.create(storage = createStorage())
+class DataStoreProvider {
+
+    fun createStorage(): BindingsStorage {
+        val dataStore = DataStoreFactory.create(storage = createOkioStorage())
+        return DataStoreBindingsStorage(dataStore)
     }
 
     @OptIn(ExperimentalForeignApi::class)
-    private fun createStorage(): OkioStorage<Preferences> {
+    private fun createOkioStorage(): OkioStorage<Preferences> {
         return OkioStorage(
             fileSystem = FileSystem.SYSTEM,
             serializer = PreferencesSerializer,
@@ -66,5 +73,18 @@ actual class DataStoreProvider {
                 (requireNotNull(documentDirectory).path + "/$bindingDataStoreFileName").toPath()
             }
         )
+    }
+}
+
+private class DataStoreBindingsStorage(
+    private val dataStore: DataStore<Preferences>,
+) : BindingsStorage {
+
+    private val key = stringPreferencesKey("bindings_json")
+
+    override val data: Flow<String?> = dataStore.data.map { it[key] }
+
+    override suspend fun update(transform: (String?) -> String) {
+        dataStore.edit { prefs -> prefs[key] = transform(prefs[key]) }
     }
 }

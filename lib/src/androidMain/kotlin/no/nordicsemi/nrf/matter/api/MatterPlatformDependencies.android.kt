@@ -49,7 +49,7 @@ internal class MatterPlatformDependencies : MatterPlatform {
     }
 
     override val bindingDataSource: BindingDataSource by lazy {
-        BaseBindingDataSource(DataStoreProvider(context).createDataStore())
+        BaseBindingDataSource(DataStoreProvider(context).createStorage())
     }
 
     override val matterClient: MatterClient by lazy { AndroidMatterClient(chipClient) }
