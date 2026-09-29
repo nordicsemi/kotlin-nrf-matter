@@ -14,14 +14,6 @@ private data class AttributeKey(
     val attributeId: Long,
 )
 
-/**
- * Web/demo actual [MatterClient]: an in-memory attribute store standing in for the real CHIP/
- * MatterSupport wire. Every real cluster class (`OnOffCluster`, `DoorLockCluster`,
- * `LevelControlCluster`, the Nordic manufacturer-specific clusters, ...) is unmodified `:lib`/
- * `:shared` code -- faking only this class is what lets that real business logic run against
- * demo data. [seed] is the one addition beyond [MatterClient]'s contract, used by the web
- * commissioning fake to populate a newly "discovered" device before it's read back.
- */
 internal class WebMatterClient : MatterClient() {
 
     private val store = mutableMapOf<AttributeKey, MutableStateFlow<Any?>>()
@@ -52,9 +44,6 @@ internal class WebMatterClient : MatterClient() {
 
     @Suppress("UNCHECKED_CAST")
     override fun <T> observeAttribute(deviceId: DeviceId, endpoint: Int, clusterId: Long, attributeId: Long): Flow<T> {
-        // Fires the moment a real cluster controller subscribes -- i.e. the moment a device
-        // card expands -- so simply looking at a device reveals its control docs, not just
-        // touching its controls.
         AppEvents.publish(AppEvent.ClusterAttributeObserved(deviceId, endpoint, clusterId, attributeId))
         return flowFor(deviceId, endpoint, clusterId, attributeId) as Flow<T>
     }
@@ -90,9 +79,6 @@ internal class WebMatterClient : MatterClient() {
             }
 
             BasicInfoClusterInfo.ID -> {
-                // Nordic's Basic Information cluster extension (`:shared`'s BasicInfoExtCluster)
-                // shares the standard Basic Information cluster ID -- only its "generate random
-                // number" command ever reaches this branch, since the standard cluster has none.
                 flowFor(deviceId, endpoint, clusterId, BASIC_INFO_EXT_RANDOM_NUMBER_ATTRIBUTE_ID).value =
                     Random.nextLong(0, 100_000)
             }
@@ -101,11 +87,9 @@ internal class WebMatterClient : MatterClient() {
     }
 }
 
-/** `no.nordicsemi.nrf.matter.nordic.ManufacturerSpecClusterInfo.ID` in `:shared` -- `:lib` can't depend on `:shared`. */
 internal const val MANUFACTURER_SPEC_CLUSTER_ID: Long = 0xFFF1FC01
 internal const val MANUFACTURER_SPEC_LED_ATTRIBUTE_ID: Long = 0xFFF10001
 internal const val MANUFACTURER_SPEC_BUTTON_ATTRIBUTE_ID: Long = 0xFFF10002
 internal const val MANUFACTURER_SPEC_NAME_ATTRIBUTE_ID: Long = 0xFFF10000
 
-/** `no.nordicsemi.nrf.matter.nordic.BasicInfoExtClusterInfo.Attribute.RANDOM_NUMBER` in `:shared`. */
 internal const val BASIC_INFO_EXT_RANDOM_NUMBER_ATTRIBUTE_ID: Long = 0x17

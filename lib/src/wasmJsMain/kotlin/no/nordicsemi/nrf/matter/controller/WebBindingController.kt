@@ -5,10 +5,6 @@ import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.events.AppEvent
 import no.nordicsemi.nrf.matter.events.AppEvents
 
-/**
- * Web/demo actual: simulates writing an Access Control List entry and a Binding Table entry,
- * narrating the steps into [logs] the way the real chip log stream would.
- */
 internal class WebBindingController(private val logs: WebBindingLogsProvider) : BindingController {
     override suspend fun bind(
         sourceNodeId: DeviceId,

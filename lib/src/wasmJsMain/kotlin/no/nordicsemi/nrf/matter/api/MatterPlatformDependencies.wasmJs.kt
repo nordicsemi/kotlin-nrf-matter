@@ -16,12 +16,6 @@ import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.repository.WebDeviceStateDataSource
 import no.nordicsemi.nrf.matter.repository.WebDevicesDataSource
 
-/**
- * Web/demo actual: every dependency is an in-memory fake -- there is no native Matter/BLE stack
- * on the web. [matterClient] is the one that matters: it's the seam every real cluster
- * controller in `:shared` talks through, so faking it is what lets that real business logic run
- * against demo data.
- */
 internal actual class MatterPlatformDependencies {
 
     actual val devicesDataSource: DevicesDataSource by lazy { WebDevicesDataSource() }

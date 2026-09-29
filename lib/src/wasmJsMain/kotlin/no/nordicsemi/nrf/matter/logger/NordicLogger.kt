@@ -7,10 +7,6 @@ import kotlinx.coroutines.flow.update
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-/**
- * Web/demo actual: keeps logs in memory only (no persistence across page reloads), which is
- * appropriate for the documentation-site demo this target exists for.
- */
 @OptIn(ExperimentalTime::class)
 actual object NordicLogger {
 

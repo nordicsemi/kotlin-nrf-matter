@@ -6,9 +6,6 @@ import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.events.AppEvent
 import no.nordicsemi.nrf.matter.events.AppEvents
 
-/**
- * Web/demo actual: simulates the short delay of unlinking a fabric from a real accessory.
- */
 internal class WebMatterDecommissioner : MatterDecommissioner {
     override suspend fun decommission(deviceId: DeviceId) {
         NordicLogger.info("Decommissioning device $deviceId", tag = "Decommission")

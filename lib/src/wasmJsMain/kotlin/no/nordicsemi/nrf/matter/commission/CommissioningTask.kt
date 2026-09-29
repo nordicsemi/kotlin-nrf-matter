@@ -18,12 +18,6 @@ import no.nordicsemi.nrf.matter.webdemo.WebDeviceCatalog
 import no.nordicsemi.nrf.matter.webdemo.seedDevice
 import kotlin.random.Random
 
-/**
- * Web/demo actual: simulates BLE discovery + provisioning with a short delay, then either seeds
- * the next demo device (see [WebDeviceCatalog]) and calls [onSuccess], or -- with a small,
- * fixed chance -- calls [onError] so `CommissioningErrorScreen` stays reachable through normal
- * use, matching `commissioning.md`'s "If commissioning fails" section.
- */
 @Composable
 actual fun rememberCommissioningTask(
     fabric: Fabric,

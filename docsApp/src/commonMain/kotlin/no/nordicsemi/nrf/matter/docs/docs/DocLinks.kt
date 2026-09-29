@@ -7,10 +7,6 @@ import no.nordicsemi.nrf.matter.cluster.OnOffClusterInfo
 import no.nordicsemi.nrf.matter.events.AppEvent
 import no.nordicsemi.nrf.matter.events.AppInteraction
 
-/**
- * Hand-authored wiring between a specific UI element in the demo shell and the doc section
- * that explains it, keyed against the real heading text in the doc/docs markdown files.
- */
 object DocLinks {
     val AppIntro = DocAnchor(DocPage.INDEX)
     val SourceCode = DocAnchor(DocPage.INDEX, "application-source-code")
@@ -54,7 +50,6 @@ object DocLinks {
     val ProjectStructure = DocAnchor(DocPage.PROJECT_STRUCTURE)
     val VendoredDeps = DocAnchor(DocPage.VENDORED_DEPS)
 
-    /** `no.nordicsemi.nrf.matter.nordic.ManufacturerSpecClusterInfo.ID` in `:shared`. */
     private const val MANUFACTURER_SPEC_CLUSTER_ID = 0xFFF1FC01L
 
     private fun forClusterId(clusterId: Long): DocAnchor? = when (clusterId) {
@@ -79,11 +74,6 @@ object DocLinks {
         }
     }
 
-    /**
-     * Maps a live [AppEvent] published by the real `:lib`/`:shared` web fakes to the doc
-     * section that explains it -- the seam that lets interacting with the *real* app shell reveal
-     * documentation instead of just doing the real thing.
-     */
     fun forAppEvent(action: AppEvent): DocAnchor? = when (action) {
         is AppEvent.ClusterCommandExecuted -> forClusterId(action.clusterId)
         is AppEvent.ClusterAttributeObserved -> forClusterId(action.clusterId)

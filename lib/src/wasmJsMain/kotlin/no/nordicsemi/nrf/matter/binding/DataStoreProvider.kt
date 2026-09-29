@@ -8,10 +8,6 @@ import kotlinx.coroutines.flow.update
 import no.nordicsemi.nrf.matter.model.DeviceBinding
 import no.nordicsemi.nrf.matter.model.DeviceId
 
-/**
- * Web/demo actual: an in-memory binding store, no persistence needed for the documentation-site
- * demo this target exists for.
- */
 actual class DataStoreProvider {
     internal actual fun createBindingDataSource(): BindingDataSource = InMemoryBindingDataSource()
 }

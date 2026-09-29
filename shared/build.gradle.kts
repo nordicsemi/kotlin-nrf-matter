@@ -46,8 +46,6 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.jetbrains.compose.runtime)
             implementation(libs.jetbrains.compose.viewmodel)
-            // no wasmJs artifact, so it can't live in commonMain now that this module also
-            // targets wasmJs -- see ui/MatterBlur.kt for the per-platform seam.
             implementation(libs.skydoves.cloudy)
         }
         iosMain.dependencies {

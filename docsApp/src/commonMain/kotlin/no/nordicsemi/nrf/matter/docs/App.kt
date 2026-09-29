@@ -108,9 +108,6 @@ fun App() {
             val isPhoneViewport = maxWidth < PHONE_WIDTH
             val capturedMaxHeight = maxHeight
 
-            // The phone is always dead-center: Box positions each aligned child independently,
-            // so the side panel appearing/disappearing never shifts it (a Row would recenter the
-            // whole row and shove the phone sideways).
             PhoneFrame(
                 isPhoneViewport = isPhoneViewport,
                 modifier = Modifier.align(Alignment.Center),

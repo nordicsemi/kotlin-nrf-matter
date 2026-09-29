@@ -8,10 +8,6 @@ import no.nordicsemi.nrf.matter.datasource.DevicesDataSource
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.Devices
 
-/**
- * Web/demo actual: an in-memory device list, no persistence needed for the documentation-site
- * demo this target exists for.
- */
 internal class WebDevicesDataSource : DevicesDataSource {
     private val state = MutableStateFlow(Devices())
 

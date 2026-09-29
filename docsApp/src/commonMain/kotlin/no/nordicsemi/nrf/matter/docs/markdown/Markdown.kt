@@ -90,7 +90,7 @@ object MarkdownParser {
                         code += lines[i]
                         i++
                     }
-                    if (i < lines.size) i++ // skip closing fence
+                    if (i < lines.size) i++
                     blocks += MdBlock.CodeBlock(lang, code.joinToString("\n"))
                 }
 
@@ -109,7 +109,6 @@ object MarkdownParser {
                         }
                         i++
                     }
-                    // trim trailing blank lines
                     while (bodyLines.isNotEmpty() && bodyLines.last().isBlank()) bodyLines.removeAt(bodyLines.size - 1)
                     if (bodyLines.isEmpty() && i < lines.size && lines[i].isNotBlank()) {
                         bodyLines += lines[i]
