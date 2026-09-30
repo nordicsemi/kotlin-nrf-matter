@@ -3,13 +3,17 @@ package no.nordicsemi.nrf.matter.ui.device
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertContentDescriptionEquals
+import androidx.compose.ui.test.assertIsEnabled
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import no.nordicsemi.nrf.matter.adapters.IOSException
 import no.nordicsemi.nrf.matter.cluster.SmokeCoAlarmCluster
 import no.nordicsemi.nrf.matter.model.AlarmState
 import no.nordicsemi.nrf.matter.model.Device
@@ -17,6 +21,7 @@ import no.nordicsemi.nrf.matter.model.ExpressedState
 import no.nordicsemi.nrf.matter.model.toDeviceId
 import no.nordicsemi.nrf.matter.ui.smokecoalarm.FakeSmokeCoAlarmClient
 import no.nordicsemi.nrf.matter.ui.smokecoalarm.SmokeCoAlarmController
+import platform.Foundation.NSError
 import kotlin.test.Test
 
 /**
@@ -95,6 +100,49 @@ class DeviceItemSmokeCoAlarmUiTest {
 
     // The icon's testTag only survives in the unmerged semantics tree: DeviceHeader's Row
     // merges its children's semantics (including the icon's) into a single merged node.
+    @Test
+    fun selfTestBusy_showsReadableErrorBelowButton() = runComposeUiTest {
+        setContent {
+            DeviceItem(device = device, clusters = listOf(controller), onDecommission = {})
+        }
+        onNodeWithTag("device_item_${device.deviceId.stringValue}").performClick()
+
+        // What Matter.framework reports when the alarm answers SelfTestRequest with BUSY (0x9C).
+        client.commandError = IOSException(NSError.errorWithDomain("MTRInteractionErrorDomain", 0x9C, null))
+        onNodeWithText("Run self-test").performClick()
+        waitForIdle()
+
+        onNodeWithTag("self_test_error", useUnmergedTree = true)
+            .assertTextEquals("The alarm is busy. A self-test can only run when the device status is Normal.")
+
+        // A change of device status clears the error, leaving the button ready to run again.
+        client.expressedState.value = ExpressedState.SMOKE_ALARM.value
+        waitForIdle()
+
+        onNodeWithTag("self_test_error", useUnmergedTree = true).assertDoesNotExist()
+        onNodeWithText("Run self-test").assertIsEnabled()
+    }
+
+    @Test
+    fun selfTest_showsTestingWhileDeviceExpressesTesting() = runComposeUiTest {
+        setContent {
+            DeviceItem(device = device, clusters = listOf(controller), onDecommission = {})
+        }
+        onNodeWithTag("device_item_${device.deviceId.stringValue}").performClick()
+
+        onNodeWithText("Run self-test").performClick()
+        client.expressedState.value = ExpressedState.TESTING.value
+        waitForIdle()
+
+        onNodeWithText("Testing...").assertIsNotEnabled()
+
+        client.expressedState.value = ExpressedState.NORMAL.value
+        waitForIdle()
+
+        onNodeWithText("Run self-test").assertIsEnabled()
+        onNodeWithTag("self_test_error", useUnmergedTree = true).assertDoesNotExist()
+    }
+
     private fun ComposeUiTest.deviceStatus() = onNodeWithTag("device_status", useUnmergedTree = true)
 
     private fun ComposeUiTest.muteStatus() = onNodeWithTag("mute_status", useUnmergedTree = true)

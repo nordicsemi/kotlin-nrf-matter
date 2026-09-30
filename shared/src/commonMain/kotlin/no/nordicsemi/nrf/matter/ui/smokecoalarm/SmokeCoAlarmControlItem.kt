@@ -59,6 +59,11 @@ fun SmokeCoAlarmControlItem(
         DeviceStatusSection(state)
         AlarmStatusRow("Smoke", state.smokeState)
 
+        // Once the attempt has failed (including timing out), stop showing the test as running
+        // so the user isn't stuck and can retry.
+        val isTesting = state.isSelfTesting && selfTestState !is UiState.Error
+        val isSending = selfTestState is UiState.Loading
+
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -66,22 +71,18 @@ fun SmokeCoAlarmControlItem(
         ) {
             Button(
                 onClick = onRunSelfTest,
-                enabled = !state.isTestInProgress,
+                enabled = !isTesting && !isSending,
             ) {
-                Text(if (state.isTestInProgress) "Testing..." else "Run self-test")
+                Text(if (isTesting) "Testing..." else "Run self-test")
             }
 
-            if (state.isTestInProgress || selfTestState is UiState.Loading) {
+            if (isTesting || isSending) {
                 CircularProgressIndicator(modifier = Modifier.size(20.dp))
             }
+        }
 
-            if (selfTestState is UiState.Error) {
-                Icon(
-                    imageVector = Icons.Outlined.Error,
-                    contentDescription = "Self-test failed",
-                    tint = NordicRed,
-                )
-            }
+        if (selfTestState is UiState.Error) {
+            SelfTestError(selfTestState.message)
         }
     }
 }
@@ -134,6 +135,27 @@ private fun AlarmStatusRow(label: String, state: AlarmState) {
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun SelfTestError(message: String) {
+    Row(
+        verticalAlignment = Alignment.Top,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        Icon(
+            imageVector = Icons.Outlined.Error,
+            contentDescription = null,
+            tint = NordicRed,
+            modifier = Modifier.size(18.dp),
+        )
+        Text(
+            text = message,
+            style = MaterialTheme.typography.bodySmall,
+            color = NordicRed,
+            modifier = Modifier.testTag("self_test_error"),
+        )
     }
 }
 

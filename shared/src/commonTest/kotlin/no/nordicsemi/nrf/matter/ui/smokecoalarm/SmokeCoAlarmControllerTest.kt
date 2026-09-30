@@ -4,6 +4,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import no.nordicsemi.nrf.matter.cluster.MatterClient
 import no.nordicsemi.nrf.matter.cluster.SmokeCoAlarmCluster
@@ -12,10 +13,13 @@ import no.nordicsemi.nrf.matter.model.AlarmState
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.ExpressedState
 import no.nordicsemi.nrf.matter.model.toDeviceId
+import no.nordicsemi.nrf.matter.ui.UiState
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Fakes the wire (MatterClient) so alarm attributes can be driven directly from a test,
@@ -36,6 +40,9 @@ internal class FakeSmokeCoAlarmClient : MatterClient() {
     val endOfServiceAlert = MutableStateFlow<Number>(0)
 
     val executedCommands = mutableListOf<Long>()
+
+    /** When set, commands fail with this error instead of succeeding. */
+    var commandError: Throwable? = null
 
     override suspend fun <T> setAttribute(
         value: T,
@@ -82,6 +89,7 @@ internal class FakeSmokeCoAlarmClient : MatterClient() {
         timedInvokeTimeoutMs: Int?,
     ) {
         executedCommands += commandId
+        commandError?.let { throw it }
     }
 }
 
@@ -156,5 +164,66 @@ class SmokeCoAlarmControllerTest {
         client.expressedState.value = ExpressedState.CO_ALARM.value
 
         assertEquals(ExpressedState.CO_ALARM, controller.state.value.expressedState)
+    }
+
+    @Test
+    fun selfTestFailure_withoutDeviceStatus_showsConnectionMessage() = runTest(UnconfinedTestDispatcher()) {
+        val controller = SmokeCoAlarmController(cluster, backgroundScope)
+        client.commandError = IllegalStateException("device not connected")
+
+        controller.runSelfTest()
+
+        val error = assertIs<UiState.Error>(controller.selfTestState.value)
+        assertEquals(
+            "Couldn't reach the device to start the self-test. Check the connection and try again.",
+            error.message,
+        )
+    }
+
+    @Test
+    fun selfTest_finishingWithinTimeout_returnsToIdleWithoutError() = runTest(UnconfinedTestDispatcher()) {
+        val controller = SmokeCoAlarmController(cluster, backgroundScope)
+
+        controller.runSelfTest()
+        client.expressedState.value = ExpressedState.TESTING.value
+        assertTrue(controller.state.value.isSelfTesting)
+
+        advanceTimeBy(5.seconds)
+        client.expressedState.value = ExpressedState.NORMAL.value
+        advanceTimeBy(SmokeCoAlarmController.SELF_TEST_TIMEOUT)
+
+        assertFalse(controller.state.value.isSelfTesting)
+        assertIs<UiState.Idle<Unit>>(controller.selfTestState.value)
+    }
+
+    @Test
+    fun selfTest_stuckInTesting_timesOutWithError() = runTest(UnconfinedTestDispatcher()) {
+        val controller = SmokeCoAlarmController(cluster, backgroundScope)
+
+        controller.runSelfTest()
+        client.expressedState.value = ExpressedState.TESTING.value
+
+        advanceTimeBy(SmokeCoAlarmController.SELF_TEST_TIMEOUT - 1.seconds)
+        assertIs<UiState.Idle<Unit>>(controller.selfTestState.value)
+
+        advanceTimeBy(2.seconds)
+        val error = assertIs<UiState.Error>(controller.selfTestState.value)
+        assertEquals(
+            "The self-test didn't finish within 30 seconds. Check the alarm, then try again.",
+            error.message,
+        )
+    }
+
+    @Test
+    fun selfTestError_clearsWhenExpressedStateChanges() = runTest(UnconfinedTestDispatcher()) {
+        val controller = SmokeCoAlarmController(cluster, backgroundScope)
+        client.commandError = IllegalStateException("device not connected")
+
+        controller.runSelfTest()
+        assertIs<UiState.Error>(controller.selfTestState.value)
+
+        client.expressedState.value = ExpressedState.SMOKE_ALARM.value
+
+        assertIs<UiState.Idle<Unit>>(controller.selfTestState.value)
     }
 }

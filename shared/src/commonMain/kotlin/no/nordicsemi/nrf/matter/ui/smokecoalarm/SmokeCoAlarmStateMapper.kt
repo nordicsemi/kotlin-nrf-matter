@@ -13,6 +13,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import no.nordicsemi.nrf.matter.cluster.InteractionStatus
+import no.nordicsemi.nrf.matter.cluster.toInteractionStatus
 import no.nordicsemi.nrf.matter.model.AlarmState
 import no.nordicsemi.nrf.matter.model.ExpressedState
 import no.nordicsemi.nrf.matter.theme.NordicFall
@@ -59,4 +61,22 @@ fun ExpressedState.toColor(): Color = when (this) {
     ExpressedState.CO_ALARM,
     ExpressedState.INTERCONNECT_SMOKE,
     ExpressedState.INTERCONNECT_CO -> NordicRed
+}
+
+/** A user facing explanation of why a SelfTestRequest failed, in place of the raw status code. */
+fun Throwable?.toSelfTestErrorMessage(): String = when (this?.toInteractionStatus()) {
+    // Per the spec, the alarm refuses a self-test while it is expressing anything other than Normal.
+    InteractionStatus.BUSY,
+    InteractionStatus.INVALID_IN_STATE -> "The alarm is busy. A self-test can only run when the device status is Normal."
+    InteractionStatus.TIMEOUT -> "The device didn't respond in time. Check that it is powered on and in range, then try again."
+    InteractionStatus.UNSUPPORTED_COMMAND,
+    InteractionStatus.UNSUPPORTED_CLUSTER,
+    InteractionStatus.UNSUPPORTED_ENDPOINT -> "This device doesn't support running a self-test from the app."
+    InteractionStatus.UNSUPPORTED_ACCESS -> "The app isn't allowed to run a self-test on this device."
+    InteractionStatus.RESOURCE_EXHAUSTED -> "The device is too busy to run a self-test right now. Try again in a moment."
+    InteractionStatus.FAILURE,
+    InteractionStatus.INVALID_COMMAND,
+    InteractionStatus.CONSTRAINT_ERROR,
+    InteractionStatus.OTHER -> "The device couldn't run the self-test. Try again."
+    null -> "Couldn't reach the device to start the self-test. Check the connection and try again."
 }

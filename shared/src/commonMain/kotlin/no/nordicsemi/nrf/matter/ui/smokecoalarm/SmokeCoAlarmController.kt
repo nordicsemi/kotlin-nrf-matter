@@ -1,18 +1,24 @@
 package no.nordicsemi.nrf.matter.ui.smokecoalarm
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import no.nordicsemi.nrf.matter.cluster.SmokeCoAlarmCluster
 import no.nordicsemi.nrf.matter.model.AlarmState
 import no.nordicsemi.nrf.matter.model.ExpressedState
 import no.nordicsemi.nrf.matter.ui.UiState
 import no.nordicsemi.nrf.matter.ui.device.ClusterController
+import kotlin.time.Duration.Companion.seconds
 
 data class SmokeCoAlarmState(
     val expressedState: ExpressedState = ExpressedState.NORMAL,
@@ -26,6 +32,10 @@ data class SmokeCoAlarmState(
 ) {
     val isAlarmActive: Boolean
         get() = smokeState != AlarmState.NORMAL || coState != AlarmState.NORMAL
+
+    /** The device expresses Testing for as long as its self-test runs. */
+    val isSelfTesting: Boolean
+        get() = expressedState == ExpressedState.TESTING
 }
 
 /**
@@ -53,6 +63,30 @@ class SmokeCoAlarmController(
         observe(cluster.observeTestInProgress()) { state, value -> state.copy(isTestInProgress = value) }
         observe(cluster.observeHardwareFaultAlert()) { state, value -> state.copy(hasHardwareFault = value) }
         observe(cluster.observeEndOfServiceAlert()) { state, value -> state.copy(isEndOfService = value.toInt() != 0) }
+
+        watchSelfTestDuration()
+    }
+
+    /**
+     * Follows the self-test through the device's ExpressedState, which moves to Testing while the
+     * test runs and back once it's done. Every change starts the self-test over from Idle, clearing
+     * any earlier error so it can be run again. If the device stays in Testing for longer than
+     * [SELF_TEST_TIMEOUT], give up so the user isn't stuck.
+     */
+    private fun watchSelfTestDuration() {
+        scope.launch {
+            _state.map { it.expressedState }
+                .distinctUntilChanged()
+                .collectLatest { expressedState ->
+                    // A command still in flight will report its own result.
+                    _selfTestState.update { it as? UiState.Loading ?: UiState.Idle() }
+
+                    if (expressedState == ExpressedState.TESTING) {
+                        delay(SELF_TEST_TIMEOUT)
+                        _selfTestState.update { selfTestTimedOut }
+                    }
+                }
+        }
     }
 
     private fun <T> observe(flow: Flow<T>, reducer: (SmokeCoAlarmState, T) -> SmokeCoAlarmState) {
@@ -63,9 +97,20 @@ class SmokeCoAlarmController(
     }
 
     fun runSelfTest() {
+        // Don't let an earlier timeout hide the fresh attempt's spinner.
+        _selfTestState.update { UiState.Idle() }
         execute { cluster.selfTestRequest() }
             .withUiState()
+            .map { if (it is UiState.Error) it.copy(message = it.cause.toSelfTestErrorMessage()) else it }
             .onEach { newState -> _selfTestState.update { newState } }
             .launchIn(scope)
+    }
+
+    companion object {
+        val SELF_TEST_TIMEOUT = 30.seconds
+
+        private val selfTestTimedOut = UiState.Error(
+            "The self-test didn't finish within ${SELF_TEST_TIMEOUT.inWholeSeconds} seconds. Check the alarm, then try again."
+        )
     }
 }
