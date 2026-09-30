@@ -72,7 +72,7 @@ software must meet the following requirements:
 ## Nordic Semiconductor development kits
 
 You can configure a Nordic Semiconductor development kit to act as a Matter device using one of the available Matter samples.
-For an up-to-date list of supported device types see: [Prepare a Matter device](preparing_a_matter_device.md).
+Check the list of [supported device types](overview.md#supported-device-types).
 
 For the authoritative, up-to-date list of supported hardware, see Nordic's [Matter hardware and memory requirements](https://nrfconnectdocs.nordicsemi.com/addons/ncs-matter/latest/matter/getting_started/hw_requirements.html) page - new development kits and SoCs are added there as they gain Matter support.
 You can also check the [sample documentation](https://nrfconnectdocs.nordicsemi.com/addons/ncs-matter/latest/samples/index.html) for the list of development kits supported by each sample.
@@ -99,12 +99,8 @@ other device type can still be commissioned and inspected, but not controlled.
 |------------------------------|-----------------------|
 | On/off light                 | `0x0100`              |
 | Dimmable light               | `0x0101`              |
-| Color temperature light      | `0x010C`              |
-| Extended color light         | `0x010D`              |
-| Outlet                       | `0x010A`              |
 | Door lock                    | `0x000A`              |
 | Light switch                 | `0x0103`              |
-| Dimmer switch                | `0x0104`              |
 | Contact sensor               | `0x0015`              |
 | Temperature sensor           | `0x0302`              |
 | Robotic vacuum cleaner       | `0x0074`              |

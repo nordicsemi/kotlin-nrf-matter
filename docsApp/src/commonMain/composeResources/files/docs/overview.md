@@ -87,12 +87,8 @@ toggle, regardless of its device type.
 |------------------------------|-----------------------|---------------------------------------------------------------------------------|
 | On/off light                 | `0x0100`              | On/off switch, **Brightness Control** slider (if Level Control is also present) |
 | Dimmable light               | `0x0101`              | On/off switch, **Brightness Control** slider                                    |
-| Color temperature light      | `0x010C`              | On/off switch, **Brightness Control** slider (color control not implemented)    |
-| Extended color light         | `0x010D`              | On/off switch, **Brightness Control** slider (color control not implemented)    |
-| Outlet                       | `0x010A`              | On/off switch                                                                    |
 | Door lock                    | `0x000A`              | Lock/unlock control                                                             |
 | Light switch                 | `0x0103`              | None — the switch is a client node and is configured on the **Bindings** screen | 
-| Dimmer switch                | `0x0104`              | None — the switch is a client node and is configured on the **Bindings** screen | 
 | Contact sensor               | `0x0015`              | Read-only **Contact detected** / **Contact not detected** indicator             |
 | Temperature sensor           | `0x0302`              | Read-only temperature reading                                                   |
 | Robotic vacuum cleaner       | `0x0074`              | Pause/resume, **Go home**, and **Run mode** / **Clean mode** pickers            |

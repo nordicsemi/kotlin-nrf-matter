@@ -25,7 +25,7 @@ The application supports the following features:
       fabric managed directly by the app itself (using `Matter.framework` and `MTRDeviceController`), with
       a bundled app extension providing the system QR-code scanning UI.
 - **Controlling** commissioned devices — door locks, light bulbs (dimmable light bulb), switches,
-  manufacturer-specific clusters and more.
+  manufacturer-specific clusters and [more](overview.md#supported-device-types).
 - **Managing bindings** between devices, for example a light switch controlling a light bulb
   directly.
 - **Viewing logs** for diagnosing commissioning and cluster interactions.
