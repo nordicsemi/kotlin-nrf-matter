@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter.ui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
@@ -48,6 +49,8 @@ fun AlertDialogView(
     confirmText: String = "Delete",
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
+    forceRemoveText: String? = null,
+    onForceRemove: () -> Unit = {},
 ) {
     AlertDialog(
         onDismissRequest = { onDismiss() },
@@ -70,10 +73,17 @@ fun AlertDialogView(
             }
         },
         dismissButton = {
-            TextButton(
-                onClick = { onDismiss() }
-            ) {
-                Text(dismissText)
+            Row {
+                if (forceRemoveText != null) {
+                    TextButton(onClick = { onForceRemove() }) {
+                        Text(forceRemoveText)
+                    }
+                }
+                TextButton(
+                    onClick = { onDismiss() }
+                ) {
+                    Text(dismissText)
+                }
             }
         }
     )

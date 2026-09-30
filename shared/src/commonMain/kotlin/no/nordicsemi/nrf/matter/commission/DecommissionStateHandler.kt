@@ -51,7 +51,7 @@ import no.nordicsemi.nrf.matter.ui.Loader
 
 /**
  * Renders the feedback for an ongoing or finished decommissioning: the progress loader, the
- * error dialog offering a force remove, and the success toast.
+ * error dialog offering a retry or force remove, and the success toast.
  *
  * This must be hosted above the device list, so that it stays in composition even when the last
  * device disappears from the list as a result of the decommissioning. Otherwise, the terminal
@@ -61,6 +61,7 @@ import no.nordicsemi.nrf.matter.ui.Loader
 @Composable
 internal fun DecommissionStateHandler(
     state: DecommissionState,
+    onRetry: (DeviceId) -> Unit,
     onForceRemove: (DeviceId) -> Unit,
     onStateHandled: () -> Unit,
 ) {
@@ -90,12 +91,15 @@ internal fun DecommissionStateHandler(
         }
 
         is DecommissionState.Error -> {
-            // Show error dialog with an option to force remove.
+            // Show error dialog with an option to retry or force remove.
             AlertDialogView(
                 onDismiss = onStateHandled,
-                onConfirm = { onForceRemove(state.deviceId) },
+                onConfirm = { onRetry(state.deviceId) },
                 title = "Error Removing Device",
-                message = "An error occurred while removing the device. Force remove?"
+                message = "An error occurred while removing the device. Retry, or force remove it?",
+                confirmText = "Retry",
+                forceRemoveText = "Force remove",
+                onForceRemove = { onForceRemove(state.deviceId) },
             )
         }
 
