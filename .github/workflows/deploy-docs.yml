@@ -8,6 +8,10 @@ permissions:
   pages: write
   id-token: write
 
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,11 +32,10 @@ jobs:
         run: ./gradlew :docsApp:wasmJsBrowserDistribution
 
       - name: Configure GitHub Pages
-        id: pages
         uses: actions/configure-pages@v6
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: docsApp/build/dist/wasmJs/productionExecutable
 
