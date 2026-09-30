@@ -214,7 +214,7 @@ smart home ecosystems (Apple, Google, Amazon, etc.), vendor-specific clusters al
 implement features unique to their hardware.
 
 The app allows you to commission and interact with devices running Nordic Semiconductor's
-[Manufacturer Specific Cluster](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/manufacturer_specific)
+[Manufacturer Specific Cluster](https://github.com/nrfconnect/sdk-nrf/tree/v3.4.1/samples/matter/manufacturer_specific)
 sample. By reading the device’s data model directly during discovery, the app automatically
 exposes any custom endpoints, attributes, or commands defined via the nRF Connect Matter
 Manufacturer Cluster Editor in the mobile UI without needing additional client-side development.
@@ -233,7 +233,7 @@ Manufacturer Cluster Editor in the mobile UI without needing additional client-s
   long-pressed) whenever a physical button (button 1 in the Nordic kit) on the device is operated.
 
 The app's support for manufacturer-specific clusters is demonstrated in the
-[manufacturer-specific sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/manufacturer_specific).
+[manufacturer-specific sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.4.1/samples/matter/manufacturer_specific).
 
 | UI element          | Description                                                                                                                                                                                                         |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|

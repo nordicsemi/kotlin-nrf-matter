@@ -59,12 +59,15 @@ using one of the available Matter samples. The samples can be installed using th
 which is a part of
 [nRF Connect for Desktop](https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-Desktop/Download).
 
-| Sample                                                  | How to get it                                                                                                                                                                                                 |
-|---------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **Door Lock**                                           | Available directly in the Matter Quick Start app, or build and flash the [light bulb sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/light_bulb) in Visual Studio Code.              |
-| **Light Bulb**                                          | Available directly in the Matter Quick Start app, or build and flash the [door lock sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/lock) in Visual Studio Code.                     |
-| **Light Switch**                                        | Build the [light switch sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/light_switch) in Visual Studio Code and flash it to one of the supported development kits.                   |
-| **Manufacturer-specific cluster and cluster extension** | Build the [manufacturer-specific sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.3.0/samples/matter/manufacturer_specific) in Visual Studio Code and flash it to one of the supported development kits. |
+| Sample                                                  | How to get it                                                                                                                                                                                                |
+|---------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Door Lock**                                           | Available directly in the Matter Quick Start app, or build and flash the [door lock sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.4.1/samples/matter/lock) in Visual Studio Code.                    |
+| **Light Bulb**                                          | Available directly in the Matter Quick Start app, or build and flash the [light bulb sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.4.1/samples/matter/light_bulb) in Visual Studio Code.             |
+| **Contact Sensor**                                      | Available directly in the Matter Quick Start app, or build and flash the [contact sensor sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.4.1/samples/matter/contact_sensor).              |
+| **Temperature Sensor**                                  | Available directly in the Matter Quick Start app, or build and flash the [temperature sensor sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.4.1/samples/matter/temperature_sensor).      |
+| **Light Switch**                                        | Build the [light switch sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.4.1/samples/matter/light_switch) in Visual Studio Code and flash it to one of the supported development kits.                  |
+| **Manufacturer-specific cluster and cluster extension** | Build the [manufacturer-specific sample](https://github.com/nrfconnect/sdk-nrf/tree/v3.4.1/samples/matter/manufacturer_specific) in Visual Studio Code and flash it to one of the supported development kits. |
+| **Robotic Vacuum Cleaner**                              | Available in [Matter Virtual Device](#matter-virtual-device)                                                                                                                                                 |
 
 !!! tip "Finding the commissioning QR code"
 
