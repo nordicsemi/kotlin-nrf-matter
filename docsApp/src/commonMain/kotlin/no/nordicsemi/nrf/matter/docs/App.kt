@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -68,6 +69,8 @@ private val PANEL_WIDTH = 400.dp
 private val PHONE_WIDTH = 412.dp
 private val PHONE_BORDER_WIDTH = 8.dp
 private val PHONE_MARGIN = 16.dp
+private val PHONE_MIN_WIDTH = 320.dp
+private const val PHONE_ASPECT_RATIO = 412f / 892f
 
 private const val COMMISSIONING_GATE_ACTION_LABEL = "Done, add the device"
 
@@ -106,10 +109,16 @@ fun App() {
         ) {
             val panelBesideFrame = maxWidth - PHONE_WIDTH - (PHONE_MARGIN * 2) >= PANEL_WIDTH + 48.dp
             val isPhoneViewport = maxWidth < PHONE_WIDTH
-            val capturedMaxHeight = maxHeight
+            val availableHeight = maxHeight - PHONE_MARGIN * 2
+            val frameWidth = minOf(PHONE_WIDTH, availableHeight * PHONE_ASPECT_RATIO)
+                .coerceAtLeast(PHONE_MIN_WIDTH)
+            val frameHeight = minOf(availableHeight, frameWidth / PHONE_ASPECT_RATIO)
+            val capturedMaxHeight = if (isPhoneViewport) maxHeight else frameHeight
 
             PhoneFrame(
                 isPhoneViewport = isPhoneViewport,
+                frameWidth = frameWidth,
+                frameHeight = frameHeight,
                 modifier = Modifier.align(Alignment.Center),
             ) {
                 PhoneFrameContent(
@@ -281,6 +290,8 @@ private fun SidePanel(
 @Composable
 private fun PhoneFrame(
     isPhoneViewport: Boolean,
+    frameWidth: Dp,
+    frameHeight: Dp,
     modifier: Modifier = Modifier,
     content: @Composable BoxScope.() -> Unit,
 ) {
@@ -290,9 +301,7 @@ private fun PhoneFrame(
     }
     Surface(
         modifier = modifier
-            .widthIn(max = PHONE_WIDTH)
-            .fillMaxHeight()
-            .padding(vertical = PHONE_MARGIN)
+            .size(width = frameWidth, height = frameHeight)
             .clip(RoundedCornerShape(36.dp)),
         shape = RoundedCornerShape(36.dp),
         shadowElevation = 24.dp,
