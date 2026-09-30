@@ -22,6 +22,8 @@ kotlin {
         androidResources {
             enable = true
         }
+
+        withHostTest {}
     }
 
     wasmJs {
@@ -83,6 +85,13 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
+        }
+        // Compose UI testing (runComposeUiTest) only runs here today: the Android host test
+        // target needs Robolectric wired up before androidx.compose.ui.test works there too.
+        getByName("iosSimulatorArm64Test").dependencies {
+            // No catalog alias published for this yet; kept in lockstep with libs.versions.jetbrains-compose.
+            implementation("org.jetbrains.compose.ui:ui-test:1.12.1")
         }
     }
 }

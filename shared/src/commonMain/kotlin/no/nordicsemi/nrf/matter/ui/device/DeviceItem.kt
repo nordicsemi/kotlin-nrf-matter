@@ -43,6 +43,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -75,6 +76,9 @@ import no.nordicsemi.nrf.matter.ui.rvc.RvcCleanModeController
 import no.nordicsemi.nrf.matter.ui.rvc.RvcControlPanel
 import no.nordicsemi.nrf.matter.ui.rvc.RvcOperationalStateController
 import no.nordicsemi.nrf.matter.ui.rvc.RvcRunModeController
+import no.nordicsemi.nrf.matter.ui.smokecoalarm.SmokeCoAlarmActionItem
+import no.nordicsemi.nrf.matter.ui.smokecoalarm.SmokeCoAlarmControlItem
+import no.nordicsemi.nrf.matter.ui.smokecoalarm.SmokeCoAlarmController
 import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorActionItem
 import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorController
 import no.nordicsemi.nrf.matter.events.AppEvent
@@ -93,6 +97,7 @@ internal fun DeviceItem(
     val basicInfoExt = clusters.filterIsInstance<BasicInfoExtController>().firstOrNull()
     val contactSensor = clusters.filterIsInstance<ContactSensorController>().firstOrNull()
     val temperatureSensor = clusters.filterIsInstance<TemperatureSensorController>().firstOrNull()
+    val smokeCoAlarm = clusters.filterIsInstance<SmokeCoAlarmController>().firstOrNull()
     val rvcOperationalState = clusters.filterIsInstance<RvcOperationalStateController>().firstOrNull()
     val rvcRunMode = clusters.filterIsInstance<RvcRunModeController>().firstOrNull()
     val rvcCleanMode = clusters.filterIsInstance<RvcCleanModeController>().firstOrNull()
@@ -104,6 +109,7 @@ internal fun DeviceItem(
     val temperatureSensorState = temperatureSensor?.state?.collectAsStateWithLifecycle()?.value
     val rvcOperationalStateValue = rvcOperationalState?.state?.collectAsStateWithLifecycle()?.value
     val rvcRunModeValue = rvcRunMode?.state?.collectAsStateWithLifecycle()?.value
+    val smokeCoAlarmState = smokeCoAlarm?.state?.collectAsStateWithLifecycle()?.value
 
     // The lock keeps its last known state while it is moving, so that the label does not flicker.
     var isLocked by remember { mutableStateOf(false) }
@@ -115,7 +121,8 @@ internal fun DeviceItem(
     val isVacuumRunning = vacuumState == RvcOperationalState.RUNNING
     val isVacuumPaused = vacuumState == RvcOperationalState.PAUSED
     val isActive = onOffState?.isOn == true || isLocked || isVacuumRunning
-    val isIconLit = isActive || contactSensorState?.isContactDetected == true
+    val isIconLit = isActive || contactSensorState?.isContactDetected == true ||
+            smokeCoAlarmState?.isAlarmActive == true
     var isExpanded by rememberSaveable { mutableStateOf(false) }
     var showMatterDeviceInfo by rememberSaveable { mutableStateOf(false) }
     var showDeviceInfo by rememberSaveable { mutableStateOf(false) }
@@ -130,6 +137,7 @@ internal fun DeviceItem(
             .fillMaxWidth()
             .padding(8.dp)
             .clip(RoundedCornerShape(16.dp))
+            .testTag("device_item_${device.deviceId.stringValue}")
             .clickable {
                 if (!isExpanded) AppEvents.emit(AppEvent.DeviceCardExpand)
                 isExpanded = !isExpanded
@@ -143,6 +151,8 @@ internal fun DeviceItem(
             title = manufacturerSpecState?.displayName ?: device.toTitle(),
             subtitle = contactSensorState?.let {
                 if (it.isContactDetected) "Contact detected" else "Contact not detected"
+            } ?: smokeCoAlarmState?.let {
+                if (it.isAlarmActive) "Alarm active" else "No alarm"
             } ?: device.toSubtitle(),
             bindingCapable = device.isBindingSource() != null,
             spinning = isVacuumRunning,
@@ -181,6 +191,10 @@ internal fun DeviceItem(
                     onStop = rvcOperationalState::goHome,
                 )
 
+                smokeCoAlarm != null && smokeCoAlarmState != null -> SmokeCoAlarmActionItem(
+                    isAlarmActive = smokeCoAlarmState.isAlarmActive,
+                )
+
                 else -> Icon(
                     imageVector = if (isExpanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
                     contentDescription = null,
@@ -199,6 +213,7 @@ internal fun DeviceItem(
                 levelControl?.let { BrightnessControl(it, device.deviceId) }
                 basicInfoExt?.let { RandomNumberControl(it) }
                 manufacturerSpec?.let { LedAndButtonControl(it) }
+                smokeCoAlarm?.let { SmokeCoAlarmControl(it) }
 
                 if (rvcOperationalState != null || rvcRunMode != null || rvcCleanMode != null) {
                     RvcControlPanel(rvcOperationalState, rvcRunMode, rvcCleanMode)
@@ -254,6 +269,19 @@ private fun LedAndButtonControl(controller: ManufacturerSpecController) {
 }
 
 @Composable
+private fun SmokeCoAlarmControl(controller: SmokeCoAlarmController) {
+    val state by controller.state.collectAsStateWithLifecycle()
+    val selfTestState by controller.selfTestState.collectAsStateWithLifecycle()
+
+    SmokeCoAlarmControlItem(
+        state = state,
+        selfTestState = selfTestState,
+        onRunSelfTest = controller::runSelfTest,
+        modifier = Modifier.padding(16.dp),
+    )
+}
+
+@Composable
 private fun RandomNumberControl(controller: BasicInfoExtController) {
     val randomNumber by controller.randomNumber.collectAsStateWithLifecycle()
 
@@ -276,7 +304,6 @@ private fun SharedSection(
             .padding(16.dp)
             .clip(RoundedCornerShape(16.dp))
             .clickable {
-                AppEvents.emit(AppEvent.MatterDeviceInformation)
                 onShowMatterDeviceInfoChange(true)
             },
         verticalArrangement = Arrangement.spacedBy(16.dp)
