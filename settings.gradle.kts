@@ -41,3 +41,4 @@ dependencyResolutionManagement {
 include(":lib")
 include(":androidApp")
 include(":shared")
+include(":docsApp")

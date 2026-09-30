@@ -2,7 +2,7 @@ package no.nordicsemi.nrf.matter.controller
 
 import kotlinx.coroutines.flow.Flow
 
-internal interface BindingLogsProvider {
+interface BindingLogsProvider {
 
     val bindingLogs: Flow<String>
 }

@@ -22,17 +22,18 @@ import io.github.alexzhirkevich.compottie.LottieCompositionSpec
 import io.github.alexzhirkevich.compottie.animateLottieCompositionAsState
 import io.github.alexzhirkevich.compottie.rememberLottieComposition
 import io.github.alexzhirkevich.compottie.rememberLottiePainter
+import no.nordicsemi.nrf.matter.platform.AppEnvironment
 import no.nordicsemi.nrf.matter.shared.generated.resources.Res
 import no.nordicsemi.nrf.matter.platform.PlatformType
-import no.nordicsemi.nrf.matter.platform.currentType
 import no.nordicsemi.nrf.matter.theme.NordicDarkGray
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalCompottieApi::class)
 @Composable
 fun CommissioningInProgressScreen() {
     Box(
         Modifier.fillMaxSize().background(Color.White),
-        contentAlignment = if (currentType == PlatformType.ANDROID) Alignment.Center else Alignment.TopCenter,
+        contentAlignment = if (koinInject<AppEnvironment>().platformType == PlatformType.ANDROID) Alignment.Center else Alignment.TopCenter,
     ) {
         val composition by rememberLottieComposition {
             LottieCompositionSpec.JsonString(

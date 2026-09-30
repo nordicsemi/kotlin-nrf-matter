@@ -8,7 +8,6 @@ import iosMatter.SharedStorage
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.coroutines.suspendCancellableCoroutine
 import no.nordicsemi.nrf.matter.adapters.IOSException
-import no.nordicsemi.nrf.matter.adapters.IOSLoggerImpl
 import no.nordicsemi.nrf.matter.adapters.handleResult
 import no.nordicsemi.nrf.matter.commission.CommissioningException
 import no.nordicsemi.nrf.matter.logger.NordicLogger
@@ -17,10 +16,6 @@ private const val TAG = "AppExtension"
 
 private val appExtensionCommissioner = MatterCommissioner()
 private val appExtensionStorage = SharedStorage()
-
-fun NordicMatters.initializeLogger() {
-    NordicLogger.setLogger(IOSLoggerImpl())
-}
 
 fun NordicMatters.rooms(): List<String> {
     val names = appExtensionStorage.getStringArrayWithKey(SharedConsts.roomsKey)

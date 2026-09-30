@@ -11,8 +11,8 @@ interface CommissioningTask {
 }
 
 @Composable
-expect fun rememberCommissioningTask(
+fun rememberCommissioningTask(
     fabric: Fabric = NordicMatters.defaultFabric,
     onSuccess: suspend (DeviceId) -> Unit,
     onError: (CommissioningException) -> Unit,
-): CommissioningTask
+): CommissioningTask = NordicMatters.platform.commissioningTaskProvider.rememberCommissioningTask(fabric, onSuccess, onError)

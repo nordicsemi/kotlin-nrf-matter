@@ -46,7 +46,6 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.skydoves.cloudy.cloudy
 import no.nordicsemi.nrf.matter.binding.isBindingSource
 import no.nordicsemi.nrf.matter.cluster.cleaningMode
 import no.nordicsemi.nrf.matter.commission.DecommissionDevice
@@ -70,6 +69,7 @@ import no.nordicsemi.nrf.matter.ui.lock.DoorLockController
 import no.nordicsemi.nrf.matter.ui.lock.LockActionItem
 import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecControlItem
 import no.nordicsemi.nrf.matter.ui.manspec.ManufacturerSpecController
+import no.nordicsemi.nrf.matter.ui.matterBlur
 import no.nordicsemi.nrf.matter.ui.rvc.RvcActionItem
 import no.nordicsemi.nrf.matter.ui.rvc.RvcCleanModeController
 import no.nordicsemi.nrf.matter.ui.rvc.RvcControlPanel
@@ -77,6 +77,8 @@ import no.nordicsemi.nrf.matter.ui.rvc.RvcOperationalStateController
 import no.nordicsemi.nrf.matter.ui.rvc.RvcRunModeController
 import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorActionItem
 import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorController
+import no.nordicsemi.nrf.matter.events.AppEvent
+import no.nordicsemi.nrf.matter.events.AppEvents
 
 @Composable
 internal fun DeviceItem(
@@ -129,9 +131,10 @@ internal fun DeviceItem(
             .padding(8.dp)
             .clip(RoundedCornerShape(16.dp))
             .clickable {
+                if (!isExpanded) AppEvents.emit(AppEvent.DeviceCardExpand)
                 isExpanded = !isExpanded
             }
-            .then(if (showMatterDeviceInfo || showDeviceInfo) Modifier.cloudy() else Modifier)
+            .then(if (showMatterDeviceInfo || showDeviceInfo) Modifier.matterBlur() else Modifier)
     ) {
 
         DeviceHeader(
@@ -202,7 +205,10 @@ internal fun DeviceItem(
                 }
 
                 SharedSection(device, showMatterDeviceInfo) { showMatterDeviceInfo = it }
-                EndpointsClustersRow(onClick = { showDeviceInfo = true })
+                EndpointsClustersRow(onClick = {
+                    AppEvents.emit(AppEvent.EndpointsClusters)
+                    showDeviceInfo = true
+                })
 
                 // Decommission device
                 DecommissionDevice(device.deviceId, onDecommission)
@@ -270,6 +276,7 @@ private fun SharedSection(
             .padding(16.dp)
             .clip(RoundedCornerShape(16.dp))
             .clickable {
+                AppEvents.emit(AppEvent.MatterDeviceInformation)
                 onShowMatterDeviceInfoChange(true)
             },
         verticalArrangement = Arrangement.spacedBy(16.dp)

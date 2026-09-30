@@ -8,7 +8,7 @@ class NordicMatterInitializer : Initializer<Unit> {
 
     override fun create(context: Context) {
         LogDatabase.initialize(context)
-        NordicMatters.initialize(context)
+        NordicMatters.initializePlatform(context)
     }
 
     override fun dependencies(): List<Class<out Initializer<*>>> = emptyList()

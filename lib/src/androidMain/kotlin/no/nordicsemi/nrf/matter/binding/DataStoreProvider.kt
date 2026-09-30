@@ -4,6 +4,10 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import androidx.datastore.preferences.preferencesDataStoreFile
 
 /*
@@ -37,11 +41,26 @@ import androidx.datastore.preferences.preferencesDataStoreFile
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-actual class DataStoreProvider(private val context: Context) {
+class DataStoreProvider(private val context: Context) {
 
-    actual fun createDataStore(): DataStore<Preferences> {
-        return PreferenceDataStoreFactory.create(
+    fun createStorage(): BindingsStorage {
+        val dataStore = PreferenceDataStoreFactory.create(
             produceFile = { context.preferencesDataStoreFile("bindings") }
         )
+        return DataStoreBindingsStorage(dataStore)
     }
 }
+
+private class DataStoreBindingsStorage(
+    private val dataStore: DataStore<Preferences>,
+) : BindingsStorage {
+
+    private val key = stringPreferencesKey("bindings_json")
+
+    override val data: Flow<String?> = dataStore.data.map { it[key] }
+
+    override suspend fun update(transform: (String?) -> String) {
+        dataStore.edit { prefs -> prefs[key] = transform(prefs[key]) }
+    }
+}
+

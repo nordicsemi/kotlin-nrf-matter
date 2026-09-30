@@ -44,11 +44,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import no.nordicsemi.nrf.matter.platform.getAppVersion
 import no.nordicsemi.nrf.matter.shared.generated.resources.Res
 import no.nordicsemi.nrf.matter.shared.generated.resources.no_matter_devices
 import no.nordicsemi.nrf.matter.theme.NordicTheme
+import no.nordicsemi.nrf.matter.events.AppEvent
+import no.nordicsemi.nrf.matter.events.AppEvents
+import no.nordicsemi.nrf.matter.platform.AppEnvironment
 import org.jetbrains.compose.resources.painterResource
+import org.koin.compose.koinInject
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -87,7 +90,7 @@ fun NoDevicesScreen(
     onMatterUrlClick: () -> Unit = {},
     onSourceCodeClick: () -> Unit = {}
 ) {
-    val version = getAppVersion()
+    val version = koinInject<AppEnvironment>().appVersion
 
     Box(
         modifier = Modifier
@@ -128,7 +131,10 @@ fun NoDevicesScreen(
 
             // Action Button
             Button(
-                onClick = { onAddDeviceClick() },
+                onClick = {
+                    AppEvents.emit(AppEvent.AddNewDevice)
+                    onAddDeviceClick()
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(48.dp)
@@ -151,7 +157,10 @@ fun NoDevicesScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            TextButton(onClick = { onMatterUrlClick() }) {
+            TextButton(onClick = {
+                AppEvents.emit(AppEvent.WhatIsMatter)
+                onMatterUrlClick()
+            }) {
                 Text(
                     "What is Matter?",
                     style = MaterialTheme.typography.labelLarge,
@@ -182,7 +191,10 @@ fun NoDevicesScreen(
                 text = "Source Code",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.clickable { onSourceCodeClick() }
+                modifier = Modifier.clickable {
+                    AppEvents.emit(AppEvent.SourceCode)
+                    onSourceCodeClick()
+                }
             )
         }
     }

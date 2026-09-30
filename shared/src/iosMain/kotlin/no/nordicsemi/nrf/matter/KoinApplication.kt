@@ -1,7 +1,9 @@
 package no.nordicsemi.nrf.matter
 
 import no.nordicsemi.nrf.matter.di.uiModule
+import no.nordicsemi.nrf.matter.platform.iosAppEnvironment
 import org.koin.core.context.startKoin
+import org.koin.dsl.module
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -36,6 +38,9 @@ import org.koin.core.context.startKoin
 
 fun initKoin() {
     startKoin {
-        modules(uiModule)
+        modules(
+            uiModule,
+            module { single { iosAppEnvironment() } },
+        )
     }
 }

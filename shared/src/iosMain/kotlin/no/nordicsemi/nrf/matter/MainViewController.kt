@@ -6,14 +6,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.window.ComposeUIViewController
 import no.nordicsemi.nrf.matter.api.NordicMatters
-import no.nordicsemi.nrf.matter.api.initializeLogger
+import no.nordicsemi.nrf.matter.api.initializePlatform
 import no.nordicsemi.nrf.matter.nordic.registerNordicClusters
 import org.koin.compose.viewmodel.koinViewModel
 import platform.UIKit.UIViewController
 
 fun MainViewController(): UIViewController {
 
-    NordicMatters.initializeLogger()
+    NordicMatters.initializePlatform()
     registerNordicClusters()
 
     initKoin()

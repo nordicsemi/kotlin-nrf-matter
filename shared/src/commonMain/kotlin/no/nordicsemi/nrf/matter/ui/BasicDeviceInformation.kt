@@ -20,6 +20,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,6 +30,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.nrf.matter.model.Device
+import no.nordicsemi.nrf.matter.platform.AppEnvironment
+import org.koin.compose.koinInject
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,6 +39,13 @@ internal fun BasicInformationBottomSheet(
     device: Device,
     onDismiss: () -> Unit,
 ) {
+    val host = koinInject<AppEnvironment>().overlayHost
+    if (host != null) {
+        SideEffect { host.showSheet(onDismissRequest = onDismiss) { BasicDeviceInformation(device = device, onDismiss = onDismiss) } }
+        DisposableEffect(Unit) { onDispose { host.clearSheet() } }
+        return
+    }
+
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)

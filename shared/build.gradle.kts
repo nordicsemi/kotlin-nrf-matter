@@ -1,3 +1,7 @@
+@file:OptIn(ExperimentalWasmDsl::class)
+
+import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.compose.compiler)
@@ -20,6 +24,10 @@ kotlin {
         }
     }
 
+    wasmJs {
+        browser()
+    }
+
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -37,6 +45,10 @@ kotlin {
         androidMain.dependencies {
             implementation(libs.jetbrains.compose.runtime)
             implementation(libs.jetbrains.compose.viewmodel)
+            implementation(libs.skydoves.cloudy)
+        }
+        iosMain.dependencies {
+            implementation(libs.skydoves.cloudy)
         }
         commonMain.dependencies {
             api(project(":lib"))
@@ -65,8 +77,6 @@ kotlin {
             implementation(libs.jetbrains.lifecycle.navigation)
 
             implementation(libs.kotlinx.serialization.json)
-
-            implementation(libs.skydoves.cloudy)
 
             implementation(libs.cmptoast)
             implementation(libs.compottie)

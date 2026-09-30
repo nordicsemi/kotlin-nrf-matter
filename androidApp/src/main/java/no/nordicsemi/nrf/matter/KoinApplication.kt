@@ -3,8 +3,10 @@ package no.nordicsemi.nrf.matter
 import android.app.Application
 import no.nordicsemi.nrf.matter.di.uiModule
 import no.nordicsemi.nrf.matter.nordic.registerNordicClusters
+import no.nordicsemi.nrf.matter.platform.androidAppEnvironment
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.GlobalContext.startKoin
+import org.koin.dsl.module
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -44,7 +46,10 @@ class KoinApplication: Application() {
 
         startKoin {
             androidContext(this@KoinApplication)
-            modules(uiModule)
+            modules(
+                uiModule,
+                module { single { androidAppEnvironment() } },
+            )
         }
     }
 }

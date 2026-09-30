@@ -4,6 +4,8 @@ package no.nordicsemi.nrf.matter.api
 
 import no.nordicsemi.nrf.matter.cluster.Cluster
 import no.nordicsemi.nrf.matter.cluster.MatterClient
+import no.nordicsemi.nrf.matter.logger.NordicLogger
+import no.nordicsemi.nrf.matter.logger.NordicLoggerBackend
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
 import kotlin.concurrent.atomics.AtomicReference
@@ -29,8 +31,18 @@ object NordicMatters {
             }
         }
 
+    private var configuredPlatform: MatterPlatformDependencies? = null
+
+    fun initialize(platform: MatterPlatformDependencies, loggerBackend: NordicLoggerBackend) {
+        NordicLogger.setBackend(loggerBackend)
+        configuredPlatform = platform
+    }
+
+    internal val platform: MatterPlatformDependencies
+        get() = checkNotNull(configuredPlatform) { "NordicMatters.initialize() must be called before use." }
+
     internal val matterDependencies: MatterDependencies by lazy {
-        MatterDependenciesProvider.createMatterDependencies()
+        MatterDependencies(platform)
     }
 
     val matterClient: MatterClient
