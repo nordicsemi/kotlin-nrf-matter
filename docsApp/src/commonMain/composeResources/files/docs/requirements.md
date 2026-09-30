@@ -69,22 +69,26 @@ software must meet the following requirements:
 - Wi-Fi Subnet: The iOS device must be connected to a Wi-Fi network that supports **IPv6** and
   allows mDNS traffic without client isolation.
 
-## Supported firmware
+## Nordic Semiconductor development kits
 
-The vendored CHIP binaries are built against **Matter 1.5.0**, which was first introduced in
-**nRF Connect SDK v3.2.0**. Nordic development kits running Matter firmware built with nRF Connect
-SDK v3.2.0 or newer are therefore compatible for testing commissioning and control with this app.
+You can configure a Nordic Semiconductor development kit to act as a Matter device using one of the available Matter samples.
+For an up-to-date list of supported device types see: [Prepare a Matter device](preparing_a_matter_device.md).
 
-| Development kit | SoC       |
-|-----------------|-----------|
-| nRF52840 DK     | nRF52840  |
-| nRF5340 DK      | nRF5340   |
-| nRF54L15 DK     | nRF54L15  |
-| nRF54LM20 DK    | nRF54LM20 |
+For the authoritative, up-to-date list of supported hardware, see Nordic's [Matter hardware and memory requirements](https://nrfconnectdocs.nordicsemi.com/addons/ncs-matter/latest/matter/getting_started/hw_requirements.html) page - new development kits and SoCs are added there as they gain Matter support.
+You can also check the [sample documentation](https://nrfconnectdocs.nordicsemi.com/addons/ncs-matter/latest/samples/index.html) for the list of development kits supported by each sample.
 
-For the authoritative, up-to-date list of supported hardware, see Nordic's
-[Matter hardware and memory requirements](https://nrfconnectdocs.nordicsemi.com/addons/ncs-matter/latest/matter/getting_started/hw_requirements.html)
-page — new development kits and SoCs are added there as they gain Matter support.
+These samples can be installed using the [Matter Quick Start app](https://docs.nordicsemi.com/r/bundle/nrf-connect-for-desktop/page/matter-quick-start-app), which is a part of [nRF Connect for Desktop](https://www.nordicsemi.com/Products/Development-tools/nRF-Connect-for-Desktop/Download). Alternatively, you can install them from the [Matter add-on to the nRF Connect SDK](https://nrfconnectdocs.nordicsemi.com/addons/ncs-matter/latest/index.html).
+
+<details>
+  <summary>Finding the commissioning QR code</summary>
+
+All samples print a link with the QR code required for commissioning in their logs. The logs from a development kit can be viewed using the [Serial Terminal app](https://docs.nordicsemi.com/r/bundle/nrf-connect-for-desktop/page/serial-terminal-app).
+
+To view the logs, open the Serial Terminal app and connect the kit using the appropriate serial port. If the device has not yet been commissioned, press the reset button on the kit. The device then prints the logs, including the QR code link, in the logs panel.
+
+![QR code link in the serial log](assets/qr_code_serial_log.png "QR code link in the serial log")
+
+</details>
 
 ## Supported device types
 
