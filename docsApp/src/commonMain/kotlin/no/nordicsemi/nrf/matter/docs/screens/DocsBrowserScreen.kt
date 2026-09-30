@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,6 +27,7 @@ import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -48,19 +50,12 @@ fun DocsBrowserScreen(
     onClose: () -> Unit,
 ) {
     var currentPage by remember(initialAnchor) { mutableStateOf(initialAnchor.page) }
-    var pendingSectionId by remember(initialAnchor) { mutableStateOf(initialAnchor.sectionId) }
-    var blocks by remember { mutableStateOf<List<MdBlock>>(emptyList()) }
-    val listState = rememberLazyListState()
+    var sectionId by remember(initialAnchor) { mutableStateOf(initialAnchor.sectionId) }
+    var navigation by remember(initialAnchor) { mutableStateOf(0) }
+    var loaded by remember { mutableStateOf<Pair<DocPage, List<MdBlock>>?>(null) }
+    val blocks = loaded?.takeIf { it.first == currentPage }?.second
 
-    LaunchedEffect(currentPage) { blocks = DocsRepository.blocksOf(currentPage) }
-    LaunchedEffect(blocks, pendingSectionId) {
-        val sectionId = pendingSectionId
-        if (sectionId != null && blocks.isNotEmpty()) {
-            val index = blocks.indexOfFirst { it is MdBlock.Heading && it.slug == sectionId }
-            if (index >= 0) listState.scrollToItem(index)
-            pendingSectionId = null
-        }
-    }
+    LaunchedEffect(currentPage) { loaded = currentPage to DocsRepository.blocksOf(currentPage) }
 
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
         Row(modifier = Modifier.fillMaxSize()) {
@@ -86,21 +81,43 @@ fun DocsBrowserScreen(
                             color = if (page == currentPage) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { currentPage = page; pendingSectionId = null }
+                                .clickable { currentPage = page; sectionId = null; navigation++ }
                                 .padding(horizontal = 16.dp, vertical = 8.dp),
                         )
                     }
                 }
             }
             VerticalDivider()
-            LazyColumn(
-                state = listState,
-                modifier = Modifier.weight(1f).fillMaxHeight(),
-                contentPadding = androidx.compose.foundation.layout.PaddingValues(24.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                itemsIndexed(blocks) { _, block ->
-                    MdBlockView(block = block, onLinkClick = { target -> onLink(DocsRepository.resolveLink(target, currentPage)) })
+            if (blocks == null) {
+                Spacer(modifier = Modifier.weight(1f).fillMaxHeight())
+            } else {
+                key(currentPage, navigation) {
+                    val initialIndex = sectionId
+                        ?.let { id -> blocks.indexOfFirst { it is MdBlock.Heading && it.slug == id } }
+                        ?.coerceAtLeast(0)
+                        ?: 0
+                    LazyColumn(
+                        state = rememberLazyListState(initialFirstVisibleItemIndex = initialIndex),
+                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(24.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        itemsIndexed(blocks) { _, block ->
+                            MdBlockView(
+                                block = block,
+                                onLinkClick = { target ->
+                                    when (val resolved = DocsRepository.resolveLink(target, currentPage)) {
+                                        is LinkTarget.Internal -> {
+                                            currentPage = resolved.anchor.page
+                                            sectionId = resolved.anchor.sectionId
+                                            navigation++
+                                        }
+                                        is LinkTarget.External -> onLink(resolved)
+                                    }
+                                },
+                            )
+                        }
+                    }
                 }
             }
         }
