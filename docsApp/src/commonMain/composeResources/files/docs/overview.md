@@ -73,7 +73,7 @@ card provides quick access to essential device details and controls:
 
 The app includes dedicated control interfaces for standard Matter device types, including
 Dimmable and Color Lights, Outlets, Light Switches, Door Locks, Contact Sensors, Temperature
-Sensors, and Robotic Vacuum Cleaners. Additionally, the app supports Nordic Manufacturer-Specific
+Sensors, Smoke/CO Alarms, and Robotic Vacuum Cleaners. Additionally, the app supports Nordic Manufacturer-Specific
 Clusters, allowing developers to interact with custom attributes and commands on proprietary
 accessories. Any device type not explicitly implemented by the app is categorized as an
 Unsupported Device Type, where essential metadata (such as Product Name, Vendor ID, and Product
@@ -92,6 +92,7 @@ toggle, regardless of its device type.
 | Contact sensor               | `0x0015`              | Read-only **Contact detected** / **Contact not detected** indicator             |
 | Temperature sensor           | `0x0302`              | Read-only temperature reading                                                   |
 | Robotic vacuum cleaner       | `0x0074`              | Pause/resume, **Go home**, and **Run mode** / **Clean mode** pickers            |
+| Smoke/CO alarm               | `0x0076`              | Device status, mute state, **Smoke** / **CO** alarm levels, **Run self-test** button |
 | Manufacturer-specific device | `0xFFF10001`          | **Generate number** button, **LED** switch, button state indicator              | 
 | Any other device type        | —                     | None — reported as unsupported                                                  |
 
@@ -199,6 +200,26 @@ than five.
 
 The card's quick action also offers a shortcut: tapping the play icon while docked starts the first
 supported cleaning mode, and tapping it while paused resumes the current run.
+
+### Smoke/CO alarms
+
+Once a Smoke/CO Alarm is commissioned, its card shows the alarm's current state and a quick-action
+icon that indicates whether an alarm is active. Expanding the card reveals the alarm controls. The
+app subscribes to the alarm's attributes, so the card follows changes made externally.
+
+### Smoke/CO alarm controls
+
+* Device status — The app subscribes to the Smoke CO Alarm cluster (`0x005C`) Expressed State
+  attribute and shows the highest priority state (for example **Normal**, **Smoke alarm**, **CO
+  alarm**, **Battery low**, **Hardware fault**, or **End of service**), together with a pill showing
+  whether the alarm is muted. A hardware fault or end-of-service condition hidden behind a higher
+  priority state is shown separately.
+* Smoke and CO levels — Segmented indicators showing **Normal**, **Warning**, or **Critical** for
+  the Smoke State and CO State attributes. The active level blinks faster the more critical it is.
+  Indicators are shown only for the attributes the alarm supports.
+* Run self-test — The app sends the **Self Test Request** command to the Smoke CO Alarm cluster
+  (`0x005C`). The button shows **Testing...** while the Test In Progress attribute is set, and an
+  error is displayed if the request fails.
 
 ### Manufacturer-specific device
 
