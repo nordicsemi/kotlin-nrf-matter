@@ -21,7 +21,7 @@ The application supports the following features:
 * **Commissioning** new Matter devices onto your fabric:
     * Android — through the Android Home API and Google Play Services, provisioning the device onto both the Google Home fabric and the app's local fabric.
     * iOS — through Apple's `MatterSupport` framework (`MatterAddDeviceRequest`), onto a local fabric managed directly by the app itself (using `Matter.framework` and `MTRDeviceController`), with a bundled app extension providing the system QR-code scanning UI.
-* **Controlling** commissioned devices — door locks, light bulbs (dimmable light bulb), switches, and manufacturer-specific clusters.
+* **Controlling** commissioned devices — door locks, light bulbs (dimmable light bulb), switches, smoke/CO alarms, and manufacturer-specific clusters.
 * **Managing bindings** between devices, for example a light switch controlling a light bulb directly.
 * **Viewing logs** for diagnosing commissioning and cluster interactions.
 
@@ -53,6 +53,7 @@ The application implements controls for the following Matter device types. Acces
 | On/off light                 | `0x0100`              | On/off switch only |
 | Dimmable light               | `0x0101`              | On/off switch, brightness control |
 | Door lock                    | `0x000A`              | Lock/unlock control  |
+| Smoke/CO alarm               | `0x0076`              | Device status, smoke/CO alarm levels, self-test |
 | Light switch                 | `0x0103`              | None - this is a client node configured on the Bindings screen |
 | Manufacturer-specific device | `0xFFF10001`          | Generate number, LED switch, button state  |
 
