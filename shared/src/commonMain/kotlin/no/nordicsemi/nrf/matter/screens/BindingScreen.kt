@@ -117,7 +117,8 @@ internal fun BindingsScreen(
                     bindingViewModel.updateBindingState(UiState.Idle())
                 },
                 onConfirm = {
-                    // Retry binding. Set state to loading and call the binding function again.
+                    // Retry binding with the previously selected devices.
+                    bindingViewModel.retryBinding()
                 },
                 title = "Binding Failed.",
                 message = "Unable to bind the device, please try again.",
