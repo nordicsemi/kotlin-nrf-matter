@@ -48,13 +48,19 @@ fun DocPanel(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
     dismissible: Boolean = true,
+    singlePage: Boolean = false,
     primaryActionLabel: String? = null,
     onPrimaryAction: (() -> Unit)? = null,
 ) {
     var stepPages by remember { mutableStateOf<List<DocStepPage>>(emptyList()) }
     var pageIndex by remember { mutableStateOf(0) }
-    LaunchedEffect(anchor) {
-        val pages = buildStepPages(DocsRepository.blocksOf(anchor.page), anchor.page.displayTitle)
+    LaunchedEffect(anchor, singlePage) {
+        val blocks = DocsRepository.blocksOf(anchor.page)
+        val pages = if (singlePage) {
+            listOf(DocStepPage(anchor.page.displayTitle, blocks))
+        } else {
+            buildStepPages(blocks, anchor.page.displayTitle)
+        }
         stepPages = pages
         pageIndex = pages.indexOfSection(anchor.sectionId)
     }

@@ -15,6 +15,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -24,7 +25,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -47,6 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.nrf.matter.HomeViewModel
@@ -65,7 +68,6 @@ import no.nordicsemi.nrf.matter.platform.AppEnvironment
 import org.koin.compose.viewmodel.koinViewModel
 import no.nordicsemi.nrf.matter.App as RealApp
 
-private val PANEL_WIDTH = 400.dp
 private val PHONE_WIDTH = 412.dp
 private val PHONE_BORDER_WIDTH = 8.dp
 private val PHONE_MARGIN = 16.dp
@@ -80,6 +82,7 @@ private val DocAnchor.isCommissioningGate: Boolean
 @Composable
 fun App() {
     var revealedAnchor by remember { mutableStateOf<DocAnchor?>(null) }
+    var getStartedOpen by remember { mutableStateOf(true) }
     var showDocsBrowser by remember { mutableStateOf<DocAnchor?>(null) }
     var coachMarkDismissed by rememberSaveable { mutableStateOf(false) }
 
@@ -107,10 +110,11 @@ fun App() {
                     ),
                 ),
         ) {
-            val panelBesideFrame = maxWidth - PHONE_WIDTH - (PHONE_MARGIN * 2) >= PANEL_WIDTH + 48.dp
+            val panelBesideFrame = maxWidth >= (PHONE_MIN_WIDTH + PHONE_MARGIN * 2) * 2
+            val phoneAreaWidth = if (panelBesideFrame) maxWidth / 2 else maxWidth
             val isPhoneViewport = maxWidth < PHONE_WIDTH
             val availableHeight = maxHeight - PHONE_MARGIN * 2
-            val frameWidth = minOf(PHONE_WIDTH, availableHeight * PHONE_ASPECT_RATIO)
+            val frameWidth = minOf(PHONE_WIDTH, availableHeight * PHONE_ASPECT_RATIO, phoneAreaWidth - PHONE_MARGIN * 2)
                 .coerceAtLeast(PHONE_MIN_WIDTH)
             val frameHeight = minOf(availableHeight, frameWidth / PHONE_ASPECT_RATIO)
             val capturedMaxHeight = if (isPhoneViewport) maxHeight else frameHeight
@@ -119,11 +123,15 @@ fun App() {
                 isPhoneViewport = isPhoneViewport,
                 frameWidth = frameWidth,
                 frameHeight = frameHeight,
-                modifier = Modifier.align(Alignment.Center),
+                modifier = if (panelBesideFrame) {
+                    Modifier.align(Alignment.CenterStart).width(phoneAreaWidth).fillMaxHeight().wrapContentSize(Alignment.Center)
+                } else {
+                    Modifier.align(Alignment.Center)
+                },
             ) {
                 PhoneFrameContent(
                     revealedAnchor = revealedAnchor,
-                    onReveal = { revealedAnchor = it },
+                    onReveal = { getStartedOpen = false; revealedAnchor = it },
                     onDismissReveal = { revealedAnchor = null },
                     panelBesideFrame = panelBesideFrame,
                     maxHeight = capturedMaxHeight,
@@ -132,11 +140,12 @@ fun App() {
             }
 
             SidePanel(
-                visible = panelBesideFrame && revealedAnchor != null,
-                anchor = revealedAnchor,
+                visible = panelBesideFrame,
+                anchor = revealedAnchor ?: DocAnchor(DocPage.INDEX).takeIf { getStartedOpen },
+                isDefault = revealedAnchor == null,
                 onLink = ::handleLink,
-                onDismiss = { revealedAnchor = null },
-                modifier = Modifier.align(Alignment.CenterEnd).padding(end = 24.dp),
+                onDismiss = { revealedAnchor = null; getStartedOpen = false },
+                modifier = Modifier.align(Alignment.CenterEnd).fillMaxWidth(0.5f).fillMaxHeight().padding(horizontal = 24.dp),
             )
 
             FloatingActionButton(
@@ -260,14 +269,46 @@ private fun BoxScope.PhoneFrameContent(
 private fun SidePanel(
     visible: Boolean,
     anchor: DocAnchor?,
+    isDefault: Boolean,
     onLink: (LinkTarget) -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     AnimatedVisibility(visible = visible, modifier = modifier, enter = fadeIn(), exit = fadeOut()) {
-        if (anchor != null) {
+        if (anchor == null) {
             Surface(
-                modifier = Modifier.widthIn(max = PANEL_WIDTH).fillMaxHeight().padding(vertical = PHONE_MARGIN),
+                modifier = Modifier.fillMaxSize().padding(vertical = PHONE_MARGIN),
+                shape = RoundedCornerShape(20.dp),
+                shadowElevation = 8.dp,
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(32.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Icon(
+                        Icons.Filled.MenuBook,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                    Text(
+                        text = "Documentation",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(top = 16.dp),
+                    )
+                    Text(
+                        text = "Use the app to see help for each step, or open the book button to browse all docs.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
+                }
+            }
+        } else {
+            Surface(
+                modifier = Modifier.fillMaxSize().padding(vertical = PHONE_MARGIN),
                 shape = RoundedCornerShape(20.dp),
                 shadowElevation = 8.dp,
             ) {
@@ -276,6 +317,7 @@ private fun SidePanel(
                     onLink = onLink,
                     onDismiss = onDismiss,
                     dismissible = !anchor.isCommissioningGate,
+                    singlePage = isDefault,
                     primaryActionLabel = if (anchor.isCommissioningGate) COMMISSIONING_GATE_ACTION_LABEL else null,
                     onPrimaryAction = if (anchor.isCommissioningGate) {
                         { onDismiss(); AppEvents.acknowledgeCommissioning() }
