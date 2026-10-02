@@ -1,13 +1,26 @@
 package no.nordicsemi.nrf.matter.ui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -48,33 +61,76 @@ fun AlertDialogView(
     confirmText: String = "Delete",
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
+    forceRemoveText: String? = null,
+    onForceRemove: () -> Unit = {},
 ) {
     AlertDialog(
         onDismissRequest = { onDismiss() },
         title = {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = title)
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = title,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(horizontal = 32.dp),
+                )
+                if (forceRemoveText != null) {
+                    IconButton(
+                        onClick = { onDismiss() },
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .size(24.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = dismissText,
+                        )
+                    }
+                }
             }
         },
         text = {
-            Text(message)
+            Text(
+                text = message,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = if (forceRemoveText != null) TextAlign.Center else TextAlign.Start,
+            )
         },
         confirmButton = {
-            TextButton(
-                onClick = { onConfirm() }
-            ) {
-                Text(confirmText)
+            if (forceRemoveText != null) {
+                // Plain text actions side by side, no fill or border.
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+                ) {
+                    TextButton(
+                        onClick = { onForceRemove() },
+                        colors = ButtonDefaults.textButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error,
+                        ),
+                    ) {
+                        Text(forceRemoveText)
+                    }
+                    TextButton(onClick = { onConfirm() }) {
+                        Text(confirmText)
+                    }
+                }
+            } else {
+                TextButton(onClick = { onConfirm() }) {
+                    Text(confirmText)
+                }
             }
         },
-        dismissButton = {
-            TextButton(
-                onClick = { onDismiss() }
-            ) {
-                Text(dismissText)
+        dismissButton = if (forceRemoveText != null) {
+            null
+        } else {
+            {
+                TextButton(onClick = { onDismiss() }) {
+                    Text(dismissText)
+                }
             }
-        }
+        },
     )
 }

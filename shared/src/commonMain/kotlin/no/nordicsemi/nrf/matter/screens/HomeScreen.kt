@@ -52,6 +52,7 @@ fun HomeScreen(
 
     DecommissionStateHandler(
         state = decommissionState,
+        onRetry = { homeViewModel.decommissionDevice(it) },
         onForceRemove = { homeViewModel.forceRemove(it) },
         onStateHandled = { homeViewModel.updateDecommissionState(DecommissionState.Idle) },
     )
