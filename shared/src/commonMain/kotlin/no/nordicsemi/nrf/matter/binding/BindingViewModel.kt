@@ -144,6 +144,18 @@ class BindingViewModel : ViewModel() {
             .launchIn(viewModelScope)
     }
 
+    // Re-runs the binding with the previously selected devices (selections are kept on failure).
+    fun retryBinding() {
+        val state = _bindingUiState.value
+        val source = state.selectedSourceDeviceId
+        val target = state.selectedTargetDeviceId
+        if (source == null || target == null) {
+            updateBindingState(UiState.Idle())
+            return
+        }
+        initiateBinding(source, target)
+    }
+
     // Resets selections and UI status back to initial state
     private fun resetFormAndState() {
         _bindingUiState.update {
