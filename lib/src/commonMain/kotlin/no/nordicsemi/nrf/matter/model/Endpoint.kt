@@ -54,8 +54,5 @@ fun List<Endpoint>.deviceTypes(): List<DeviceType> =
 
 fun List<Endpoint>.deviceType(): DeviceType =
     deviceTypes()
-        .firstOrNull {
-            it != SupportedDeviceType.UNKNOWN.value &&
-            it in SupportedDeviceType.entries.map { it.value }
-        }
+        .firstOrNull { it != SupportedDeviceType.UNKNOWN.value }
         ?: SupportedDeviceType.UNKNOWN.value
