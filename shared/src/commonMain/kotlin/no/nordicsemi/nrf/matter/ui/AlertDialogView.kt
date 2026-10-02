@@ -1,20 +1,25 @@
 package no.nordicsemi.nrf.matter.ui
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 /*
@@ -62,43 +67,54 @@ fun AlertDialogView(
     AlertDialog(
         onDismissRequest = { onDismiss() },
         title = {
-            Box(
-                modifier = Modifier.fillMaxWidth(),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(text = title)
+            Box(modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    text = title,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .padding(horizontal = 32.dp),
+                )
+                if (forceRemoveText != null) {
+                    IconButton(
+                        onClick = { onDismiss() },
+                        modifier = Modifier
+                            .align(Alignment.CenterEnd)
+                            .size(24.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = dismissText,
+                        )
+                    }
+                }
             }
         },
         text = {
-            Text(message)
+            Text(
+                text = message,
+                modifier = Modifier.fillMaxWidth(),
+                textAlign = if (forceRemoveText != null) TextAlign.Center else TextAlign.Start,
+            )
         },
         confirmButton = {
             if (forceRemoveText != null) {
-                Column(
+                // Plain text actions side by side, no fill or border.
+                Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
                 ) {
-                    Button(
-                        onClick = { onConfirm() },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(confirmText)
-                    }
-                    OutlinedButton(
+                    TextButton(
                         onClick = { onForceRemove() },
-                        modifier = Modifier.fillMaxWidth(),
-                        colors = ButtonDefaults.outlinedButtonColors(
+                        colors = ButtonDefaults.textButtonColors(
                             contentColor = MaterialTheme.colorScheme.error,
                         ),
-                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
                     ) {
                         Text(forceRemoveText)
                     }
-                    TextButton(
-                        onClick = { onDismiss() },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        Text(dismissText)
+                    TextButton(onClick = { onConfirm() }) {
+                        Text(confirmText)
                     }
                 }
             } else {
