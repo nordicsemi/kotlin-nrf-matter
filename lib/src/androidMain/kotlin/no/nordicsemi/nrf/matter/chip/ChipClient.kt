@@ -157,13 +157,17 @@ class ChipClient(
                 nodeId,
                 object : GetConnectedDeviceCallbackJni.GetConnectedDeviceCallback {
                     override fun onDeviceConnected(devicePointer: Long) {
-                        continuation.resume(devicePointer)
+                        if (continuation.isActive) {
+                            continuation.resume(devicePointer)
+                        }
                     }
 
                     override fun onConnectionFailure(nodeId: Long, error: Exception) {
                         val errorMessage = "Unable to get connected device with nodeId $nodeId."
                         NordicLogger.error(errorMessage, error, tag = TAG)
-                        continuation.resumeWithException(IllegalStateException(errorMessage))
+                        if (continuation.isActive) {
+                            continuation.resumeWithException(IllegalStateException(errorMessage, error))
+                        }
                     }
                 })
         }
@@ -546,7 +550,19 @@ class ChipClient(
         maxIntervalS: Int = DEFAULT_SUBSCRIPTION_MAX_INTERVAL_S,
         timeoutMs: Int = DEFAULT_SUBSCRIPTION_TIMEOUT_MS,
     ): Flow<Any?> = callbackFlow {
-        val devicePtr = getConnectedDevicePointer(deviceId.longValue)
+        val devicePtr = try {
+            getConnectedDevicePointer(deviceId.longValue)
+        } catch (e: Exception) {
+            NordicLogger.error(
+                "Failed to get connected device pointer for attribute $attributeId on device $deviceId",
+                e,
+                tag = TAG
+            )
+            // Complete the flow quietly: an offline node must not crash collectors that have
+            // no error handling. The subscription simply ends.
+            close()
+            return@callbackFlow
+        }
 
         val reportCallback = object : ReportCallback {
             override fun onError(
@@ -559,7 +575,7 @@ class ChipClient(
                     e,
                     tag = TAG
                 )
-                close(e)
+                close()
             }
 
             override fun onReport(nodeState: NodeState?) {
@@ -585,12 +601,12 @@ class ChipClient(
                 // once a subscription drops, give up instead of retrying forever with a growing
                 // backoff. Closing the flow drives the awaitClose block below, which tears the
                 // native ReadClient down for good.
-                close(
-                    IllegalStateException(
-                        "Subscription for attribute $attributeId terminated with error " +
-                                "$terminationCause; not resubscribing"
-                    )
+                NordicLogger.info(
+                    "Subscription for attribute $attributeId terminated with error " +
+                            "$terminationCause; not resubscribing",
+                    tag = TAG
                 )
+                close()
             },
         )
 
