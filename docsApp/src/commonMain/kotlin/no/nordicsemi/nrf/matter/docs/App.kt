@@ -15,6 +15,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -48,6 +49,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.nrf.matter.HomeViewModel
@@ -80,6 +82,7 @@ private val DocAnchor.isCommissioningGate: Boolean
 @Composable
 fun App() {
     var revealedAnchor by remember { mutableStateOf<DocAnchor?>(null) }
+    var getStartedOpen by remember { mutableStateOf(true) }
     var showDocsBrowser by remember { mutableStateOf<DocAnchor?>(null) }
     var coachMarkDismissed by rememberSaveable { mutableStateOf(false) }
 
@@ -128,7 +131,7 @@ fun App() {
             ) {
                 PhoneFrameContent(
                     revealedAnchor = revealedAnchor,
-                    onReveal = { revealedAnchor = it },
+                    onReveal = { getStartedOpen = false; revealedAnchor = it },
                     onDismissReveal = { revealedAnchor = null },
                     panelBesideFrame = panelBesideFrame,
                     maxHeight = capturedMaxHeight,
@@ -137,10 +140,11 @@ fun App() {
             }
 
             SidePanel(
-                visible = panelBesideFrame && revealedAnchor != null,
-                anchor = revealedAnchor,
+                visible = panelBesideFrame,
+                anchor = revealedAnchor ?: DocAnchor(DocPage.INDEX).takeIf { getStartedOpen },
+                isDefault = revealedAnchor == null,
                 onLink = ::handleLink,
-                onDismiss = { revealedAnchor = null },
+                onDismiss = { revealedAnchor = null; getStartedOpen = false },
                 modifier = Modifier.align(Alignment.CenterEnd).fillMaxWidth(0.5f).fillMaxHeight().padding(horizontal = 24.dp),
             )
 
@@ -265,12 +269,44 @@ private fun BoxScope.PhoneFrameContent(
 private fun SidePanel(
     visible: Boolean,
     anchor: DocAnchor?,
+    isDefault: Boolean,
     onLink: (LinkTarget) -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     AnimatedVisibility(visible = visible, modifier = modifier, enter = fadeIn(), exit = fadeOut()) {
-        if (anchor != null) {
+        if (anchor == null) {
+            Surface(
+                modifier = Modifier.fillMaxSize().padding(vertical = PHONE_MARGIN),
+                shape = RoundedCornerShape(20.dp),
+                shadowElevation = 8.dp,
+            ) {
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(32.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    Icon(
+                        Icons.Filled.MenuBook,
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        tint = MaterialTheme.colorScheme.primary,
+                    )
+                    Text(
+                        text = "Documentation",
+                        style = MaterialTheme.typography.titleMedium,
+                        modifier = Modifier.padding(top = 16.dp),
+                    )
+                    Text(
+                        text = "Use the app to see help for each step, or open the book button to browse all docs.",
+                        style = MaterialTheme.typography.bodyMedium,
+                        textAlign = TextAlign.Center,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 8.dp),
+                    )
+                }
+            }
+        } else {
             Surface(
                 modifier = Modifier.fillMaxSize().padding(vertical = PHONE_MARGIN),
                 shape = RoundedCornerShape(20.dp),
@@ -281,6 +317,7 @@ private fun SidePanel(
                     onLink = onLink,
                     onDismiss = onDismiss,
                     dismissible = !anchor.isCommissioningGate,
+                    singlePage = isDefault,
                     primaryActionLabel = if (anchor.isCommissioningGate) COMMISSIONING_GATE_ACTION_LABEL else null,
                     onPrimaryAction = if (anchor.isCommissioningGate) {
                         { onDismiss(); AppEvents.acknowledgeCommissioning() }
