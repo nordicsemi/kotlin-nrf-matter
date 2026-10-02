@@ -1,14 +1,21 @@
 package no.nordicsemi.nrf.matter.ui
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 
 /*
  * Copyright (c) 2025, Nordic Semiconductor
@@ -66,25 +73,48 @@ fun AlertDialogView(
             Text(message)
         },
         confirmButton = {
-            TextButton(
-                onClick = { onConfirm() }
-            ) {
-                Text(confirmText)
-            }
-        },
-        dismissButton = {
-            Row {
-                if (forceRemoveText != null) {
-                    TextButton(onClick = { onForceRemove() }) {
+            if (forceRemoveText != null) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Button(
+                        onClick = { onConfirm() },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(confirmText)
+                    }
+                    OutlinedButton(
+                        onClick = { onForceRemove() },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            contentColor = MaterialTheme.colorScheme.error,
+                        ),
+                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error),
+                    ) {
                         Text(forceRemoveText)
                     }
+                    TextButton(
+                        onClick = { onDismiss() },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(dismissText)
+                    }
                 }
-                TextButton(
-                    onClick = { onDismiss() }
-                ) {
+            } else {
+                TextButton(onClick = { onConfirm() }) {
+                    Text(confirmText)
+                }
+            }
+        },
+        dismissButton = if (forceRemoveText != null) {
+            null
+        } else {
+            {
+                TextButton(onClick = { onDismiss() }) {
                     Text(dismissText)
                 }
             }
-        }
+        },
     )
 }
