@@ -95,7 +95,7 @@ internal fun DecommissionStateHandler(
             AlertDialogView(
                 onDismiss = onStateHandled,
                 onConfirm = { onRetry(state.deviceId) },
-                title = "Error Removing Device",
+                title = "Removal Failed",
                 message = "An error occurred while removing the device. Retry, or force remove it?",
                 confirmText = "Retry",
                 forceRemoveText = "Force remove",
