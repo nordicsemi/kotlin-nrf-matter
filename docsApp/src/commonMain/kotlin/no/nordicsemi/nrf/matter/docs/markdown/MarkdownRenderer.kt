@@ -229,7 +229,7 @@ private val MAX_SCREENSHOT_HEIGHT = 380.dp
 private fun ImageGalleryView(gallery: MdBlock.ImageGallery) {
     Row(
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(12.dp, alignment = Alignment.Start),
+        horizontalArrangement = Arrangement.spacedBy(12.dp, alignment = Alignment.CenterHorizontally),
     ) {
         gallery.images.forEach { name ->
             val resource = Res.allDrawableResources[name]
