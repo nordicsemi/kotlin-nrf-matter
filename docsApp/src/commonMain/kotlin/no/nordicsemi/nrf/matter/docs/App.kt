@@ -24,7 +24,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -65,7 +66,6 @@ import no.nordicsemi.nrf.matter.platform.AppEnvironment
 import org.koin.compose.viewmodel.koinViewModel
 import no.nordicsemi.nrf.matter.App as RealApp
 
-private val PANEL_WIDTH = 400.dp
 private val PHONE_WIDTH = 412.dp
 private val PHONE_BORDER_WIDTH = 8.dp
 private val PHONE_MARGIN = 16.dp
@@ -107,10 +107,11 @@ fun App() {
                     ),
                 ),
         ) {
-            val panelBesideFrame = maxWidth - PHONE_WIDTH - (PHONE_MARGIN * 2) >= PANEL_WIDTH + 48.dp
+            val panelBesideFrame = maxWidth >= (PHONE_MIN_WIDTH + PHONE_MARGIN * 2) * 2
+            val phoneAreaWidth = if (panelBesideFrame) maxWidth / 2 else maxWidth
             val isPhoneViewport = maxWidth < PHONE_WIDTH
             val availableHeight = maxHeight - PHONE_MARGIN * 2
-            val frameWidth = minOf(PHONE_WIDTH, availableHeight * PHONE_ASPECT_RATIO)
+            val frameWidth = minOf(PHONE_WIDTH, availableHeight * PHONE_ASPECT_RATIO, phoneAreaWidth - PHONE_MARGIN * 2)
                 .coerceAtLeast(PHONE_MIN_WIDTH)
             val frameHeight = minOf(availableHeight, frameWidth / PHONE_ASPECT_RATIO)
             val capturedMaxHeight = if (isPhoneViewport) maxHeight else frameHeight
@@ -119,7 +120,11 @@ fun App() {
                 isPhoneViewport = isPhoneViewport,
                 frameWidth = frameWidth,
                 frameHeight = frameHeight,
-                modifier = Modifier.align(Alignment.Center),
+                modifier = if (panelBesideFrame) {
+                    Modifier.align(Alignment.CenterStart).width(phoneAreaWidth).fillMaxHeight().wrapContentSize(Alignment.Center)
+                } else {
+                    Modifier.align(Alignment.Center)
+                },
             ) {
                 PhoneFrameContent(
                     revealedAnchor = revealedAnchor,
@@ -136,7 +141,7 @@ fun App() {
                 anchor = revealedAnchor,
                 onLink = ::handleLink,
                 onDismiss = { revealedAnchor = null },
-                modifier = Modifier.align(Alignment.CenterEnd).padding(end = 24.dp),
+                modifier = Modifier.align(Alignment.CenterEnd).fillMaxWidth(0.5f).fillMaxHeight().padding(horizontal = 24.dp),
             )
 
             FloatingActionButton(
@@ -267,7 +272,7 @@ private fun SidePanel(
     AnimatedVisibility(visible = visible, modifier = modifier, enter = fadeIn(), exit = fadeOut()) {
         if (anchor != null) {
             Surface(
-                modifier = Modifier.widthIn(max = PANEL_WIDTH).fillMaxHeight().padding(vertical = PHONE_MARGIN),
+                modifier = Modifier.fillMaxSize().padding(vertical = PHONE_MARGIN),
                 shape = RoundedCornerShape(20.dp),
                 shadowElevation = 8.dp,
             ) {
