@@ -2,8 +2,10 @@ package no.nordicsemi.nrf.matter.cluster
 
 import no.nordicsemi.nrf.matter.api.NordicMatters
 import no.nordicsemi.nrf.matter.model.Device
+import no.nordicsemi.nrf.matter.model.SupportedDeviceType
 
 fun Device.toClusters(): List<Cluster> {
+    val device = this
     val client = NordicMatters.matterClient
 
     return endpoints.flatMap { endpoint ->
@@ -20,6 +22,8 @@ fun Device.toClusters(): List<Cluster> {
                 SmokeCoAlarmClusterInfo.ID -> SmokeCoAlarmCluster(deviceId, endpoint.id, client)
 
                 else -> NordicMatters.getCustomClusters()[clusterId]
+                    .takeIf { it?.deviceType != SupportedDeviceType.UNKNOWN.value }
+                    .takeIf { it?.deviceType == device.deviceType }
                     ?.factory
                     ?.invoke(deviceId, endpoint.id, client)
             }
