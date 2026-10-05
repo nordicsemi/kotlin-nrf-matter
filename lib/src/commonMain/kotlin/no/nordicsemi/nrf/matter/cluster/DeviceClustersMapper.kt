@@ -21,14 +21,11 @@ fun Device.toClusters(): List<Cluster> {
                 RvcOperationalStateClusterInfo.ID -> RvcOperationalStateCluster(deviceId, endpoint.id, client)
                 SmokeCoAlarmClusterInfo.ID -> SmokeCoAlarmCluster(deviceId, endpoint.id, client)
 
-                else -> NordicMatters.getCustomClusters()[clusterId]?.let { factory ->
-                    factory.first?.let { customDeviceType ->
-                        factory.second
-                            .takeIf { customDeviceType != SupportedDeviceType.UNKNOWN.value }
-                            .takeIf { device.deviceType == customDeviceType }
-                            ?.invoke(deviceId, endpoint.id, client)
-                    }
-                }
+                else -> NordicMatters.getCustomClusters()[clusterId]
+                    .takeIf { it?.deviceType != SupportedDeviceType.UNKNOWN.value }
+                    .takeIf { it?.deviceType == device.deviceType }
+                    ?.factory
+                    ?.invoke(deviceId, endpoint.id, client)
             }
         }
     }

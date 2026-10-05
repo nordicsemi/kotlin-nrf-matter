@@ -38,9 +38,9 @@ class DescriptorCluster(
     private suspend fun collectInto(into: MutableList<Endpoint>) {
         if (into.any { it.id == endpoint }) return
 
-        val serverClusters = serverClusters()
-        val clientClusters = clientClusters()
-        val deviceTypes = deviceTypes()
+        val serverClusters = serverClusters().sorted()
+        val clientClusters = clientClusters().sorted()
+        val deviceTypes = deviceTypes().sorted()
         val parts = parts()
 
         NordicLogger.debug("Descriptor cluster for endpoint: $endpoint")

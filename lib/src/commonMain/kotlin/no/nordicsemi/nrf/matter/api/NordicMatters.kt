@@ -6,6 +6,7 @@ import no.nordicsemi.nrf.matter.cluster.Cluster
 import no.nordicsemi.nrf.matter.cluster.MatterClient
 import no.nordicsemi.nrf.matter.logger.NordicLogger
 import no.nordicsemi.nrf.matter.logger.NordicLoggerBackend
+import no.nordicsemi.nrf.matter.model.ClusterType
 import no.nordicsemi.nrf.matter.model.DeviceId
 import no.nordicsemi.nrf.matter.model.DeviceType
 import kotlin.concurrent.atomics.AtomicReference
@@ -54,30 +55,46 @@ object NordicMatters {
         return Fabric(id, matterDependencies)
     }
 
-    private val _customClusters =
-        AtomicReference<Map<Long, Pair<DeviceType?, (DeviceId, Int, MatterClient) -> Cluster>>>(emptyMap())
+    private val _customClusters = AtomicReference<Map<Long, ClusterDefinition>>(emptyMap())
 
-    fun registerCustomCluster(clusterId: Long, deviceType: DeviceType? = null, factory: (DeviceId, Int, MatterClient) -> Cluster) {
-        while (true) {
-            val current = _customClusters.load()
-            val updated = current + (clusterId to (deviceType to factory))
+    fun registerCustomCluster(clusterId: Long, clusterName: String, deviceType: DeviceType? = null, factory: (DeviceId, Int, MatterClient) -> Cluster) {
+        val definition = ClusterDefinition(
+            name = clusterName,
+            deviceType = deviceType,
+            factory = factory
+        )
 
-            if (_customClusters.compareAndSet(current, updated)) return
-        }
+        val current = _customClusters.load()
+        val updated = current + (clusterId to definition)
+
+        val _ = _customClusters.compareAndSet(current, updated)
     }
 
-    internal fun getCustomClusters(): Map<Long, Pair<DeviceType?, (DeviceId, Int, MatterClient) -> Cluster>> =
-        _customClusters.load()
+    internal fun getCustomClusters(): Map<Long, ClusterDefinition> = _customClusters.load()
 
     fun parseDeviceType(type: Long): DeviceType {
-        val customDeviceType = _customClusters.load()
+        val clusterDefinition = _customClusters.load()
             .values
-            .mapNotNull { it.first }
-            .firstOrNull { it.id == type }
+            .firstOrNull { it.deviceType?.id == type }
 
-        return customDeviceType ?: DeviceType.parse(type)
+        return clusterDefinition?.deviceType ?: DeviceType.parse(type)
+    }
+
+    fun parseClusterName(id: Long, deviceTypes: List<Long>): String {
+        val clusterDefinition = _customClusters.load()[id]
+
+        return clusterDefinition
+            ?.takeIf { it.deviceType?.id in deviceTypes }
+            ?.name
+            ?: ClusterType.parse(id).name
     }
 }
+
+data class ClusterDefinition(
+    val name: String,
+    val deviceType: DeviceType?,
+    val factory: (DeviceId, Int, MatterClient) -> Cluster,
+)
 
 @JvmInline
 value class FabricId(val value: Int) : Comparable<FabricId> {

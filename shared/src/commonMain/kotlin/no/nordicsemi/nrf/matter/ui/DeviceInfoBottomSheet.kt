@@ -149,8 +149,10 @@ internal fun DeviceInfoContent(
             }
         }
 
+        // We need all device types to correctly map cluster extensions.
+        val allDeviceTypes = endpoints.flatMap { it.types }
         items(endpoints, key = { it.id }) { endpoint ->
-            EndpointCard(endpoint)
+            EndpointCard(endpoint, allDeviceTypes)
         }
 
         item {
@@ -166,7 +168,7 @@ internal fun DeviceInfoContent(
 }
 
 @Composable
-private fun EndpointCard(endpoint: Endpoint) {
+private fun EndpointCard(endpoint: Endpoint, allDeviceTypes: List<Long>) {
     OutlinedCard(modifier = Modifier.fillMaxWidth()) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -186,12 +188,12 @@ private fun EndpointCard(endpoint: Endpoint) {
             EndpointSection(
                 title = "Server Clusters",
                 ids = endpoint.serverClusters,
-                nameFor = { ClusterType.parse(it).name },
+                nameFor = { NordicMatters.parseClusterName(it, allDeviceTypes) },
             )
             EndpointSection(
                 title = "Client Clusters",
                 ids = endpoint.clientClusters,
-                nameFor = { ClusterType.parse(it).name },
+                nameFor = { NordicMatters.parseClusterName(it, allDeviceTypes) },
             )
         }
     }
