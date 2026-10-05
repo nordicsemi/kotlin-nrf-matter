@@ -21,6 +21,7 @@ nordicPublishing {
     POM_ARTIFACT_ID = "matter-support"
     POM_NAME = "Nordic library for Matter connectivity."
 
+    POM_VERSION_NAME = "0.1.0"
     POM_DESCRIPTION = "Nordic Android Matter Library"
     POM_URL = "https://github.com/nordicsemi/kotlin-nrf-matter"
     POM_SCM_URL = "https://github.com/nordicsemi/kotlin-nrf-matter"
