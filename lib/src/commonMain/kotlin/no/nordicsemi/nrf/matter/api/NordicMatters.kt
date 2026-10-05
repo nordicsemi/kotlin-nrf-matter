@@ -80,10 +80,13 @@ object NordicMatters {
         return clusterDefinition?.deviceType ?: DeviceType.parse(type)
     }
 
-    fun parseClusterName(id: Long): String {
+    fun parseClusterName(id: Long, deviceTypes: List<Long>): String {
         val clusterDefinition = _customClusters.load()[id]
 
-        return clusterDefinition?.name ?: ClusterType.parse(id).name
+        return clusterDefinition
+            ?.takeIf { it.deviceType?.id in deviceTypes }
+            ?.name
+            ?: ClusterType.parse(id).name
     }
 }
 
