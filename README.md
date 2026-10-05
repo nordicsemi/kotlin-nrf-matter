@@ -6,6 +6,8 @@ nRF Matter for Mobile is a commissioning and control companion app by [Nordic Se
 
 [![Release notes](assets/ReleaseNotes.png)](https://github.com/nordicsemi/kotlin-nrf-matter/releases) [![App development](assets/AppDevelopment.png)](./app_development.md)
 
+    The documentation is also available as an interactive website with a browsable docs structure: [nordicsemi.github.io/kotlin-nrf-matter](https://nordicsemi.github.io/kotlin-nrf-matter/).
+
 For Matter developer documentation from Nordic Semiconductor, see the [nRF Connect SDK](https://nrfconnectdocs.nordicsemi.com/ncs/latest/nrf/installation/install_ncs.html) and [Matter add-on](https://nrfconnectdocs.nordicsemi.com/addons/ncs-matter/latest/index.html) documentation.
 
 ---
