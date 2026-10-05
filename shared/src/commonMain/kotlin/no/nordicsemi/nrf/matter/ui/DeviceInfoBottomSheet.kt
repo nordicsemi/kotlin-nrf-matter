@@ -186,12 +186,12 @@ private fun EndpointCard(endpoint: Endpoint) {
             EndpointSection(
                 title = "Server Clusters",
                 ids = endpoint.serverClusters,
-                nameFor = { ClusterType.parse(it).name },
+                nameFor = { NordicMatters.parseClusterName(it) },
             )
             EndpointSection(
                 title = "Client Clusters",
                 ids = endpoint.clientClusters,
-                nameFor = { ClusterType.parse(it).name },
+                nameFor = { NordicMatters.parseClusterName(it) },
             )
         }
     }
