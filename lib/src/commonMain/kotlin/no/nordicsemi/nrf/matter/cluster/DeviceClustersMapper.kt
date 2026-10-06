@@ -3,10 +3,11 @@ package no.nordicsemi.nrf.matter.cluster
 import no.nordicsemi.nrf.matter.api.NordicMatters
 import no.nordicsemi.nrf.matter.model.Device
 import no.nordicsemi.nrf.matter.model.SupportedDeviceType
+import no.nordicsemi.nrf.matter.model.deviceTypes
 
 fun Device.toClusters(): List<Cluster> {
-    val device = this
     val client = NordicMatters.matterClient
+    val deviceTypes = endpoints.deviceTypes()
 
     return endpoints.flatMap { endpoint ->
         endpoint.serverClusters.mapNotNull { clusterId ->
@@ -23,7 +24,7 @@ fun Device.toClusters(): List<Cluster> {
 
                 else -> NordicMatters.getCustomClusters()[clusterId]
                     .takeIf { it?.deviceType != SupportedDeviceType.UNKNOWN.value }
-                    .takeIf { it?.deviceType == device.deviceType }
+                    .takeIf { it?.deviceType in deviceTypes }
                     ?.factory
                     ?.invoke(deviceId, endpoint.id, client)
             }
