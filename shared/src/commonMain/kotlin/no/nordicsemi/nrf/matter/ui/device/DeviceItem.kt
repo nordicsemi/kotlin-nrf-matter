@@ -123,6 +123,21 @@ internal fun DeviceItem(
     val isActive = onOffState?.isOn == true || isLocked || isVacuumRunning
     val isIconLit = isActive || contactSensorState?.isContactDetected == true ||
             smokeCoAlarmState?.isAlarmActive == true
+    val hasLock = doorLock != null && lockState != null
+    val hasOnOff = onOff != null && onOffState != null
+    val hasContact = contactSensor != null && contactSensorState != null
+    val hasTemperature = temperatureSensor != null && temperatureSensorState != null
+    val hasRvc = rvcOperationalState != null && rvcOperationalStateValue != null
+    val hasSmoke = smokeCoAlarm != null && smokeCoAlarmState != null
+    val headerAction = when {
+        hasLock -> HeaderAction.LOCK
+        hasOnOff -> HeaderAction.ON_OFF
+        hasContact -> HeaderAction.CONTACT
+        hasTemperature -> HeaderAction.TEMPERATURE
+        hasRvc -> HeaderAction.RVC
+        hasSmoke -> HeaderAction.SMOKE
+        else -> null
+    }
     var isExpanded by rememberSaveable { mutableStateOf(false) }
     var showMatterDeviceInfo by rememberSaveable { mutableStateOf(false) }
     var showDeviceInfo by rememberSaveable { mutableStateOf(false) }
@@ -210,6 +225,56 @@ internal fun DeviceItem(
             Column {
                 HorizontalDivider()
 
+                if (hasLock && headerAction != HeaderAction.LOCK) {
+                    ExpandedActionRow("Door lock") {
+                        LockActionItem(
+                            lockState = lockState,
+                            isLocked = isLocked,
+                            onLockUnlockDoor = doorLock::setLocked,
+                        )
+                    }
+                }
+                if (hasOnOff && headerAction != HeaderAction.ON_OFF) {
+                    ExpandedActionRow("On/Off") {
+                        OnOffActionItem(
+                            isOn = onOffState.isOn,
+                            isEnabled = onOffState.isEnabled,
+                            onCheckedChange = onOff::setOn,
+                        )
+                    }
+                }
+                if (hasContact && headerAction != HeaderAction.CONTACT) {
+                    ExpandedActionRow("Contact sensor") {
+                        ContactSensorActionItem(isContactDetected = contactSensorState.isContactDetected)
+                    }
+                }
+                if (hasTemperature && headerAction != HeaderAction.TEMPERATURE) {
+                    ExpandedActionRow("Temperature") {
+                        TemperatureSensorActionItem(temperatureCelsius = temperatureSensorState.temperatureCelsius)
+                    }
+                }
+                if (hasRvc && headerAction != HeaderAction.RVC) {
+                    ExpandedActionRow("Vacuum") {
+                        RvcActionItem(
+                            operationalState = rvcOperationalStateValue,
+                            onPlay = {
+                                if (isVacuumPaused) {
+                                    rvcOperationalState.resume()
+                                } else {
+                                    (rvcRunModeValue as? UiState.Success)?.data?.supportedModes?.cleaningMode()
+                                        ?.let { rvcRunMode.changeToMode(it.mode) }
+                                }
+                            },
+                            onStop = rvcOperationalState::goHome,
+                        )
+                    }
+                }
+                if (hasSmoke && headerAction != HeaderAction.SMOKE) {
+                    ExpandedActionRow("Smoke/CO alarm") {
+                        SmokeCoAlarmActionItem(isAlarmActive = smokeCoAlarmState.isAlarmActive)
+                    }
+                }
+
                 levelControl?.let { BrightnessControl(it, device.deviceId) }
                 basicInfoExt?.let { RandomNumberControl(it) }
                 manufacturerSpec?.let { LedAndButtonControl(it) }
@@ -239,6 +304,27 @@ internal fun DeviceItem(
         if (showDeviceInfo) {
             DeviceInfoBottomSheet(device, onDismiss = { showDeviceInfo = false })
         }
+    }
+}
+
+private enum class HeaderAction { LOCK, ON_OFF, CONTACT, TEMPERATURE, RVC, SMOKE }
+
+@Composable
+private fun ExpandedActionRow(label: String, action: @Composable () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp)
+            .padding(top = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Text(
+            text = label,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(1f),
+        )
+        action()
     }
 }
 
