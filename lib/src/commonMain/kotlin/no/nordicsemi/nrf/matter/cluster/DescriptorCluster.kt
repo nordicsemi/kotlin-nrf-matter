@@ -54,6 +54,7 @@ class DescriptorCluster(
             types = deviceTypes,
             serverClusters = serverClusters,
             clientClusters = clientClusters,
+            parts = parts,
         )
 
         parts.forEach { child ->

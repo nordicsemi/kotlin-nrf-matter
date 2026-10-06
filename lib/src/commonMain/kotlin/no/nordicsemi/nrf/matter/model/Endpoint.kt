@@ -42,6 +42,7 @@ data class Endpoint(
     val types: List<Long> = emptyList(),
     val serverClusters: List<Long> = emptyList(),
     val clientClusters: List<Long> = emptyList(),
+    val parts: List<Int> = emptyList(),
 ) {
     val isRoot: Boolean
         get() = id == ROOT_ENDPOINT
@@ -52,7 +53,20 @@ fun List<Endpoint>.deviceTypes(): List<DeviceType> =
         .flatMap { it.types }
         .map { NordicMatters.parseDeviceType(it) }
 
-fun List<Endpoint>.deviceType(): DeviceType =
-    deviceTypes()
+private val UTILITY_DEVICE_TYPE_IDS = setOf(0x000EL, 0x0011L, 0x0013L, 0x0016L)
+
+fun List<Endpoint>.deviceType(): DeviceType {
+    val applicationEndpoints = filterNot { it.isRoot }
+    val childIds = applicationEndpoints.flatMap { it.parts }.toSet()
+    val topLevel = applicationEndpoints.filter { it.id !in childIds }.ifEmpty { applicationEndpoints }
+
+    fun List<Endpoint>.firstType(): DeviceType? = asSequence()
+        .flatMap { it.types }
+        .filter { it !in UTILITY_DEVICE_TYPE_IDS }
+        .map { NordicMatters.parseDeviceType(it) }
         .firstOrNull { it != SupportedDeviceType.UNKNOWN.value }
+
+    return topLevel.firstType()
+        ?: applicationEndpoints.firstType()
         ?: SupportedDeviceType.UNKNOWN.value
+}
