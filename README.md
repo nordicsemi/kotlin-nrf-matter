@@ -2,7 +2,7 @@
 
 [![Download on the App Store](assets/AppStore.png)](https://apps.apple.com/app/nrf-matter/id6786253679) [![Get it on Google Play](assets/PlayStore.png)](https://play.google.com/store/apps/details?id=no.nordicsemi.nrf.matter)
 
-This README is also available as interactive documentation: [nordicsemi.github.io/kotlin-nrf-matter](https://nordicsemi.github.io/kotlin-nrf-matter/) 
+This README is also available as an [interactive documentation](https://nordicsemi.github.io/kotlin-nrf-matter/).
 
 nRF Matter for Mobile is a commissioning and control companion app by [Nordic Semiconductor](https://www.nordicsemi.com/) for the [Matter](https://www.nordicsemi.com/Products/Technologies/Matter) protocol. The app is available for Android and iOS. It is built with Kotlin Multiplatform and Compose Multiplatform, with the iOS-specific implementation written in Swift.
 
