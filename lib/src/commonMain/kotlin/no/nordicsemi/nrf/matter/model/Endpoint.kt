@@ -52,7 +52,12 @@ fun List<Endpoint>.deviceTypes(): List<DeviceType> =
         .flatMap { it.types }
         .map { NordicMatters.parseDeviceType(it) }
 
-fun List<Endpoint>.deviceType(): DeviceType =
-    deviceTypes()
-        .firstOrNull { it != SupportedDeviceType.UNKNOWN.value }
+fun List<Endpoint>.deviceType(): DeviceType {
+    val types = deviceTypes().filter { it != SupportedDeviceType.UNKNOWN.value }
+    val custom = NordicMatters.getCustomClusters().values.mapNotNull { it.deviceType }
+    val supported = SupportedDeviceType.entries.map { it.value } - SupportedDeviceType.UNKNOWN.value
+
+    return types.firstOrNull { it in supported || it in custom }
+        ?: types.firstOrNull()
         ?: SupportedDeviceType.UNKNOWN.value
+}
