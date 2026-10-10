@@ -420,3 +420,225 @@ On Android only, since the device is commissioned through Android's Google Play 
 If removing the fabric from the device fails (for example, if the device is offline), a prompt will give you the option to **Force Remove** it. Force-removing deletes the device from the app's repository immediately without waiting to unlink the fabric directly on the device.
 
 **Note:** Force-removing a device only clears the app's own records. The accessory keeps the fabric credentials it was given, so it may need to be factory reset before it can be commissioned again.
+
+## Library
+
+This repository contains also an alpha version library for Compose Multiplatform Matter Library.
+
+The library can be included by adding below line to `commonMain`.
+
+```kotlin
+implementation("no.nordicsemi.nrf.matter:matter-support:0.1.0")
+```
+
+### Commissioning
+Commissioning can be run from the common code like below. Some additional set up must be added per
+platform.
+```kotlin
+val fabric = NordicMatters.defaultFabric
+val state = remember { mutableStateOf<CommissioningScreenState>(CommissioningScreenState.InProgress) }
+
+val commissioningTask = rememberCommissioningTask(
+    fabric = fabric,
+    onSuccess = { deviceId ->
+        fabric.commissionDevice(deviceId)
+    },
+    onError = {
+        // handle error
+    },
+)
+
+LaunchedEffect(commissioningTask) {
+    commissioningTask.startCommissioning()
+}
+```
+#### Android
+
+###### Home API
+You need to add sdk. You may copy mavenLocal directory to your project or follow official Google sources.
+When copying mavenLocal dir add this to your dependencies section in settings.gradle to include it in the project.
+```groovy
+dependencyResolutionManagement {
+    repositories {
+        maven {
+            url = uri("$rootDir/mavenLocal")
+        }
+```
+
+###### Permissions
+You need to request necessary runtime permissions before you can launch commissioning task.
+
+The list of permissions:
+android.permission.ACCESS_FINE_LOCATION
+android.permission.CAMERA
+android.permission.BLUETOOTH_SCAN
+android.permission.BLUETOOTH_CONNECT
+
+#### iOS
+Commissioning happens through app extension which cannot be a part of the library and needs to be configured
+separately.
+Matter extension is in iosApp/iosApp/nrfMatter directory. It can be created using XCode's creator.
+File -> New -> Target... -> choose "Matter extension" from the list.
+Created extension should contain a below record in Info.Plist and one class RequestHandler which code
+needs to be changes.
+```
+<key>NSExtension</key>
+<dict>
+<key>NSExtensionPointIdentifier</key>
+<string>com.apple.matter.support.extension.device-setup</string>
+<key>NSExtensionPrincipalClass</key>
+<string>$(PRODUCT_MODULE_NAME).RequestHandler</string>
+</dict>
+```
+
+Both targets should declare bonjour services that are needed for discovering Matter devices:
+```
+<key>NSBonjourServices</key>
+<array>
+<string>_matter._tcp</string>
+<string>_matterc._udp</string>
+<string>_matterd._udp</string>
+</array>
+```
+
+It requires 2 app groups and 1 shared keychain. All those keys must be declared in both places:
+the main app and the app's extension.
+
+The name of declared app groups can be overridden in Info.plist using the keys below. It is not
+recommended to use the same app group in both cases to avoid the risk of overriding values under
+the same key.
+NordicMatterLocalAppGroup
+NordicMatterSharedAppGroup
+
+The name of shared keychain can be overridden in Info.plist using the key below.
+NordicMatterKeychainGroup
+
+To make library code available in app extension it needs to be exported.
+```groovy
+    listOf(
+        iosArm64(),
+        iosSimulatorArm64()
+    ).forEach { iosTarget ->
+        iosTarget.binaries.framework {
+            baseName = "shared"
+            isStatic = true
+
+            export("no.nordicsemi.nrf.matter:matter-support:<version>")
+        }
+    }
+```
+
+App extension must declare one class. It can be copy pasted from this project. One thing an user may
+consider modifying is the code that selects thread network in function `selectThreadNetwork`.
+```swift
+final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
+
+    private let fabric: Fabric
+
+    override init() {
+        NordicMatters.shared.initializePlatform()
+        fabric = NordicMatters.shared.defaultFabric
+    }
+
+    override func rooms(in home: MatterAddDeviceRequest.Home?) async -> [MatterAddDeviceRequest.Room] {
+        return NordicMatters.shared.rooms()
+            .map { MatterAddDeviceRequest.Room(displayName: $0) }
+    }
+
+    override func commissionDevice(in home: MatterAddDeviceRequest.Home?, onboardingPayload: String, commissioningID: UUID) async throws {
+        try await fabric.commissionDevice(payload: onboardingPayload)
+    }
+
+    override func configureDevice(named name: String, in room: MatterAddDeviceRequest.Room?) async {
+        fabric.finalizeDevice(name: name)
+    }
+
+    override func validateDeviceCredential(_ deviceCredential: MatterAddDeviceExtensionRequestHandler.DeviceCredential) async throws {
+    }
+
+    override func selectWiFiNetwork(from wifiScanResults: [MatterAddDeviceExtensionRequestHandler.WiFiScanResult]) async throws -> MatterAddDeviceExtensionRequestHandler.WiFiNetworkAssociation {
+        return .defaultSystemNetwork
+    }
+
+    override func selectThreadNetwork(from threadScanResults: [MatterAddDeviceExtensionRequestHandler.ThreadScanResult]) async throws -> MatterAddDeviceExtensionRequestHandler.ThreadNetworkAssociation {
+        NordicMatters.shared.logThreadNetworks(
+            names: threadScanResults.map { $0.networkName }
+        )
+
+        return .network(extendedPANID: threadScanResults[0].extendedPANID)
+    }
+}
+```
+
+The main app also needs to declare "Privacy - Local Network Usage Description" to work with Matter
+devices.
+
+### Controlling a Matter device
+
+##### Clusters
+
+Matter device can be controlled using cluster. Cluster declares attributes that can be read 
+or observed and commands for modifying them. 
+
+After commissioning the library read Basic Information Cluster which contains, surprisingly, basic
+information about a device like Name, fw version etc. In the next step, Descriptor Cluster is read
+for every endpoint. Descriptor cluster contains information about server cluster (functionality
+that a device exposes), client clusters (functionalities that a device can consume), and device 
+types which is basically a contract which clusters are mandatory or optional for this particular 
+device type.
+
+All devices belong to a fabric. Now, the library contains only one fabric and can be accessed through
+`NordicMatters.defaultFabric`. 
+After successful commissioning a device will appear on the devices list:
+`NordicMatters.defaultFabric.devices`
+
+When you choose a device which you've just added you can obtain clusters by doing:
+`device.toClusters()`. `Cluster` is just a class that wraps a cluster which has its own unique id.
+It allows for reading, observing attributes and sending commands. 
+```kotlin
+// reading attributes
+readAttribute(attributeId: Long): T
+// oberving attributes
+observeAttribute(attributeId: Long): Flow<T>
+// executing commands
+executeCommand(...)
+```
+
+The library also has a few implementations of clusters defined by Matter standard e.g. on/off 
+cluster. It is a wrapper around Cluster class and provides functionality in more human friendly
+format e.g. `setOn()` and `observeOnOff()`. Under the hood, it still just reads, observes 
+attributes and sends commands.
+
+##### Decommissioning
+
+Decommissioning can be triggered using the below function. It decommssions device by clearing
+necessary data on the Matter device.
+```kotlin
+NordicMatters.defaultFabric.decommissionDevice(deviceId)
+```
+
+If the device is not available, it can be force removed from the local fabric.
+```kotlin
+NordicMatters.defaultFabric.forceRemoveDevice(deviceId)
+```
+
+##### Binding
+
+For binding you need to have 2 devices. One device will be a source e.g. a switch and another will
+be a target e.g. a bulb. For now binding supports only on/off cluster but with little modification
+and in future releases shuould be possible to get any type of cluster.
+
+To get the list of available source device use:
+```kotlin
+NordicMatters.defaultFabric.getBindingSourceDevices()
+```
+
+To get the list of available target devices use:
+```kotlin
+NordicMatters.defaultFabric.getEligibleTargetDevices(sourceDeviceId)
+```
+
+To bind use:
+```kotlin
+NordicMatters.defaultFabric.bindDevices(sourceDeviceId, targetDeviceId)
+```
