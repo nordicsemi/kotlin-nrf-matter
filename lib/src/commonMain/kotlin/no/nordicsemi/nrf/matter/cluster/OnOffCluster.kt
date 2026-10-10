@@ -12,12 +12,10 @@ object OnOffClusterInfo {
 }
 
 class OnOffCluster(
-    override val deviceId: DeviceId,
-    override val endpoint: Int,
+    deviceId: DeviceId,
+    endpoint: Int,
     controller: MatterClient,
-) : Cluster(controller) {
-
-    override val id: Long = OnOffClusterInfo.ID
+) : Cluster(deviceId, endpoint, OnOffClusterInfo.ID, controller) {
 
     /** Turns the device on or off. The OnOff attribute itself is read only, hence the commands. */
     suspend fun setOn(isOn: Boolean) {

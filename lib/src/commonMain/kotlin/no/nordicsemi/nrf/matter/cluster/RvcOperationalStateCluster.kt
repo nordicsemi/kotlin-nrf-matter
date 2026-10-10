@@ -25,12 +25,10 @@ object RvcOperationalStateClusterInfo {
 }
 
 class RvcOperationalStateCluster(
-    override val deviceId: DeviceId,
-    override val endpoint: Int,
+    deviceId: DeviceId,
+    endpoint: Int,
     controller: MatterClient,
-) : Cluster(controller) {
-
-    override val id: Long = RvcOperationalStateClusterInfo.ID
+) : Cluster(deviceId, endpoint, RvcOperationalStateClusterInfo.ID, controller) {
 
     suspend fun pause() = executeCommand(commandId = RvcOperationalStateClusterInfo.Command.PAUSE)
     suspend fun resume() = executeCommand(commandId = RvcOperationalStateClusterInfo.Command.RESUME)

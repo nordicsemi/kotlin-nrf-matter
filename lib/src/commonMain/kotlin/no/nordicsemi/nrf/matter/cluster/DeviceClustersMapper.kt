@@ -10,7 +10,7 @@ fun Device.toClusters(): List<Cluster> {
     val deviceTypes = endpoints.deviceTypes()
 
     return endpoints.flatMap { endpoint ->
-        endpoint.serverClusters.mapNotNull { clusterId ->
+        endpoint.serverClusters.map { clusterId ->
             when (clusterId) {
                 OnOffClusterInfo.ID -> OnOffCluster(deviceId, endpoint.id, client)
                 LevelControlClusterInfo.ID -> LevelControlCluster(deviceId, endpoint.id, client)
@@ -27,6 +27,7 @@ fun Device.toClusters(): List<Cluster> {
                     .takeIf { it?.deviceType in deviceTypes }
                     ?.factory
                     ?.invoke(deviceId, endpoint.id, client)
+                    ?: Cluster(deviceId, endpoint.id, clusterId, client)
             }
         }
     }

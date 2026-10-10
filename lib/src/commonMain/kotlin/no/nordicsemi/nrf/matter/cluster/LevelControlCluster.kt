@@ -16,12 +16,10 @@ object LevelControlClusterInfo {
 }
 
 class LevelControlCluster(
-    override val deviceId: DeviceId,
-    override val endpoint: Int,
+    deviceId: DeviceId,
+    endpoint: Int,
     controller: MatterClient,
-) : Cluster(controller) {
-
-    override val id: Long = LevelControlClusterInfo.ID
+) : Cluster(deviceId, endpoint, LevelControlClusterInfo.ID, controller) {
 
     /**
      * Sets the raw device level.

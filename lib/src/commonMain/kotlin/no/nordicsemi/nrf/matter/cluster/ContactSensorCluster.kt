@@ -12,12 +12,10 @@ object ContactSensorClusterInfo {
 }
 
 class ContactSensorCluster(
-    override val deviceId: DeviceId,
-    override val endpoint: Int,
+    deviceId: DeviceId,
+    endpoint: Int,
     controller: MatterClient,
-) : Cluster(controller) {
-
-    override val id: Long = ContactSensorClusterInfo.ID
+) : Cluster(deviceId, endpoint, ContactSensorClusterInfo.ID, controller) {
 
     fun observeStateValue(): Flow<Boolean> = observeAttribute(ContactSensorClusterInfo.Attribute.STATE_VALUE)
 }

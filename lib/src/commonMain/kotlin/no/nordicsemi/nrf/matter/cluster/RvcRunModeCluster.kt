@@ -17,12 +17,10 @@ object RvcRunModeClusterInfo {
 }
 
 class RvcRunModeCluster(
-    override val deviceId: DeviceId,
-    override val endpoint: Int,
+    deviceId: DeviceId,
+    endpoint: Int,
     controller: MatterClient,
-) : Cluster(controller) {
-
-    override val id: Long = RvcRunModeClusterInfo.ID
+) : Cluster(deviceId, endpoint, RvcRunModeClusterInfo.ID, controller) {
 
     suspend fun changeToMode(mode: Int) {
         executeCommand(commandId = RvcRunModeClusterInfo.Command.CHANGE_TO_MODE, value = mode.toUByte())

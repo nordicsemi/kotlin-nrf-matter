@@ -17,12 +17,10 @@ object DoorLockClusterInfo {
 }
 
 class DoorLockCluster(
-    override val deviceId: DeviceId,
-    override val endpoint: Int,
+    deviceId: DeviceId,
+    endpoint: Int,
     controller: MatterClient,
-) : Cluster(controller) {
-
-    override val id: Long = DoorLockClusterInfo.ID
+) : Cluster(deviceId, endpoint, DoorLockClusterInfo.ID, controller) {
 
     /**
      * Locks or unlocks the door. The optional PIN code field is never sent.

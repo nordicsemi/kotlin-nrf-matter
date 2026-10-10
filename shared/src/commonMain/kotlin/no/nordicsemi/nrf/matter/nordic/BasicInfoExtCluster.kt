@@ -19,12 +19,10 @@ object BasicInfoExtClusterInfo {
 }
 
 class BasicInfoExtCluster(
-    override val deviceId: DeviceId,
-    override val endpoint: Int,
+    deviceId: DeviceId,
+    endpoint: Int,
     controller: MatterClient,
-) : Cluster(controller) {
-
-    override val id: Long = BasicInfoExtClusterInfo.ID
+) : Cluster(deviceId, endpoint, BasicInfoExtClusterInfo.ID, controller) {
 
     suspend fun generateRandomNumber(): Long {
         executeCommand(commandId = BasicInfoExtClusterInfo.Command.GENERATE_RANDOM_NUMBER)
