@@ -1,4 +1,4 @@
-# nRF Matter for Mobile + Matter CMM library
+# nRF Matter for Mobile + Matter KMM library
 
 [![Download on the App Store](assets/AppStore.png)](https://apps.apple.com/app/nrf-matter/id6786253679) [![Get it on Google Play](assets/PlayStore.png)](https://play.google.com/store/apps/details?id=no.nordicsemi.nrf.matter)
 
@@ -12,9 +12,9 @@ For Matter developer documentation from Nordic Semiconductor, see the [nRF Conne
 
 ---
 
-**Contents:** [CMM library](#library) · [Features](#features) · [Minimum OS Requirements](#minimum-os-requirements) · [Supported Matter device types](#supported-matter-device-types) · [Working with the app](#working-with-the-app)
+**Contents:** [KMM Library](#kmm-library) · [Features](#features) · [Minimum OS Requirements](#minimum-os-requirements) · [Supported Matter device types](#supported-matter-device-types) · [Working with the app](#working-with-the-app)
 
-## Library
+## KMM Library
 
 This repository also contains an alpha version of a Compose Multiplatform Matter library.
 
