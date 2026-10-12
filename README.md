@@ -444,7 +444,6 @@ Commissioning can be started from common code, as shown below. Some additional s
 platform.
 ```kotlin
 val fabric = NordicMatters.defaultFabric
-val state = remember { mutableStateOf<CommissioningScreenState>(CommissioningScreenState.InProgress) }
 
 val commissioningTask = rememberCommissioningTask(
     fabric = fabric,
@@ -505,7 +504,7 @@ This repository's extension lives in the `iosApp/nrfMatter` directory and can se
                baseName = "shared"
                isStatic = true
 
-               export("no.nordicsemi.nrf.matter:matter-support:0.1.0")
+               export("no.nordicsemi.nrf.matter:matter-support:<version>")
            }
        }
    ```
@@ -597,7 +596,7 @@ The following must be configured in **both** the main app and the extension.
    </array>
    ```
 2. Declare two app groups in the target's *Signing & Capabilities* and set their names in `Info.plist`
-   using the keys below. Using the same app group for both is not recommended, as the two would
+   using the keys below. Using the same app group for both is not recommended, as the two could
    overwrite each other's values under the same keys.
    - `NordicMatterLocalAppGroup`
    - `NordicMatterSharedAppGroup`
@@ -626,7 +625,7 @@ val devices: Flow<List<Device>> = NordicMatters.defaultFabric.devices
 ```
 
 Given a device, its clusters are obtained with `device.toClusters()`. `Cluster` wraps a single Matter
-cluster, identified by its unique id, and exposes the following operations to its subclasses:
+cluster, identified by its unique id, and exposes the following operations:
 ```kotlin
 // reading attributes 
 suspend fun <T> readAttribute(attributeId: Long): T
