@@ -1,8 +1,9 @@
-# nRF Matter for Mobile
+# nRF Matter for Mobile + Matter CMM library
 
 [![Download on the App Store](assets/AppStore.png)](https://apps.apple.com/app/nrf-matter/id6786253679) [![Get it on Google Play](assets/PlayStore.png)](https://play.google.com/store/apps/details?id=no.nordicsemi.nrf.matter)
 
 This README is also available as an [interactive documentation](https://nordicsemi.github.io/kotlin-nrf-matter/).
+The app is accompanied by a [KMM library](#library) designed to simplify Matter integration in Compose Multiplatform projects.
 
 nRF Matter for Mobile is a commissioning and control companion app by [Nordic Semiconductor](https://www.nordicsemi.com/) for the [Matter](https://www.nordicsemi.com/Products/Technologies/Matter) protocol. The app is available for Android and iOS. It is built with Kotlin Multiplatform and Compose Multiplatform, with the iOS-specific implementation written in Swift.
 
@@ -431,11 +432,11 @@ Add the following line to the `commonMain` dependencies to include it:
 api("no.nordicsemi.nrf.matter:matter-support:0.1.0")
 ```
 
-Use `api` rather than `implementation`: the iOS setup described below exports the library from the
+Use `api` rather than `implementation`. The iOS setup described below exports the library from the
 shared framework, and only `api` dependencies can be exported.
 
-On Android the library initializes itself through `androidx.startup`, so no setup code is needed.
-On iOS you must call `NordicMatters.shared.initializePlatform()` before using any other API — in
+On Android the library initializes itself through `androidx.startup.InitializationProvider`, so no setup code is needed.
+On iOS you must call `NordicMatters.shared.initializePlatform()` before using any other API, in
 both the main app and the Matter extension.
 
 ### Commissioning
@@ -455,8 +456,8 @@ val commissioningTask = rememberCommissioningTask(
     },
 )
 
-LaunchedEffect(commissioningTask) {
-    commissioningTask.startCommissioning()
+Button(onClick = { commissioningTask.startCommissioning() }) {
+    Text("Commission a new device")
 }
 ```
 #### Android
@@ -494,8 +495,7 @@ has to be configured separately in your own project.
 This repository's extension lives in the `iosApp/nrfMatter` directory and can serve as a reference.
 To create your own, use Xcode: *File -> New -> Target...* and choose "Matter extension" from the list.
 
-The extension needs the entry below in its `Info.plist`, plus a single `RequestHandler` class
-(described further down).
+The extension needs the entries below in its `Info.plist`, plus a single `RequestHandler` class.
 ```xml
 <key>NSExtension</key>
 <dict>
@@ -529,7 +529,7 @@ The shared keychain name can be overridden in `Info.plist` using the key below.
 
 - `NordicMatterKeychainGroup`
 
-To make the library code available to the app extension, export it from the shared framework in your
+To make the library code available to the app extension, export it from the ":shared" module in your
 `build.gradle.kts`:
 ```kotlin
     listOf(
@@ -615,8 +615,8 @@ devices.
 A Matter device is controlled through its clusters. A cluster declares attributes that can be read or
 observed, and commands that modify them.
 
-After commissioning, the library reads the Basic Information cluster, which contains — unsurprisingly
-— basic information about the device, such as its name and firmware version. It then reads the
+After commissioning, the library reads the Basic Information cluster, which contains, unsurprisingly,
+basic information about the device, such as its name and firmware version. It then reads the
 Descriptor cluster of every endpoint. The Descriptor cluster lists the server clusters (functionality
 the device exposes), the client clusters (functionality the device can consume), and the device types,
 which define which clusters are mandatory or optional for that particular device type.
@@ -631,21 +631,20 @@ val devices: Flow<List<Device>> = NordicMatters.defaultFabric.devices
 Given a device, its clusters are obtained with `device.toClusters()`. `Cluster` wraps a single Matter
 cluster, identified by its unique id, and exposes the following operations to its subclasses:
 ```kotlin
-// reading attributes
-protected suspend fun <T> readAttribute(attributeId: Long): T
+// reading attributes 
+suspend fun <T> readAttribute(attributeId: Long): T
 // observing attributes
-protected fun <T> observeAttribute(attributeId: Long): Flow<T>
+fun <T> observeAttribute(attributeId: Long): Flow<T>
 // executing commands
-protected suspend fun executeCommand(
+suspend fun executeCommand(
     commandId: Long,
     value: Any? = null,
     timedInvokeTimeoutMs: Int? = null,
 )
 ```
 
-These members are `protected`, so they are used when implementing a cluster rather than called
-directly. The library ships implementations of several standard Matter clusters — for example the
-On/Off cluster — which wrap `Cluster` and expose the same functionality in a friendlier form, such as
+The library ships implementations of several standard Matter clusters, for example the
+On/Off cluster, which wrap `Cluster` and expose the same functionality in a friendlier form, such as
 `setOn()` and `observeOnOff()`. Under the hood they still only read attributes, observe attributes and
 send commands. Custom clusters can be registered with `NordicMatters.registerCustomCluster(...)`.
 
@@ -666,7 +665,7 @@ NordicMatters.defaultFabric.forceRemoveDevice(deviceId)
 #### Binding
 
 Binding requires two devices: a source, such as a switch, and a target, such as a bulb. Binding
-currently supports only the On/Off cluster; support for other cluster types is planned for a future
+currently supports only the On/Off cluster. Support for binding of any cluster type is planned for a future
 release.
 
 To get the devices that can act as a source:
