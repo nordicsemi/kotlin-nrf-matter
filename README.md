@@ -587,6 +587,24 @@ final class RequestHandler: MatterAddDeviceExtensionRequestHandler {
 }
 ```
 
+The extension links against the shared framework, so it must build it. In Xcode, select the extension
+target, open *Build Phases*, and add a *Run Script Phase* named "Compile Kotlin Framework" (the same
+script as in the main app target), placed before "Compile Sources".
+
+In the main app, call `NordicMatters.shared.initializePlatform()` before using any other library API,
+for example in the `App` initializer:
+```swift
+@main
+struct iOSApp: App {
+
+    init() {
+        NordicMatters.shared.initializePlatform()
+    }
+
+    // ...
+}
+```
+
 The main app also needs to declare "Privacy - Local Network Usage Description" to work with Matter
 devices.
 
