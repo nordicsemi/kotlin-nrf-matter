@@ -485,6 +485,7 @@ be granted before a commissioning task can be started:
 - `android.permission.CAMERA`
 - `android.permission.BLUETOOTH_SCAN`
 - `android.permission.BLUETOOTH_CONNECT`
+- `android.permission.ACCESS_LOCAL_NETWORK`
 
 #### iOS
 On iOS, commissioning runs inside an app extension. The extension cannot be part of the library and
