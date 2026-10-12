@@ -429,7 +429,7 @@ This repository also contains an alpha version of a Compose Multiplatform Matter
 Add the following line to the `commonMain` dependencies to include it:
 
 ```kotlin
-api("no.nordicsemi.nrf.matter:matter-support:0.1.0")
+api("no.nordicsemi.nrf.matter:matter-support:0.1.1")
 ```
 
 Use `api` rather than `implementation`. The iOS setup described below exports the library from the
