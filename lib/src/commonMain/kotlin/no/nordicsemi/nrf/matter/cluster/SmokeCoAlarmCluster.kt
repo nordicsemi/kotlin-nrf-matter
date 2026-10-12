@@ -23,12 +23,10 @@ object SmokeCoAlarmClusterInfo {
 }
 
 class SmokeCoAlarmCluster(
-    override val deviceId: DeviceId,
-    override val endpoint: Int,
+    deviceId: DeviceId,
+    endpoint: Int,
     controller: MatterClient,
-) : Cluster(controller) {
-
-    override val id: Long = SmokeCoAlarmClusterInfo.ID
+) : Cluster(deviceId, endpoint, SmokeCoAlarmClusterInfo.ID, controller) {
 
     /** Emits the raw ExpressedState value, see [no.nordicsemi.nrf.matter.model.ExpressedState]. */
     fun observeExpressedState(): Flow<Number> = observeAttribute(SmokeCoAlarmClusterInfo.Attribute.EXPRESSED_STATE)

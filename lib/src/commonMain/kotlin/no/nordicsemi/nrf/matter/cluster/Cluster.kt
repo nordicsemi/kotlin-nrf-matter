@@ -3,19 +3,20 @@ package no.nordicsemi.nrf.matter.cluster
 import kotlinx.coroutines.flow.Flow
 import no.nordicsemi.nrf.matter.model.DeviceId
 
-abstract class Cluster(protected val controller: MatterClient) {
+open class Cluster(
+    val deviceId: DeviceId,
+    val endpoint: Int,
+    val id: Long,
+    protected val controller: MatterClient,
+) {
 
-    abstract val deviceId: DeviceId
-    abstract val endpoint: Int
-    abstract val id: Long
-
-    protected suspend fun <T> readAttribute(attributeId: Long): T =
+    suspend fun <T> readAttribute(attributeId: Long): T =
         controller.readAttribute(deviceId, endpoint, id, attributeId)
 
-    protected fun <T> observeAttribute(attributeId: Long): Flow<T> =
+    fun <T> observeAttribute(attributeId: Long): Flow<T> =
         controller.observeAttribute(deviceId, endpoint, id, attributeId)
 
-    protected suspend fun executeCommand(
+    suspend fun executeCommand(
         commandId: Long,
         value: Any? = null,
         timedInvokeTimeoutMs: Int? = null,

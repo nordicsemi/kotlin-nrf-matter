@@ -22,12 +22,9 @@ object BasicInfoClusterInfo {
 }
 
 class BasicInformationCluster(
-    override val deviceId: DeviceId,
+    deviceId: DeviceId,
     controller: MatterClient,
-) : Cluster(controller) {
-
-    override val id: Long = BasicInfoClusterInfo.ID
-    override val endpoint = ROOT_ENDPOINT
+) : Cluster(deviceId, ROOT_ENDPOINT, BasicInfoClusterInfo.ID, controller) {
 
     suspend fun read(): BasicInformation = BasicInformation(
         vendorName = readVendorName(),

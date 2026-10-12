@@ -12,12 +12,10 @@ object TemperatureMeasurementClusterInfo {
 }
 
 class TemperatureMeasurementCluster(
-    override val deviceId: DeviceId,
-    override val endpoint: Int,
+    deviceId: DeviceId,
+    endpoint: Int,
     controller: MatterClient,
-) : Cluster(controller) {
-
-    override val id: Long = TemperatureMeasurementClusterInfo.ID
+) : Cluster(deviceId, endpoint, TemperatureMeasurementClusterInfo.ID, controller) {
 
     fun observeMeasuredValue(): Flow<Number> = observeAttribute(TemperatureMeasurementClusterInfo.Attribute.MEASURED_VALUE)
 }

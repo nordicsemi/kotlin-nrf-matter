@@ -21,12 +21,10 @@ object DescriptorClusterInfo {
 }
 
 class DescriptorCluster(
-    override val deviceId: DeviceId,
-    override val endpoint: Int,
+    deviceId: DeviceId,
+    endpoint: Int,
     controller: MatterClient,
-) : Cluster(controller) {
-
-    override val id: Long = DescriptorClusterInfo.ID
+) : Cluster(deviceId, endpoint, DescriptorClusterInfo.ID, controller) {
 
     suspend fun endpoints(): List<Endpoint> {
         val collected = mutableListOf<Endpoint>()

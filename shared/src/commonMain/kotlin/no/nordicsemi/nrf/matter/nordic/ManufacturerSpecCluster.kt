@@ -20,12 +20,10 @@ object ManufacturerSpecClusterInfo {
 }
 
 class ManufacturerSpecCluster(
-    override val deviceId: DeviceId,
-    override val endpoint: Int,
+    deviceId: DeviceId,
+    endpoint: Int,
     controller: MatterClient,
-) : Cluster(controller) {
-
-    override val id: Long = ManufacturerSpecClusterInfo.ID
+) : Cluster(deviceId, endpoint, ManufacturerSpecClusterInfo.ID, controller) {
 
     suspend fun setLed(isOn: Boolean) {
         executeCommand(
