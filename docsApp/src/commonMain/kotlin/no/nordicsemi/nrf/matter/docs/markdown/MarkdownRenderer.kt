@@ -67,22 +67,7 @@ fun MdBlockView(block: MdBlock, onLinkClick: (String) -> Unit) {
 
         is MdBlock.Paragraph -> InlineText(block.spans, onLinkClick)
 
-        is MdBlock.CodeBlock -> {
-            Surface(
-                color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    text = block.code,
-                    fontFamily = FontFamily.Monospace,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier
-                        .horizontalScroll(rememberScrollState())
-                        .padding(12.dp),
-                )
-            }
-        }
+        is MdBlock.CodeBlock -> CodeBlockView(block)
 
         is MdBlock.Table -> TableView(block, onLinkClick)
 
@@ -111,6 +96,24 @@ fun MdBlockView(block: MdBlock, onLinkClick: (String) -> Unit) {
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun CodeBlockView(block: MdBlock.CodeBlock, modifier: Modifier = Modifier) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerHighest,
+        shape = RoundedCornerShape(8.dp),
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Text(
+            text = block.code,
+            fontFamily = FontFamily.Monospace,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier
+                .horizontalScroll(rememberScrollState())
+                .padding(12.dp),
+        )
     }
 }
 
@@ -185,10 +188,14 @@ private fun ListBlockView(list: MdBlock.ListBlock, onLinkClick: (String) -> Unit
                 )
                 Column {
                     InlineText(item.spans, onLinkClick)
+                    item.code.forEach { CodeBlockView(it, Modifier.padding(top = 6.dp)) }
                     item.subItems.forEach { sub ->
                         Row(modifier = Modifier.padding(top = 4.dp)) {
                             Text(text = "◦", modifier = Modifier.width(24.dp))
-                            InlineText(sub.spans, onLinkClick)
+                            Column {
+                                InlineText(sub.spans, onLinkClick)
+                                sub.code.forEach { CodeBlockView(it, Modifier.padding(top = 6.dp)) }
+                            }
                         }
                     }
                 }
