@@ -73,7 +73,7 @@ card provides quick access to essential device details and controls:
 
 The app includes dedicated control interfaces for standard Matter device types, including
 Dimmable and Color Lights, Outlets, Light Switches, Door Locks, Contact Sensors, Temperature
-Sensors, Smoke/CO Alarms, and Robotic Vacuum Cleaners. Additionally, the app supports Nordic Manufacturer-Specific
+Sensors, Smoke/CO Alarms, Thermostats, and Robotic Vacuum Cleaners. Additionally, the app supports Nordic Manufacturer-Specific
 Clusters, allowing developers to interact with custom attributes and commands on proprietary
 accessories. Any device type not explicitly implemented by the app is categorized as an
 Unsupported Device Type, where essential metadata (such as Product Name, Vendor ID, and Product
@@ -83,18 +83,19 @@ Which controls a card shows is driven by the clusters the accessory actually exp
 declared device type — for example, any device that exposes the On/Off cluster gets the on/off
 toggle, regardless of its device type.
 
-| Device type                  | Matter device type ID | Controls available in the app                                                   |
-|------------------------------|-----------------------|---------------------------------------------------------------------------------|
-| On/off light                 | `0x0100`              | On/off switch, **Brightness Control** slider (if Level Control is also present) |
-| Dimmable light               | `0x0101`              | On/off switch, **Brightness Control** slider                                    |
-| Door lock                    | `0x000A`              | Lock/unlock control                                                             |
-| Light switch                 | `0x0103`              | None — the switch is a client node and is configured on the **Bindings** screen | 
-| Contact sensor               | `0x0015`              | Read-only **Contact detected** / **Contact not detected** indicator             |
-| Temperature sensor           | `0x0302`              | Read-only temperature reading                                                   |
-| Robotic vacuum cleaner       | `0x0074`              | Pause/resume, **Go home**, and **Run mode** / **Clean mode** pickers            |
-| Smoke/CO alarm               | `0x0076`              | Device status, mute state, **Smoke** / **CO** alarm levels, **Run self-test** button |
-| Manufacturer-specific device | `0xFFF10001`          | **Generate number** button, **LED** switch, button state indicator              | 
-| Any other device type        | —                     | None — reported as unsupported                                                  |
+| Device type                  | Matter device type ID | Controls available in the app                                                                                |
+|------------------------------|-----------------------|--------------------------------------------------------------------------------------------------------------|
+| On/off light                 | `0x0100`              | On/off switch, **Brightness Control** slider (if Level Control is also present)                              |
+| Dimmable light               | `0x0101`              | On/off switch, **Brightness Control** slider                                                                 |
+| Door lock                    | `0x000A`              | Lock/unlock control                                                                                          |
+| Light switch                 | `0x0103`              | None — the switch is a client node and is configured on the **Bindings** screen                              | 
+| Contact sensor               | `0x0015`              | Read-only **Contact detected** / **Contact not detected** indicator                                          |
+| Temperature sensor           | `0x0302`              | Read-only temperature reading                                                                                |
+| Robotic vacuum cleaner       | `0x0074`              | Pause/resume, **Go home**, and **Run mode** / **Clean mode** pickers                                         |
+| Smoke/CO alarm               | `0x0076`              | Device status, mute state, **Smoke** / **CO** alarm levels, **Run self-test** button                         |
+| Thermostat                   | `0x0301`              | **System mode** selector, **Heating** / **Cooling** setpoint steppers, local temperature, supported features |
+| Manufacturer-specific device | `0xFFF10001`          | **Generate number** button, **LED** switch, button state indicator                                           | 
+| Any other device type        | —                     | None — reported as unsupported                                                                               |
 
 Regardless of the device type, every card provides the **Matter Device information** and
 **Endpoints & Clusters** sheets, and the **Remove/Decommission Device** button.
@@ -220,6 +221,22 @@ app subscribes to the alarm's attributes, so the card follows changes made exter
 * Run self-test — The app sends the **Self Test Request** command to the Smoke CO Alarm cluster
   (`0x005C`). The button shows **Testing...** while the Test In Progress attribute is set, and an
   error is displayed if the request fails.
+
+### Thermostats
+
+Once a Thermostat is commissioned, its card shows the local temperature and the current system mode.
+Expanding the card reveals the thermostat controls. The app reads the Thermostat cluster (`0x0201`)
+Feature Map and only offers the controls the device supports.
+
+### Thermostat controls
+
+* System mode — A segmented control that writes the System Mode attribute. **Off** is always
+  offered; **Auto**, **Cool** and **Heat** appear when the Auto, Cooling and Heating features are
+  supported.
+* Heating / Cooling setpoint — Plus and minus buttons that change the Occupied Heating or Cooling
+  Setpoint attribute in 0.5 °C steps. Shown only with the Heating or Cooling feature.
+* Local temperature — The Local Temperature attribute, updated live.
+* Supported features — The features reported by the Feature Map (for example Heating, Cooling, Auto).
 
 ### Manufacturer-specific device
 
