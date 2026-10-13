@@ -30,7 +30,8 @@ fun Device.toIcon(isActive: Boolean): Painter = when (deviceType) {
     SupportedDeviceType.OUTLET.value -> painterResource(Res.drawable.smart_outlet)
     SupportedDeviceType.LIGHT_SWITCH.value -> painterResource(Res.drawable.power_settings)
     SupportedDeviceType.CONTACT_SENSOR.value -> painterResource(Res.drawable.contact_sensor)
-    SupportedDeviceType.TEMPERATURE_SENSOR.value -> painterResource(Res.drawable.temperature)
+    SupportedDeviceType.TEMPERATURE_SENSOR.value,
+    SupportedDeviceType.THERMOSTAT.value -> painterResource(Res.drawable.temperature)
     SupportedDeviceType.ROBOTIC_VACUUM_CLEANER.value -> rememberVectorPainter(Icons.Outlined.CleaningServices)
     SupportedDeviceType.SMOKE_CO_ALARM.value -> painterResource(Res.drawable.smoke_co_alarm)
     else -> painterResource(Res.drawable.light_bulb)
@@ -60,6 +61,7 @@ private fun DeviceType.toSubtitle(): String = when (this) {
     SupportedDeviceType.TEMPERATURE_SENSOR.value -> "Measures temperature"
     SupportedDeviceType.ROBOTIC_VACUUM_CLEANER.value -> "Robot vacuum cleaner"
     SupportedDeviceType.SMOKE_CO_ALARM.value -> "Detects smoke and carbon monoxide"
+    SupportedDeviceType.THERMOSTAT.value -> "Controls heating and cooling"
 
     else -> "Unsupported device type."
 }

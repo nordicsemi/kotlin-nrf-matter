@@ -81,6 +81,9 @@ import no.nordicsemi.nrf.matter.ui.smokecoalarm.SmokeCoAlarmControlItem
 import no.nordicsemi.nrf.matter.ui.smokecoalarm.SmokeCoAlarmController
 import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorActionItem
 import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorController
+import no.nordicsemi.nrf.matter.ui.thermostat.ThermostatActionItem
+import no.nordicsemi.nrf.matter.ui.thermostat.ThermostatControlItem
+import no.nordicsemi.nrf.matter.ui.thermostat.ThermostatController
 import no.nordicsemi.nrf.matter.events.AppEvent
 import no.nordicsemi.nrf.matter.events.AppEvents
 
@@ -98,6 +101,7 @@ internal fun DeviceItem(
     val contactSensor = clusters.filterIsInstance<ContactSensorController>().firstOrNull()
     val temperatureSensor = clusters.filterIsInstance<TemperatureSensorController>().firstOrNull()
     val smokeCoAlarm = clusters.filterIsInstance<SmokeCoAlarmController>().firstOrNull()
+    val thermostat = clusters.filterIsInstance<ThermostatController>().firstOrNull()
     val rvcOperationalState = clusters.filterIsInstance<RvcOperationalStateController>().firstOrNull()
     val rvcRunMode = clusters.filterIsInstance<RvcRunModeController>().firstOrNull()
     val rvcCleanMode = clusters.filterIsInstance<RvcCleanModeController>().firstOrNull()
@@ -110,6 +114,7 @@ internal fun DeviceItem(
     val rvcOperationalStateValue = rvcOperationalState?.state?.collectAsStateWithLifecycle()?.value
     val rvcRunModeValue = rvcRunMode?.state?.collectAsStateWithLifecycle()?.value
     val smokeCoAlarmState = smokeCoAlarm?.state?.collectAsStateWithLifecycle()?.value
+    val thermostatState = thermostat?.state?.collectAsStateWithLifecycle()?.value
 
     // The lock keeps its last known state while it is moving, so that the label does not flicker.
     var isLocked by remember { mutableStateOf(false) }
@@ -122,13 +127,14 @@ internal fun DeviceItem(
     val isVacuumPaused = vacuumState == RvcOperationalState.PAUSED
     val isActive = onOffState?.isOn == true || isLocked || isVacuumRunning
     val isIconLit = isActive || contactSensorState?.isContactDetected == true ||
-            smokeCoAlarmState?.isAlarmActive == true
+            smokeCoAlarmState?.isAlarmActive == true || thermostatState?.isActive == true
     val hasLock = doorLock != null && lockState != null
     val hasOnOff = onOff != null && onOffState != null
     val hasContact = contactSensor != null && contactSensorState != null
     val hasTemperature = temperatureSensor != null && temperatureSensorState != null
     val hasRvc = rvcOperationalState != null && rvcOperationalStateValue != null
     val hasSmoke = smokeCoAlarm != null && smokeCoAlarmState != null
+    val hasThermostat = thermostat != null && thermostatState != null
     val headerAction = when {
         hasLock -> HeaderAction.LOCK
         hasOnOff -> HeaderAction.ON_OFF
@@ -136,6 +142,7 @@ internal fun DeviceItem(
         hasTemperature -> HeaderAction.TEMPERATURE
         hasRvc -> HeaderAction.RVC
         hasSmoke -> HeaderAction.SMOKE
+        hasThermostat -> HeaderAction.THERMOSTAT
         else -> null
     }
     var isExpanded by rememberSaveable { mutableStateOf(false) }
@@ -168,6 +175,8 @@ internal fun DeviceItem(
                 if (it.isContactDetected) "Contact detected" else "Contact not detected"
             } ?: smokeCoAlarmState?.let {
                 if (it.isAlarmActive) "Alarm active" else "No alarm"
+            } ?: thermostatState?.let {
+                "Mode: ${it.systemMode.label}"
             } ?: device.toSubtitle(),
             bindingCapable = device.isBindingSource() != null,
             spinning = isVacuumRunning,
@@ -208,6 +217,10 @@ internal fun DeviceItem(
 
                 smokeCoAlarm != null && smokeCoAlarmState != null -> SmokeCoAlarmActionItem(
                     isAlarmActive = smokeCoAlarmState.isAlarmActive,
+                )
+
+                thermostat != null && thermostatState != null -> ThermostatActionItem(
+                    localTemperatureCelsius = thermostatState.localTemperatureCelsius,
                 )
 
                 else -> Icon(
@@ -275,10 +288,17 @@ internal fun DeviceItem(
                     }
                 }
 
+                if (hasThermostat && headerAction != HeaderAction.THERMOSTAT) {
+                    ExpandedActionRow("Thermostat") {
+                        ThermostatActionItem(localTemperatureCelsius = thermostatState.localTemperatureCelsius)
+                    }
+                }
+
                 levelControl?.let { BrightnessControl(it, device.deviceId) }
                 basicInfoExt?.let { RandomNumberControl(it) }
                 manufacturerSpec?.let { LedAndButtonControl(it) }
                 smokeCoAlarm?.let { SmokeCoAlarmControl(it) }
+                thermostat?.let { ThermostatControl(it) }
 
                 if (rvcOperationalState != null || rvcRunMode != null || rvcCleanMode != null) {
                     RvcControlPanel(rvcOperationalState, rvcRunMode, rvcCleanMode)
@@ -307,7 +327,7 @@ internal fun DeviceItem(
     }
 }
 
-private enum class HeaderAction { LOCK, ON_OFF, CONTACT, TEMPERATURE, RVC, SMOKE }
+private enum class HeaderAction { LOCK, ON_OFF, CONTACT, TEMPERATURE, RVC, SMOKE, THERMOSTAT }
 
 @Composable
 private fun ExpandedActionRow(label: String, action: @Composable () -> Unit) {
@@ -363,6 +383,19 @@ private fun SmokeCoAlarmControl(controller: SmokeCoAlarmController) {
         state = state,
         selfTestState = selfTestState,
         onRunSelfTest = controller::runSelfTest,
+        modifier = Modifier.padding(16.dp),
+    )
+}
+
+@Composable
+private fun ThermostatControl(controller: ThermostatController) {
+    val state by controller.state.collectAsStateWithLifecycle()
+
+    ThermostatControlItem(
+        state = state,
+        onSystemModeChange = controller::setSystemMode,
+        onHeatingSetpointChange = controller::adjustHeatingSetpoint,
+        onCoolingSetpointChange = controller::adjustCoolingSetpoint,
         modifier = Modifier.padding(16.dp),
     )
 }
