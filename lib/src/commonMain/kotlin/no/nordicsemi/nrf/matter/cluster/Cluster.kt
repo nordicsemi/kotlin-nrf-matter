@@ -16,6 +16,10 @@ open class Cluster(
     fun <T> observeAttribute(attributeId: Long): Flow<T> =
         controller.observeAttribute(deviceId, endpoint, id, attributeId)
 
+    suspend fun <T> writeAttribute(attributeId: Long, value: T) {
+        controller.setAttribute(value, deviceId, endpoint, id, attributeId)
+    }
+
     suspend fun executeCommand(
         commandId: Long,
         value: Any? = null,
