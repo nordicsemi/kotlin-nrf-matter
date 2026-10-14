@@ -23,6 +23,7 @@ Matter Virtual Device application:
 - Contact Sensor
 - Temperature Sensor
 - Robotic Vacuum Cleaner
+- Thermostat
 
 To explore and test additional device types, a compatible Nordic development kit is required.
 

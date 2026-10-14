@@ -33,7 +33,7 @@ library, published as `no.nordicsemi.nrf.matter:matter-support`, in the usual so
 
 [`/shared`](https://github.com/nordicsemi/kotlin-nrf-matter/tree/main/shared) is the Compose
 Multiplatform UI: screens for the dashboard, commissioning, bindings, and logs, per-device-type
-controllers (locks, lights, switches, contact and temperature sensors, the robotic vacuum cleaner
+controllers (locks, lights, switches, contact and temperature sensors, thermostats, the robotic vacuum cleaner
 controls), the theme, navigation, and the view models and Koin bindings behind them. It
 `api` exports `:lib`, so it is also the iOS framework the Xcode project consumes. Swift needs a
 single `import shared` to reach the whole Kotlin surface. Both Xcode targets build it through a

@@ -51,7 +51,8 @@ Once commissioned, your accessory is added to the home dashboard as a dedicated 
 card provides quick access to essential device details and controls:
 
 * Quick Controls: Directly operate primary actions such as toggling an On/Off light, controlling a
-  door lock, or triggering a custom manufacturer command and Remove/Decommission device.
+  door lock, reading a thermostat's local temperature, or triggering a custom manufacturer command
+  and Remove/Decommission device.
 * Device Status: View the device name, type, and current connection state.
 * Detailed View: Tap the card to open the complete device view, where you can inspect device
   metadata read directly from the accessory's Basic Information cluster (`0x0028`).
@@ -224,9 +225,11 @@ app subscribes to the alarm's attributes, so the card follows changes made exter
 
 ### Thermostats
 
-Once a Thermostat is commissioned, its card shows the local temperature and the current system mode.
-Expanding the card reveals the thermostat controls. The app reads the Thermostat cluster (`0x0201`)
-Feature Map and only offers the controls the device supports.
+Once a Thermostat is commissioned, its card shows the local temperature in the header and the
+current system mode. If the device doesn't expose its local temperature, an expand arrow is shown
+instead. Expanding the card reveals the thermostat controls. The app reads the Thermostat cluster
+(`0x0201`) Feature Map and only offers the controls the device supports. The app subscribes to the
+thermostat's attributes, so the card follows changes made externally.
 
 ### Thermostat controls
 
@@ -234,8 +237,11 @@ Feature Map and only offers the controls the device supports.
   offered; **Auto**, **Cool** and **Heat** appear when the Auto, Cooling and Heating features are
   supported.
 * Heating / Cooling setpoint — Plus and minus buttons that change the Occupied Heating or Cooling
-  Setpoint attribute in 0.5 °C steps. Shown only with the Heating or Cooling feature.
-* Local temperature — The Local Temperature attribute, updated live.
+  Setpoint attribute in 0.5 °C steps, limited to 7–35 °C. The new value is shown immediately and
+  corrected by the subscription if the device rejects it. The Heating setpoint is shown only with
+  the Heating feature, and the Cooling setpoint only with the Cooling feature.
+* Local temperature — The Local Temperature attribute, updated live. Hidden when the device reports
+  the Local Temperature Not Exposed feature.
 * Supported features — The features reported by the Feature Map (for example Heating, Cooling, Auto).
 
 ### Manufacturer-specific device
