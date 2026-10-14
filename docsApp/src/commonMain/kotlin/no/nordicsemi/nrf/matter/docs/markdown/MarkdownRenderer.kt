@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -41,14 +42,21 @@ import docs.shared.generated.resources.Res
 import docs.shared.generated.resources.allDrawableResources
 import org.jetbrains.compose.resources.painterResource
 
+private val MAX_CONTENT_WIDTH = 720.dp
+
 @Composable
 fun MarkdownContent(
     blocks: List<MdBlock>,
     onLinkClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        blocks.forEach { block -> MdBlockView(block, onLinkClick) }
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            modifier = Modifier.widthIn(max = MAX_CONTENT_WIDTH),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            blocks.forEach { block -> MdBlockView(block, onLinkClick) }
+        }
     }
 }
 
