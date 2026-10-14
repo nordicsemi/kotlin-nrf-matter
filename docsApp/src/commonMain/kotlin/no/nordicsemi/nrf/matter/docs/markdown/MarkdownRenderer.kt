@@ -7,7 +7,9 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -25,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.isSpecified
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
@@ -241,13 +244,17 @@ private fun ImageGalleryView(gallery: MdBlock.ImageGallery) {
         gallery.images.forEach { name ->
             val resource = Res.allDrawableResources[name]
             if (resource != null) {
+                val painter = painterResource(resource)
+                val size = painter.intrinsicSize
+                // Intrinsic dp size shrinks as UI density grows (4K), so size by aspect ratio instead.
+                val ratio = if (size.isSpecified && size.height > 0f) size.width / size.height else null
                 Image(
-                    painter = painterResource(resource),
+                    painter = painter,
                     contentDescription = name,
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
                         .weight(1f, fill = false)
-                        .heightIn(max = MAX_SCREENSHOT_HEIGHT)
+                        .then(if (ratio != null) Modifier.height(MAX_SCREENSHOT_HEIGHT).aspectRatio(ratio) else Modifier.heightIn(max = MAX_SCREENSHOT_HEIGHT))
                         .clip(RoundedCornerShape(16.dp)),
                 )
             }
