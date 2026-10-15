@@ -17,6 +17,7 @@ import no.nordicsemi.nrf.matter.ui.device.ClusterController
 data class ThermostatState(
     val featureMap: Int = 0,
     val localTemperatureCelsius: Float? = null,
+    val outdoorTemperatureCelsius: Float? = null,
     val heatingSetpointCelsius: Float? = null,
     val coolingSetpointCelsius: Float? = null,
     val systemMode: ThermostatSystemMode = ThermostatSystemMode.OFF,
@@ -64,6 +65,7 @@ class ThermostatController(
                 .onSuccess { r -> _state.update { it.copy(coolingLimitsCelsius = r) } }
         }
         observe(cluster.observeLocalTemperature()) { s, v -> s.copy(localTemperatureCelsius = v.toCelsius()) }
+        observe(cluster.observeOutdoorTemperature()) { s, v -> s.copy(outdoorTemperatureCelsius = v?.toCelsius()) }
         observe(cluster.observeHeatingSetpoint()) { s, v -> s.copy(heatingSetpointCelsius = v.toCelsius()) }
         observe(cluster.observeCoolingSetpoint()) { s, v -> s.copy(coolingSetpointCelsius = v.toCelsius()) }
         observe(cluster.observeSystemMode()) { s, v -> s.copy(systemMode = ThermostatSystemMode.from(v.toInt())) }

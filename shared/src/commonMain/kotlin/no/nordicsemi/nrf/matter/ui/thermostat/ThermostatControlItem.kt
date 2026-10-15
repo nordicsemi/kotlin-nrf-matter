@@ -91,6 +91,26 @@ fun ThermostatControlItem(
             }
         }
 
+        state.outdoorTemperatureCelsius?.let { outdoor ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "Outdoor temperature",
+                    style = MaterialTheme.typography.labelLarge,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    text = "${outdoor.format()}°C",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.testTag("thermostat_outdoor_temperature"),
+                )
+            }
+        }
+
         SystemModeSelector(state, onSystemModeChange)
 
         if (state.supportsHeating && state.heatingSetpointCelsius != null) {

@@ -8,6 +8,7 @@ object ThermostatClusterInfo {
 
     object Attribute {
         const val LOCAL_TEMPERATURE: Long = 0x0000
+        const val OUTDOOR_TEMPERATURE: Long = 0x0001
         const val ABS_MIN_HEAT_SETPOINT_LIMIT: Long = 0x0003
         const val ABS_MAX_HEAT_SETPOINT_LIMIT: Long = 0x0004
         const val ABS_MIN_COOL_SETPOINT_LIMIT: Long = 0x0005
@@ -46,6 +47,10 @@ class ThermostatCluster(
     /** Emits the local temperature in 0.01 °C. Not supported with the LocalTemperatureNotExposed feature. */
     fun observeLocalTemperature(): Flow<Number> =
         observeAttribute(ThermostatClusterInfo.Attribute.LOCAL_TEMPERATURE)
+
+    /** Emits the outdoor temperature in 0.01 °C, or null when the device has no value. Optional attribute. */
+    fun observeOutdoorTemperature(): Flow<Number?> =
+        observeAttribute(ThermostatClusterInfo.Attribute.OUTDOOR_TEMPERATURE)
 
     /** Emits the raw SystemMode value, see [no.nordicsemi.nrf.matter.model.ThermostatSystemMode]. */
     fun observeSystemMode(): Flow<Number> = observeAttribute(ThermostatClusterInfo.Attribute.SYSTEM_MODE)
