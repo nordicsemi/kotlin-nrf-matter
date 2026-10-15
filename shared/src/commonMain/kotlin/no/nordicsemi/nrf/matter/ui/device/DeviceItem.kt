@@ -219,9 +219,7 @@ internal fun DeviceItem(
                     isAlarmActive = smokeCoAlarmState.isAlarmActive,
                 )
 
-                thermostat != null && thermostatState != null -> ThermostatActionItem(
-                    localTemperatureCelsius = thermostatState.localTemperatureCelsius,
-                )
+                thermostat != null && thermostatState != null -> ThermostatActionItem()
 
                 else -> Icon(
                     imageVector = if (isExpanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
@@ -285,12 +283,6 @@ internal fun DeviceItem(
                 if (hasSmoke && headerAction != HeaderAction.SMOKE) {
                     ExpandedActionRow("Smoke/CO alarm") {
                         SmokeCoAlarmActionItem(isAlarmActive = smokeCoAlarmState.isAlarmActive)
-                    }
-                }
-
-                if (hasThermostat && headerAction != HeaderAction.THERMOSTAT) {
-                    ExpandedActionRow("Thermostat") {
-                        ThermostatActionItem(localTemperatureCelsius = thermostatState.localTemperatureCelsius)
                     }
                 }
 
