@@ -6,6 +6,11 @@ enum class ThermostatSystemMode(val value: Int, val label: String) {
     AUTO(1, "Auto"),
     COOL(3, "Cool"),
     HEAT(4, "Heat"),
+    EMERGENCY_HEAT(5, "Emergency heat"),
+    PRECOOLING(6, "Precooling"),
+    FAN_ONLY(7, "Fan only"),
+    DRY(8, "Dry"),
+    SLEEP(9, "Sleep"),
     OTHER(-1, "Other");
 
     companion object {

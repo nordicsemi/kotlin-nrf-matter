@@ -20,6 +20,8 @@ data class ThermostatState(
     val heatingSetpointCelsius: Float? = null,
     val coolingSetpointCelsius: Float? = null,
     val systemMode: ThermostatSystemMode = ThermostatSystemMode.OFF,
+    val heatingLimitsCelsius: ClosedFloatingPointRange<Float> = ThermostatController.DEFAULT_LIMITS_CELSIUS,
+    val coolingLimitsCelsius: ClosedFloatingPointRange<Float> = ThermostatController.DEFAULT_LIMITS_CELSIUS,
     val isEnabled: Boolean = true,
 ) {
     fun supports(feature: Int) = featureMap and feature != 0
@@ -28,14 +30,9 @@ data class ThermostatState(
     val supportsCooling get() = supports(Feature.COOLING)
     val supportsAuto get() = supports(Feature.AUTO_MODE)
 
-    /** Modes the user can select, derived from the supported features. Off is always available. */
+    /** Modes the user can select: every defined SystemMode value. */
     val selectableModes: List<ThermostatSystemMode>
-        get() = buildList {
-            add(ThermostatSystemMode.OFF)
-            if (supportsAuto) add(ThermostatSystemMode.AUTO)
-            if (supportsCooling) add(ThermostatSystemMode.COOL)
-            if (supportsHeating) add(ThermostatSystemMode.HEAT)
-        }
+        get() = ThermostatSystemMode.entries.filter { it != ThermostatSystemMode.OTHER }
 
     val isActive: Boolean
         get() = systemMode != ThermostatSystemMode.OFF
@@ -58,6 +55,14 @@ class ThermostatController(
             runCatching { cluster.featureMap() }
                 .onSuccess { map -> _state.update { it.copy(featureMap = map) } }
         }
+        scope.launch {
+            runCatching { cluster.heatingSetpointLimits().toRange() }
+                .onSuccess { r -> _state.update { it.copy(heatingLimitsCelsius = r) } }
+        }
+        scope.launch {
+            runCatching { cluster.coolingSetpointLimits().toRange() }
+                .onSuccess { r -> _state.update { it.copy(coolingLimitsCelsius = r) } }
+        }
         observe(cluster.observeLocalTemperature()) { s, v -> s.copy(localTemperatureCelsius = v.toCelsius()) }
         observe(cluster.observeHeatingSetpoint()) { s, v -> s.copy(heatingSetpointCelsius = v.toCelsius()) }
         observe(cluster.observeCoolingSetpoint()) { s, v -> s.copy(coolingSetpointCelsius = v.toCelsius()) }
@@ -72,33 +77,57 @@ class ThermostatController(
     }
 
     fun setSystemMode(mode: ThermostatSystemMode) {
-        send({ s -> s.copy(systemMode = mode) }) { cluster.setSystemMode(mode.value) }
+        val previous = _state.value.systemMode
+        send(
+            optimistic = { it.copy(systemMode = mode) },
+            revert = { s -> if (s.systemMode == mode) s.copy(systemMode = previous) else s },
+        ) { cluster.setSystemMode(mode.value) }
     }
 
     fun adjustHeatingSetpoint(deltaCelsius: Float) {
-        val target = ((_state.value.heatingSetpointCelsius ?: return) + deltaCelsius).coerceInRange()
-        send({ s -> s.copy(heatingSetpointCelsius = target) }) { cluster.setHeatingSetpoint(target.toCentiDegrees()) }
+        val current = _state.value.heatingSetpointCelsius ?: return
+        val target = (current + deltaCelsius).coerceIn(_state.value.heatingLimitsCelsius)
+        if (target == current) return
+        send(
+            optimistic = { it.copy(heatingSetpointCelsius = target) },
+            revert = { s -> if (s.heatingSetpointCelsius == target) s.copy(heatingSetpointCelsius = current) else s },
+        ) { cluster.setHeatingSetpoint(target.toCentiDegrees()) }
     }
 
     fun adjustCoolingSetpoint(deltaCelsius: Float) {
-        val target = ((_state.value.coolingSetpointCelsius ?: return) + deltaCelsius).coerceInRange()
-        send({ s -> s.copy(coolingSetpointCelsius = target) }) { cluster.setCoolingSetpoint(target.toCentiDegrees()) }
+        val current = _state.value.coolingSetpointCelsius ?: return
+        val target = (current + deltaCelsius).coerceIn(_state.value.coolingLimitsCelsius)
+        if (target == current) return
+        send(
+            optimistic = { it.copy(coolingSetpointCelsius = target) },
+            revert = { s -> if (s.coolingSetpointCelsius == target) s.copy(coolingSetpointCelsius = current) else s },
+        ) { cluster.setCoolingSetpoint(target.toCentiDegrees()) }
     }
 
-    /** Shows the new value right away, then writes it; the subscription restores the real value on failure. */
-    private fun send(optimistic: (ThermostatState) -> ThermostatState, action: suspend () -> Unit) {
+    /**
+     * Shows the new value right away, then writes it. If the write fails the previous value is restored,
+     * unless a newer value (e.g. from the subscription) has replaced the optimistic one in the meantime.
+     */
+    private fun send(
+        optimistic: (ThermostatState) -> ThermostatState,
+        revert: (ThermostatState) -> ThermostatState,
+        action: suspend () -> Unit,
+    ) {
         _state.update(optimistic)
-        scope.launch { runCatching { action() } }
+        scope.launch {
+            runCatching { action() }.onFailure { _state.update(revert) }
+        }
     }
 
     companion object {
         const val SETPOINT_STEP_CELSIUS = 0.5f
-        private const val MIN_SETPOINT_CELSIUS = 7f
-        private const val MAX_SETPOINT_CELSIUS = 35f
-
-        private fun Float.coerceInRange() = coerceIn(MIN_SETPOINT_CELSIUS, MAX_SETPOINT_CELSIUS)
+        val DEFAULT_LIMITS_CELSIUS = 7f..35f
     }
 }
+
+private fun Pair<Int, Int>.toRange(): ClosedFloatingPointRange<Float> = (first / 100f)..(second / 100f)
+
+private fun Float.coerceIn(range: ClosedFloatingPointRange<Float>) = coerceIn(range.start, range.endInclusive)
 
 private fun Number.toCelsius(): Float = toFloat() / 100f
 
