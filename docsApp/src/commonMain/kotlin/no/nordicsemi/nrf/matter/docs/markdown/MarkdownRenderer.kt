@@ -7,7 +7,9 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -25,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.isSpecified
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
@@ -67,22 +70,7 @@ fun MdBlockView(block: MdBlock, onLinkClick: (String) -> Unit) {
 
         is MdBlock.Paragraph -> InlineText(block.spans, onLinkClick)
 
-        is MdBlock.CodeBlock -> {
-            Surface(
-                color = MaterialTheme.colorScheme.surfaceContainerHighest,
-                shape = RoundedCornerShape(8.dp),
-                modifier = Modifier.fillMaxWidth(),
-            ) {
-                Text(
-                    text = block.code,
-                    fontFamily = FontFamily.Monospace,
-                    style = MaterialTheme.typography.bodySmall,
-                    modifier = Modifier
-                        .horizontalScroll(rememberScrollState())
-                        .padding(12.dp),
-                )
-            }
-        }
+        is MdBlock.CodeBlock -> CodeBlockView(block)
 
         is MdBlock.Table -> TableView(block, onLinkClick)
 
@@ -111,6 +99,24 @@ fun MdBlockView(block: MdBlock, onLinkClick: (String) -> Unit) {
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun CodeBlockView(block: MdBlock.CodeBlock, modifier: Modifier = Modifier) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerHighest,
+        shape = RoundedCornerShape(8.dp),
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Text(
+            text = block.code,
+            fontFamily = FontFamily.Monospace,
+            style = MaterialTheme.typography.bodySmall,
+            modifier = Modifier
+                .horizontalScroll(rememberScrollState())
+                .padding(12.dp),
+        )
     }
 }
 
@@ -185,10 +191,14 @@ private fun ListBlockView(list: MdBlock.ListBlock, onLinkClick: (String) -> Unit
                 )
                 Column {
                     InlineText(item.spans, onLinkClick)
+                    item.code.forEach { CodeBlockView(it, Modifier.padding(top = 6.dp)) }
                     item.subItems.forEach { sub ->
                         Row(modifier = Modifier.padding(top = 4.dp)) {
                             Text(text = "◦", modifier = Modifier.width(24.dp))
-                            InlineText(sub.spans, onLinkClick)
+                            Column {
+                                InlineText(sub.spans, onLinkClick)
+                                sub.code.forEach { CodeBlockView(it, Modifier.padding(top = 6.dp)) }
+                            }
                         }
                     }
                 }
@@ -234,13 +244,17 @@ private fun ImageGalleryView(gallery: MdBlock.ImageGallery) {
         gallery.images.forEach { name ->
             val resource = Res.allDrawableResources[name]
             if (resource != null) {
+                val painter = painterResource(resource)
+                val size = painter.intrinsicSize
+                // Intrinsic dp size shrinks as UI density grows (4K), so size by aspect ratio instead.
+                val ratio = if (size.isSpecified && size.height > 0f) size.width / size.height else null
                 Image(
-                    painter = painterResource(resource),
+                    painter = painter,
                     contentDescription = name,
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
                         .weight(1f, fill = false)
-                        .heightIn(max = MAX_SCREENSHOT_HEIGHT)
+                        .then(if (ratio != null) Modifier.height(MAX_SCREENSHOT_HEIGHT).aspectRatio(ratio) else Modifier.heightIn(max = MAX_SCREENSHOT_HEIGHT))
                         .clip(RoundedCornerShape(16.dp)),
                 )
             }

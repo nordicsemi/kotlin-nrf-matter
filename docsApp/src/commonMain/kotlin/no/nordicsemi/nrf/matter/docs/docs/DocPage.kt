@@ -21,6 +21,7 @@ enum class DocPage(val resourceFile: String, val displayTitle: String, val group
     BINDINGS("bindings.md", "Configuring bindings", DocGroup.USER_GUIDE),
     LOGS("logs.md", "Viewing logs", DocGroup.USER_GUIDE),
 
+    LIBRARY("library.md", "Library", DocGroup.DEVELOPER),
     PROJECT_STRUCTURE("project_structure.md", "Project structure", DocGroup.DEVELOPER),
     VENDORED_DEPS("vendored_dependencies.md", "Vendored dependencies", DocGroup.DEVELOPER),
 

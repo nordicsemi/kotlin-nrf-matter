@@ -47,6 +47,7 @@ object DocLinks {
     val RevisionHistory = DocAnchor(DocPage.REVISION_HISTORY)
     val Building = DocAnchor(DocPage.BUILDING)
     val ProjectStructure = DocAnchor(DocPage.PROJECT_STRUCTURE)
+    val Library = DocAnchor(DocPage.LIBRARY)
     val VendoredDeps = DocAnchor(DocPage.VENDORED_DEPS)
 
     private const val MANUFACTURER_SPEC_CLUSTER_ID = 0xFFF1FC01L

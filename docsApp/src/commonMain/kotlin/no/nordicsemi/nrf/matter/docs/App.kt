@@ -37,6 +37,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -49,7 +50,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.nrf.matter.HomeViewModel
@@ -72,6 +75,10 @@ private val PHONE_WIDTH = 412.dp
 private val PHONE_BORDER_WIDTH = 8.dp
 private val PHONE_MARGIN = 16.dp
 private val PHONE_MIN_WIDTH = 320.dp
+// Layout is designed for roughly this viewport; larger screens (e.g. 4K) scale the UI up to fill it.
+private val REFERENCE_WIDTH = 1600.dp
+private val REFERENCE_HEIGHT = 900.dp
+private const val MAX_UI_SCALE = 3f
 private const val PHONE_ASPECT_RATIO = 412f / 892f
 
 private const val COMMISSIONING_GATE_ACTION_LABEL = "Done, add the device"
@@ -97,6 +104,51 @@ fun App() {
     }
 
     NordicTheme {
+        ScaledToViewport {
+            AppContent(
+                revealedAnchor = revealedAnchor,
+                getStartedOpen = getStartedOpen,
+                showDocsBrowser = showDocsBrowser,
+                coachMarkDismissed = coachMarkDismissed,
+                onReveal = { getStartedOpen = false; revealedAnchor = it },
+                onDismissReveal = { revealedAnchor = null },
+                onDismissSidePanel = { revealedAnchor = null; getStartedOpen = false },
+                onCloseBrowser = { showDocsBrowser = null },
+                onOpenBrowser = { showDocsBrowser = DocAnchor(DocLinks.AppIntro.page) },
+                onDismissCoachMark = { coachMarkDismissed = true },
+                onLink = ::handleLink,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ScaledToViewport(content: @Composable () -> Unit) {
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val scale = minOf(maxWidth / REFERENCE_WIDTH, maxHeight / REFERENCE_HEIGHT).coerceIn(1f, MAX_UI_SCALE)
+        val density = LocalDensity.current
+        CompositionLocalProvider(
+            LocalDensity provides Density(density.density * scale, density.fontScale),
+            content = content,
+        )
+    }
+}
+
+@Composable
+private fun AppContent(
+    revealedAnchor: DocAnchor?,
+    getStartedOpen: Boolean,
+    showDocsBrowser: DocAnchor?,
+    coachMarkDismissed: Boolean,
+    onReveal: (DocAnchor) -> Unit,
+    onDismissReveal: () -> Unit,
+    onDismissSidePanel: () -> Unit,
+    onCloseBrowser: () -> Unit,
+    onOpenBrowser: () -> Unit,
+    onDismissCoachMark: () -> Unit,
+    onLink: (LinkTarget) -> Unit,
+) {
+    run {
         BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
@@ -131,11 +183,11 @@ fun App() {
             ) {
                 PhoneFrameContent(
                     revealedAnchor = revealedAnchor,
-                    onReveal = { getStartedOpen = false; revealedAnchor = it },
-                    onDismissReveal = { revealedAnchor = null },
+                    onReveal = onReveal,
+                    onDismissReveal = onDismissReveal,
                     panelBesideFrame = panelBesideFrame,
                     maxHeight = capturedMaxHeight,
-                    onLink = ::handleLink,
+                    onLink = onLink,
                 )
             }
 
@@ -143,13 +195,13 @@ fun App() {
                 visible = panelBesideFrame,
                 anchor = revealedAnchor ?: DocAnchor(DocPage.INDEX).takeIf { getStartedOpen },
                 isDefault = revealedAnchor == null,
-                onLink = ::handleLink,
-                onDismiss = { revealedAnchor = null; getStartedOpen = false },
+                onLink = onLink,
+                onDismiss = onDismissSidePanel,
                 modifier = Modifier.align(Alignment.CenterEnd).fillMaxWidth(0.5f).fillMaxHeight().padding(horizontal = 24.dp),
             )
 
             FloatingActionButton(
-                onClick = { showDocsBrowser = DocAnchor(DocLinks.AppIntro.page) },
+                onClick = onOpenBrowser,
                 modifier = Modifier.align(Alignment.BottomStart).padding(20.dp),
             ) {
                 Icon(Icons.Filled.MenuBook, contentDescription = "Browse all docs")
@@ -161,7 +213,7 @@ fun App() {
                 enter = fadeIn(),
                 exit = fadeOut(),
             ) {
-                CoachMark(onDismiss = { coachMarkDismissed = true })
+                CoachMark(onDismiss = onDismissCoachMark)
             }
 
             val browserAnchor = showDocsBrowser
@@ -169,8 +221,8 @@ fun App() {
                 Box(modifier = Modifier.fillMaxSize()) {
                     DocsBrowserScreen(
                         initialAnchor = browserAnchor,
-                        onLink = ::handleLink,
-                        onClose = { showDocsBrowser = null },
+                        onLink = onLink,
+                        onClose = onCloseBrowser,
                     )
                 }
             }

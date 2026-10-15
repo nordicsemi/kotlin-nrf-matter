@@ -11,6 +11,7 @@ sealed class InlineSpan {
 data class ListItem(
     val spans: List<InlineSpan>,
     val subItems: List<ListItem> = emptyList(),
+    val code: List<MdBlock.CodeBlock> = emptyList(),
 )
 
 sealed class MdBlock {
@@ -173,7 +174,11 @@ object MarkdownParser {
         return trimmed.split("|").map { it.trim() }
     }
 
-    private class RawItem(val text: StringBuilder, val subItems: MutableList<RawItem> = mutableListOf())
+    private class RawItem(
+        val text: StringBuilder,
+        val subItems: MutableList<RawItem> = mutableListOf(),
+        val code: MutableList<MdBlock.CodeBlock> = mutableListOf(),
+    )
 
     private fun parseList(lines: List<String>, start: Int): Pair<Int, MdBlock.ListBlock> {
         var i = start
@@ -214,6 +219,17 @@ object MarkdownParser {
                     currentSub = item
                 }
                 i++
+            } else if (line.trimStart().startsWith("```")) {
+                val fenceIndent = line.length - line.trimStart().length
+                val lang = line.trimStart().removePrefix("```").trim().ifBlank { null }
+                i++
+                val code = mutableListOf<String>()
+                while (i < lines.size && !lines[i].trimStart().startsWith("```")) {
+                    code += lines[i].let { l -> if (l.take(fenceIndent).isBlank()) l.drop(fenceIndent) else l.trimStart() }
+                    i++
+                }
+                if (i < lines.size) i++
+                (currentSub ?: currentTop)?.code?.add(MdBlock.CodeBlock(lang, code.joinToString("\n")))
             } else if (isContinuation(line)) {
                 val target = currentSub ?: currentTop
                 target?.text?.append(' ')?.append(line.trim())
@@ -226,7 +242,8 @@ object MarkdownParser {
         val listItems = items.map { top ->
             ListItem(
                 spans = parseInline(top.text.toString()),
-                subItems = top.subItems.map { sub -> ListItem(parseInline(sub.text.toString())) },
+                subItems = top.subItems.map { sub -> ListItem(parseInline(sub.text.toString()), code = sub.code) },
+                code = top.code,
             )
         }
         return i to MdBlock.ListBlock(listItems, ordered)
