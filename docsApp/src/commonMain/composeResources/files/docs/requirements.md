@@ -105,6 +105,7 @@ other device type can still be commissioned and inspected, but not controlled.
 | Temperature sensor           | `0x0302`              |
 | Robotic vacuum cleaner       | `0x0074`              |
 | Thermostat                   | `0x0301`              |
+| Window covering              | `0x0202`              |
 | Manufacturer-specific device | `0xFFF10001`          |
 
 See [Overview and user interface](overview.md#supported-device-types) for the controls offered for
