@@ -7,6 +7,10 @@ object WindowCoveringClusterInfo {
     const val ID: Long = 0x0102
 
     object Attribute {
+        const val CURRENT_POSITION_LIFT_PERCENTAGE: Long = 0x0008
+        const val CURRENT_POSITION_TILT_PERCENTAGE: Long = 0x0009
+        const val TARGET_POSITION_LIFT_PERCENT_100THS: Long = 0x000B
+        const val TARGET_POSITION_TILT_PERCENT_100THS: Long = 0x000C
         const val CURRENT_POSITION_LIFT_PERCENT_100THS: Long = 0x000E
         const val CURRENT_POSITION_TILT_PERCENT_100THS: Long = 0x000F
         const val FEATURE_MAP: Long = 0xFFFC
@@ -46,6 +50,22 @@ class WindowCoveringCluster(
     /** Emits the tilt position in 0.01 %, where 0 is fully open and 10000 fully closed. Null when unknown. */
     fun observeTiltPosition(): Flow<Number?> =
         observeAttribute(WindowCoveringClusterInfo.Attribute.CURRENT_POSITION_TILT_PERCENT_100THS)
+
+    /** Emits the lift position in whole percent (0 = open, 100 = closed). Null when unknown. */
+    fun observeLiftPercentage(): Flow<Number?> =
+        observeAttribute(WindowCoveringClusterInfo.Attribute.CURRENT_POSITION_LIFT_PERCENTAGE)
+
+    /** Emits the tilt position in whole percent (0 = open, 100 = closed). Null when unknown. */
+    fun observeTiltPercentage(): Flow<Number?> =
+        observeAttribute(WindowCoveringClusterInfo.Attribute.CURRENT_POSITION_TILT_PERCENTAGE)
+
+    /** Emits the lift position the device is moving to, in 0.01 %. Null when no target is set. */
+    fun observeTargetLiftPosition(): Flow<Number?> =
+        observeAttribute(WindowCoveringClusterInfo.Attribute.TARGET_POSITION_LIFT_PERCENT_100THS)
+
+    /** Emits the tilt position the device is moving to, in 0.01 %. Null when no target is set. */
+    fun observeTargetTiltPosition(): Flow<Number?> =
+        observeAttribute(WindowCoveringClusterInfo.Attribute.TARGET_POSITION_TILT_PERCENT_100THS)
 
     suspend fun open() = executeCommand(WindowCoveringClusterInfo.Command.UP_OR_OPEN)
 
