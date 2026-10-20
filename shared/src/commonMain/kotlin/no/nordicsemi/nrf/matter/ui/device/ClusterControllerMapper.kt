@@ -12,6 +12,7 @@ import no.nordicsemi.nrf.matter.cluster.RvcOperationalStateCluster
 import no.nordicsemi.nrf.matter.cluster.RvcRunModeCluster
 import no.nordicsemi.nrf.matter.cluster.TemperatureMeasurementCluster
 import no.nordicsemi.nrf.matter.cluster.ThermostatCluster
+import no.nordicsemi.nrf.matter.cluster.WindowCoveringCluster
 import no.nordicsemi.nrf.matter.nordic.BasicInfoExtCluster
 import no.nordicsemi.nrf.matter.nordic.ManufacturerSpecCluster
 import no.nordicsemi.nrf.matter.ui.contact.ContactSensorController
@@ -26,6 +27,7 @@ import no.nordicsemi.nrf.matter.ui.rvc.RvcRunModeController
 import no.nordicsemi.nrf.matter.ui.smokecoalarm.SmokeCoAlarmController
 import no.nordicsemi.nrf.matter.ui.temperature.TemperatureSensorController
 import no.nordicsemi.nrf.matter.ui.thermostat.ThermostatController
+import no.nordicsemi.nrf.matter.ui.windowcovering.WindowCoveringController
 
 fun Cluster.toController(scope: CoroutineScope): ClusterController? = when (this) {
     is OnOffCluster -> OnOffController(this, scope)
@@ -40,5 +42,6 @@ fun Cluster.toController(scope: CoroutineScope): ClusterController? = when (this
     is RvcCleanModeCluster -> RvcCleanModeController(this, scope)
     is RvcOperationalStateCluster -> RvcOperationalStateController(this, scope)
     is ThermostatCluster -> ThermostatController(this, scope)
+    is WindowCoveringCluster -> WindowCoveringController(this, scope)
     else -> null
 }
