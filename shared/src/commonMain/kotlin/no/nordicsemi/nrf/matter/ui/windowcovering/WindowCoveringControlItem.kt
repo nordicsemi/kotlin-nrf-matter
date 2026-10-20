@@ -56,8 +56,10 @@ import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import no.nordicsemi.nrf.matter.cluster.WindowCoveringClusterInfo.Feature
+import no.nordicsemi.nrf.matter.theme.NordicTheme
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.roundToInt
@@ -454,5 +456,61 @@ private fun PositionSlider(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun WindowCoveringControlItem_LiftAndTilt_Preview() {
+    NordicTheme {
+        WindowCoveringControlItem(
+            state = WindowCoveringState(
+                featureMap = Feature.LIFT or Feature.TILT,
+                liftPercent = 40,
+                tiltPercent = 70,
+            ),
+            onOpen = {},
+            onClose = {},
+            onStop = {},
+            onLiftChange = {},
+            onTiltChange = {},
+            modifier = Modifier.padding(16.dp),
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun WindowCoveringControlItem_Moving_Preview() {
+    NordicTheme {
+        WindowCoveringControlItem(
+            state = WindowCoveringState(
+                featureMap = Feature.LIFT,
+                liftPercent = 20,
+                liftTargetPercent = 80,
+            ),
+            onOpen = {},
+            onClose = {},
+            onStop = {},
+            onLiftChange = {},
+            onTiltChange = {},
+            modifier = Modifier.padding(16.dp),
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun WindowCoveringControlItem_Unknown_Preview() {
+    NordicTheme {
+        WindowCoveringControlItem(
+            state = WindowCoveringState(featureMap = Feature.LIFT or Feature.TILT),
+            onOpen = {},
+            onClose = {},
+            onStop = {},
+            onLiftChange = {},
+            onTiltChange = {},
+            modifier = Modifier.padding(16.dp),
+        )
     }
 }
