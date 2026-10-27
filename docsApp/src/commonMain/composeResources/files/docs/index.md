@@ -7,7 +7,7 @@ the iOS-specific implementation written in Swift.
 
 ## Application
 
-[![Download on the App Store](../../assets/AppStore.png)](https://apps.apple.com/ng/app/nrf-matter/id6786253679) [![Download on the App Store](../../assets/PlayStore.png)](https://play.google.com/store/apps/details?id=no.nordicsemi.nrf.matter)
+[![Download on the App Store](../../assets/AppStore.png)](https://apps.apple.com/ng/app/nrf-matter/id6786253679) [![Download on the Play Store](../../assets/PlayStore.png)](https://play.google.com/store/apps/details?id=no.nordicsemi.nrf.matter)
 
 
 ## Overview
