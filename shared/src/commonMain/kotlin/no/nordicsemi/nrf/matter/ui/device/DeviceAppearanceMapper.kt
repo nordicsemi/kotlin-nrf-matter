@@ -1,6 +1,7 @@
 package no.nordicsemi.nrf.matter.ui.device
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Blinds
 import androidx.compose.material.icons.outlined.CleaningServices
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.painter.Painter
@@ -34,6 +35,7 @@ fun Device.toIcon(isActive: Boolean): Painter = when (deviceType) {
     SupportedDeviceType.THERMOSTAT.value -> painterResource(Res.drawable.temperature)
     SupportedDeviceType.ROBOTIC_VACUUM_CLEANER.value -> rememberVectorPainter(Icons.Outlined.CleaningServices)
     SupportedDeviceType.SMOKE_CO_ALARM.value -> painterResource(Res.drawable.smoke_co_alarm)
+    SupportedDeviceType.WINDOW_COVERING.value -> rememberVectorPainter(Icons.Outlined.Blinds)
     else -> painterResource(Res.drawable.light_bulb)
 }
 
@@ -62,6 +64,7 @@ private fun DeviceType.toSubtitle(): String = when (this) {
     SupportedDeviceType.ROBOTIC_VACUUM_CLEANER.value -> "Robot vacuum cleaner"
     SupportedDeviceType.SMOKE_CO_ALARM.value -> "Detects smoke and carbon monoxide"
     SupportedDeviceType.THERMOSTAT.value -> "Controls heating and cooling"
+    SupportedDeviceType.WINDOW_COVERING.value -> "Controls blinds and shades"
 
     else -> "Unsupported device type."
 }

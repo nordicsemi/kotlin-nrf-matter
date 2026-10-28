@@ -48,6 +48,10 @@ kotlin {
             implementation(libs.jetbrains.compose.runtime)
             implementation(libs.jetbrains.compose.viewmodel)
             implementation(libs.skydoves.cloudy)
+
+            // Android Studio's Compose Preview needs ComposeViewAdapter from ui-tooling on the classpath.
+            implementation(project.dependencies.platform(libs.androidx.compose.bom))
+            implementation(libs.androidx.compose.ui.tooling)
         }
         iosMain.dependencies {
             implementation(libs.skydoves.cloudy)

@@ -95,6 +95,7 @@ toggle, regardless of its device type.
 | Robotic vacuum cleaner       | `0x0074`              | Pause/resume, **Go home**, and **Run mode** / **Clean mode** pickers                                         |
 | Smoke/CO alarm               | `0x0076`              | Device status, mute state, **Smoke** / **CO** alarm levels, **Run self-test** button                         |
 | Thermostat                   | `0x0301`              | **System mode** selector, **Heating** / **Cooling** setpoint steppers, local temperature, supported features |
+| Window covering              | `0x0202`              | **Open** / **Stop** / **Close** buttons, **Lift** and **Tilt** position sliders                              |
 | Manufacturer-specific device | `0xFFF10001`          | **Generate number** button, **LED** switch, button state indicator                                           | 
 | Any other device type        | —                     | None — reported as unsupported                                                                               |
 
@@ -243,6 +244,15 @@ thermostat's attributes, so the card follows changes made externally.
 * Local temperature — The Local Temperature attribute, updated live. Hidden when the device reports
   the Local Temperature Not Exposed feature.
 * Supported features — The features reported by the Feature Map (for example Heating, Cooling, Auto).
+
+### Window coverings
+
+Once a Window Covering is commissioned, its card shows the lift and tilt positions as a percentage
+closed (0 % is fully open, 100 % fully closed). Expanding the card reveals the controls: **Open**,
+**Stop** and **Close** buttons, and **Lift** and **Tilt** sliders that send a Go To Lift/Tilt
+Percentage command when released. The app reads the Window Covering cluster (`0x0102`) Feature Map
+and subscribes to the position attributes, so the card follows changes made on the device, for
+example with the buttons of the nRF Connect SDK Window Covering sample.
 
 ### Manufacturer-specific device
 
