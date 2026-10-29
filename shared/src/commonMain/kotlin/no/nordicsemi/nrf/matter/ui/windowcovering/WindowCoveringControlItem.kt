@@ -427,7 +427,7 @@ private fun PositionSlider(
                         else -> "Idle"
                     },
                     style = MaterialTheme.typography.labelSmall,
-                    color = if (isMoving) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
+                    color = if (isMoving) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary,
                     modifier = Modifier.alpha(pulse),
                 )
             }
