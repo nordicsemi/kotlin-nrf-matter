@@ -27,7 +27,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -99,11 +99,12 @@ fun WindowCoveringControlItem(
             )
             ActionButton(
                 "Stop",
-                Icons.Filled.Stop,
+                Icons.Filled.Pause,
                 MaterialTheme.colorScheme.error,
                 onStop,
                 "window_covering_stop",
-                Modifier.weight(1f)
+                Modifier.weight(1f),
+                enabled = state.isMoving,
             )
             ActionButton(
                 "Close",
@@ -236,9 +237,11 @@ private fun ActionButton(
     onClick: () -> Unit,
     tag: String,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     OutlinedButton(
         onClick = onClick,
+        enabled = enabled,
         shape = RoundedCornerShape(12.dp),
         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 10.dp),
         border = BorderStroke(1.dp, accent.copy(alpha = 0.4f)),
@@ -248,7 +251,12 @@ private fun ActionButton(
         ),
         modifier = modifier.testTag(tag),
     ) {
-        Icon(icon, contentDescription = null, tint = accent, modifier = Modifier.size(18.dp))
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = if (enabled) accent else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+            modifier = Modifier.size(18.dp),
+        )
         Spacer(Modifier.width(4.dp))
         Text(label, fontWeight = FontWeight.SemiBold)
     }

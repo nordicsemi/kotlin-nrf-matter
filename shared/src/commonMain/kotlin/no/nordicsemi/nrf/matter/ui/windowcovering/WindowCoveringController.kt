@@ -36,6 +36,11 @@ data class WindowCoveringState(
     /** True until the device has reported (or been given) any lift or tilt position. */
     val isPositionUnknown get() = liftDestination == null && tiltDestination == null
 
+    /** True while the device has a target it has not reached yet. */
+    val isMoving: Boolean
+        get() = (liftPercent != null && liftTargetPercent != null && liftPercent != liftTargetPercent) ||
+            (tiltPercent != null && tiltTargetPercent != null && tiltPercent != tiltTargetPercent)
+
     val isOpen: Boolean
         get() = (liftDestination ?: 0) < 100 || (tiltDestination ?: 0) < 100
 
