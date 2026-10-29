@@ -263,9 +263,17 @@ private const val MOVE_MS_PER_PERCENT = 80f
  */
 @Composable
 private fun animateLinearPercent(current: Int?, target: Int?): Float {
-    val destination = (current ?: target ?: 0).toFloat()
-    val position = remember { Animatable(destination) }
+    val destination = (current ?: target)?.toFloat()
+    val position = remember { Animatable(destination ?: 0f) }
+    // The first known position is shown as it is; only later changes are animated.
+    var placed by remember { mutableStateOf(destination != null) }
     LaunchedEffect(destination) {
+        if (destination == null) return@LaunchedEffect
+        if (!placed) {
+            position.snapTo(destination)
+            placed = true
+            return@LaunchedEffect
+        }
         val duration = (abs(destination - position.value) * MOVE_MS_PER_PERCENT).roundToInt()
         position.animateTo(destination, tween(duration, easing = LinearEasing))
     }
