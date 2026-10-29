@@ -29,9 +29,9 @@ data class WindowCoveringState(
     val supportsLift get() = supports(Feature.LIFT) || (featureMap == 0 && liftPercent != null)
     val supportsTilt get() = supports(Feature.TILT) || (featureMap == 0 && tiltPercent != null)
 
-    /** Where the covering is, or is heading to when it has a target. */
-    val liftDestination get() = liftTargetPercent ?: liftPercent
-    val tiltDestination get() = tiltTargetPercent ?: tiltPercent
+    /** Where the covering is now; the target is only a fallback until a position is known. */
+    val liftDestination get() = liftPercent ?: liftTargetPercent
+    val tiltDestination get() = tiltPercent ?: tiltTargetPercent
 
     /** True until the device has reported (or been given) any lift or tilt position. */
     val isPositionUnknown get() = liftDestination == null && tiltDestination == null
@@ -86,7 +86,7 @@ class WindowCoveringController(
     }
 
     fun stop() {
-        _state.update { it.copy(liftTargetPercent = it.liftPercent, tiltTargetPercent = it.tiltPercent) }
+        _state.update { it.copy(liftTargetPercent = null, tiltTargetPercent = null) }
         send { cluster.stop() }
     }
 

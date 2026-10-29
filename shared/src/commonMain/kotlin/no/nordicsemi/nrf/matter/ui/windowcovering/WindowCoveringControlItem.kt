@@ -1,9 +1,9 @@
 package no.nordicsemi.nrf.matter.ui.windowcovering
 
-import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
@@ -39,6 +39,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -118,8 +119,11 @@ fun WindowCoveringControlItem(
             PositionUnknownNotice()
         } else {
             BlindsPreview(
-                lift = state.liftDestination,
-                tilt = state.tiltDestination.takeIf { state.supportsTilt },
+                lift = state.liftPercent ?: state.liftTargetPercent,
+                liftCurrent = state.liftPercent,
+                liftTarget = state.liftTargetPercent,
+                tiltCurrent = state.tiltPercent.takeIf { state.supportsTilt },
+                tiltTarget = state.tiltTargetPercent.takeIf { state.supportsTilt },
             )
 
             if (state.supportsLift) {
@@ -250,21 +254,35 @@ private fun ActionButton(
     }
 }
 
-private val MoveAnimation = tween<Float>(durationMillis = 1500, easing = FastOutSlowInEasing)
+/** Time to move the displayed position by 1 %. */
+private const val MOVE_MS_PER_PERCENT = 80f
+
+/**
+ * Glides to the position the device reports ([current], or [target] until one is known) at a constant speed.
+ * The display never runs ahead of the device, so it has nothing to jump back to when the move is stopped.
+ */
+@Composable
+private fun animateLinearPercent(current: Int?, target: Int?): Float {
+    val destination = (current ?: target ?: 0).toFloat()
+    val position = remember { Animatable(destination) }
+    LaunchedEffect(destination) {
+        val duration = (abs(destination - position.value) * MOVE_MS_PER_PERCENT).roundToInt()
+        position.animateTo(destination, tween(duration, easing = LinearEasing))
+    }
+    return position.value
+}
 
 /** A window with slats that lower with the lift position and rotate with the tilt position. */
 @Composable
-private fun BlindsPreview(lift: Int?, tilt: Int?) {
-    val liftFraction by animateFloatAsState(
-        (lift ?: 0) / 100f,
-        MoveAnimation,
-        label = "blinds-lift"
-    )
-    val tiltFraction by animateFloatAsState(
-        (tilt ?: 0) / 100f,
-        MoveAnimation,
-        label = "blinds-tilt"
-    )
+private fun BlindsPreview(
+    lift: Int?,
+    liftCurrent: Int?,
+    liftTarget: Int?,
+    tiltCurrent: Int?,
+    tiltTarget: Int?,
+) {
+    val liftFraction = animateLinearPercent(liftCurrent, liftTarget) / 100f
+    val tiltFraction = animateLinearPercent(tiltCurrent, tiltTarget) / 100f
     val slat = MaterialTheme.colorScheme.outline
     val edge = MaterialTheme.colorScheme.primary
     val well = MaterialTheme.colorScheme.surfaceContainerLowest
@@ -379,10 +397,9 @@ private fun PositionSlider(
     tag: String,
 ) {
     var dragging by remember { mutableStateOf<Float?>(null) }
-    val destination = (target ?: current ?: 0).toFloat()
-    val animated by animateFloatAsState(destination, MoveAnimation, label = "$label-position")
+    val animated = animateLinearPercent(current, target)
     val shown = dragging ?: animated
-    val isMoving = dragging == null && abs(animated - destination) > 0.5f
+    val isMoving = dragging == null && current != null && target != null && current != target
 
     val pulse = rememberPulse(label, enabled = isMoving)
 
@@ -406,12 +423,11 @@ private fun PositionSlider(
                 )
                 Text(
                     text = when {
-                        isMoving -> "Moving to ${destination.roundToInt()}%"
-                        current != null && target != null && current != target -> "Target ${target}%"
+                        isMoving -> "Moving to $target%"
                         else -> "Idle"
                     },
                     style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
+                    color = if (isMoving) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
                     modifier = Modifier.alpha(pulse),
                 )
             }
@@ -424,6 +440,7 @@ private fun PositionSlider(
         }
         Slider(
             value = shown,
+            enabled = !isMoving,
             onValueChange = { dragging = it },
             onValueChangeFinished = {
                 dragging?.let { onChangeFinished(it.roundToInt()) }
@@ -434,11 +451,18 @@ private fun PositionSlider(
                 activeTrackColor = MaterialTheme.colorScheme.primaryContainer,
                 inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant,
                 thumbColor = MaterialTheme.colorScheme.primary,
+                disabledActiveTrackColor = MaterialTheme.colorScheme.tertiaryContainer,
+                disabledInactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                disabledThumbColor = MaterialTheme.colorScheme.tertiary,
             ),
             thumb = {
                 SliderDefaults.Thumb(
                     interactionSource = remember { MutableInteractionSource() },
-                    colors = SliderDefaults.colors(thumbColor = MaterialTheme.colorScheme.primary),
+                    enabled = !isMoving,
+                    colors = SliderDefaults.colors(
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        disabledThumbColor = MaterialTheme.colorScheme.tertiary,
+                    ),
                     modifier = Modifier.size(20.dp),
                 )
             },
