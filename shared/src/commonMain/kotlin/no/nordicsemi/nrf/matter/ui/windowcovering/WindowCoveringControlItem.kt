@@ -11,6 +11,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -53,6 +54,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -97,15 +99,17 @@ fun WindowCoveringControlItem(
                 "window_covering_open",
                 Modifier.weight(1f)
             )
-            ActionButton(
-                "Stop",
-                Icons.Filled.Pause,
-                MaterialTheme.colorScheme.error,
-                onStop,
-                "window_covering_stop",
-                Modifier.weight(1f),
-                enabled = state.isMoving,
-            )
+            if (state.reportsProgress) {
+                ActionButton(
+                    "Stop",
+                    Icons.Filled.Pause,
+                    MaterialTheme.colorScheme.error,
+                    onStop,
+                    "window_covering_stop",
+                    Modifier.weight(1f),
+                    enabled = state.isMoving,
+                )
+            }
             ActionButton(
                 "Close",
                 Icons.Filled.KeyboardArrowDown,
@@ -120,11 +124,15 @@ fun WindowCoveringControlItem(
             PositionUnknownNotice()
         } else {
             BlindsPreview(
-                lift = state.liftPercent ?: state.liftTargetPercent,
                 liftCurrent = state.liftPercent,
                 liftTarget = state.liftTargetPercent,
                 tiltCurrent = state.tiltPercent.takeIf { state.supportsTilt },
                 tiltTarget = state.tiltTargetPercent.takeIf { state.supportsTilt },
+                liftTracked = state.liftTracked,
+                tiltTracked = state.tiltTracked,
+                liftHeld = state.liftHeld,
+                tiltHeld = state.tiltHeld,
+                commands = state.commands,
             )
 
             if (state.supportsLift) {
@@ -132,6 +140,10 @@ fun WindowCoveringControlItem(
                     "Lift",
                     state.liftPercent,
                     state.liftTargetPercent,
+                    state.isLiftMoving,
+                    state.liftTracked,
+                    state.liftHeld,
+                    state.commands,
                     onLiftChange,
                     "window_covering_lift"
                 )
@@ -141,6 +153,10 @@ fun WindowCoveringControlItem(
                     "Tilt",
                     state.tiltPercent,
                     state.tiltTargetPercent,
+                    state.isTiltMoving,
+                    state.tiltTracked,
+                    state.tiltHeld,
+                    state.commands,
                     onTiltChange,
                     "window_covering_tilt"
                 )
@@ -262,27 +278,32 @@ private fun ActionButton(
     }
 }
 
-/** Time to move the displayed position by 1 %. */
-private const val MOVE_MS_PER_PERCENT = 80f
 
 /**
- * Glides to the position the device reports ([current], or [target] until one is known) at a constant speed.
- * The display never runs ahead of the device, so it has nothing to jump back to when the move is stopped.
+ * Glides at a constant speed to the [current] position if the device reports it ([tracked]), else to the [target].
+ * After a Stop ([held]) the glide halts where it is.
  */
 @Composable
-private fun animateLinearPercent(current: Int?, target: Int?): Float {
-    val destination = (current ?: target)?.toFloat()
+private fun animateLinearPercent(current: Int?, target: Int?, tracked: Boolean, held: Boolean, commands: Commands): Float {
+    // A device that reports its position is followed; one that only sets the target is shown at its target.
+    val destination = (if (tracked) current ?: target else target ?: current)?.toFloat()
     val position = remember { Animatable(destination ?: 0f) }
     // The first known position is shown as it is; only later changes are animated.
     var placed by remember { mutableStateOf(destination != null) }
-    LaunchedEffect(destination) {
+    LaunchedEffect(destination, held, commands.moves) {
+        // After Stop the display stays put, whatever the device then does with its target.
+        if (held) {
+            position.stop()
+            return@LaunchedEffect
+        }
         if (destination == null) return@LaunchedEffect
-        if (!placed) {
+        // Reports that arrive when the card opens, before any command, are shown as they are.
+        if (!placed || (commands.moves == 0 && !tracked)) {
             position.snapTo(destination)
             placed = true
             return@LaunchedEffect
         }
-        val duration = (abs(destination - position.value) * MOVE_MS_PER_PERCENT).roundToInt()
+        val duration = (abs(destination - position.value) * MOVE_MS_PER_PERCENT.toFloat()).roundToInt()
         position.animateTo(destination, tween(duration, easing = LinearEasing))
     }
     return position.value
@@ -291,14 +312,18 @@ private fun animateLinearPercent(current: Int?, target: Int?): Float {
 /** A window with slats that lower with the lift position and rotate with the tilt position. */
 @Composable
 private fun BlindsPreview(
-    lift: Int?,
     liftCurrent: Int?,
     liftTarget: Int?,
     tiltCurrent: Int?,
     tiltTarget: Int?,
+    liftTracked: Boolean,
+    tiltTracked: Boolean,
+    liftHeld: Boolean,
+    tiltHeld: Boolean,
+    commands: Commands,
 ) {
-    val liftFraction = animateLinearPercent(liftCurrent, liftTarget) / 100f
-    val tiltFraction = animateLinearPercent(tiltCurrent, tiltTarget) / 100f
+    val liftFraction = animateLinearPercent(liftCurrent, liftTarget, liftTracked, liftHeld, commands) / 100f
+    val tiltFraction = animateLinearPercent(tiltCurrent, tiltTarget, tiltTracked, tiltHeld, commands) / 100f
     val slat = MaterialTheme.colorScheme.outline
     val edge = MaterialTheme.colorScheme.primary
     val well = MaterialTheme.colorScheme.surfaceContainerLowest
@@ -338,12 +363,6 @@ private fun BlindsPreview(
                 }
             }
         }
-        Text(
-            text = lift?.let { "Current position: $it% lift" } ?: "Current position unknown",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-        )
     }
 }
 
@@ -409,13 +428,17 @@ private fun PositionSlider(
     label: String,
     current: Int?,
     target: Int?,
+    moving: Boolean,
+    tracked: Boolean,
+    held: Boolean,
+    commands: Commands,
     onChangeFinished: (Int) -> Unit,
     tag: String,
 ) {
     var dragging by remember { mutableStateOf<Float?>(null) }
-    val animated = animateLinearPercent(current, target)
+    val animated = animateLinearPercent(current, target, tracked, held, commands)
     val shown = dragging ?: animated
-    val isMoving = dragging == null && current != null && target != null && current != target
+    val isMoving = dragging == null && moving
 
     val pulse = rememberPulse(label, enabled = isMoving)
 
@@ -424,6 +447,8 @@ private fun PositionSlider(
             .fillMaxWidth()
             .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+            // A locked slider must swallow touches, or they fall through to the device card and collapse it.
+            .pointerInput(isMoving) { if (isMoving) detectTapGestures { } }
             .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         Row(
