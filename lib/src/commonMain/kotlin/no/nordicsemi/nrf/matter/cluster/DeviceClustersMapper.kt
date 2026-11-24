@@ -22,6 +22,7 @@ fun Device.toClusters(): List<Cluster> {
                 RvcOperationalStateClusterInfo.ID -> RvcOperationalStateCluster(deviceId, endpoint.id, client)
                 SmokeCoAlarmClusterInfo.ID -> SmokeCoAlarmCluster(deviceId, endpoint.id, client)
                 ThermostatClusterInfo.ID -> ThermostatCluster(deviceId, endpoint.id, client)
+                WindowCoveringClusterInfo.ID -> WindowCoveringCluster(deviceId, endpoint.id, client)
 
                 else -> NordicMatters.getCustomClusters()[clusterId]
                     .takeIf { it?.deviceType != SupportedDeviceType.UNKNOWN.value }
