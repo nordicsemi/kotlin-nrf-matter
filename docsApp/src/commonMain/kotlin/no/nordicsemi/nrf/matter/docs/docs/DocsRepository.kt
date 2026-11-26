@@ -1,8 +1,11 @@
 package no.nordicsemi.nrf.matter.docs.docs
 
 import docs.shared.generated.resources.Res
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import no.nordicsemi.nrf.matter.docs.markdown.MarkdownParser
 import no.nordicsemi.nrf.matter.docs.markdown.MdBlock
+import org.jetbrains.compose.resources.MissingResourceException
 
 data class DocStepPage(val title: String, val blocks: List<MdBlock>)
 
@@ -39,7 +42,12 @@ object DocsRepository {
 
     suspend fun blocksOf(page: DocPage): List<MdBlock> {
         blocksCache[page]?.let { return it }
-        val bytes = Res.readBytes("files/docs/${page.resourceFile}")
+        val bytes = try {
+            Res.readBytes("files/docs/${page.resourceFile}")
+        } catch (e: MissingResourceException) {
+            currentCoroutineContext().ensureActive()
+            throw e
+        }
         val blocks = MarkdownParser.parse(bytes.decodeToString())
         blocksCache[page] = blocks
         return blocks
